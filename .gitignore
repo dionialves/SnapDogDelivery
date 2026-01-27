@@ -28,3 +28,4 @@ replay_pid*
 mvnw
 mvnw.cmd
 target/
+.tool-versions
