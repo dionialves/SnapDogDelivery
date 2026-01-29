@@ -1,4 +1,4 @@
-package com.dionialves.greendogdelivery.item;
+package com.dionialves.snapdogdelivery.item;
 
 import org.hibernate.validator.constraints.Length;
 

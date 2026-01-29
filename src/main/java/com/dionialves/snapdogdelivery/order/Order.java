@@ -1,4 +1,4 @@
-package com.dionialves.greendogdelivery.order;
+package com.dionialves.snapdogdelivery.order;
 
 import java.util.Date;
 import java.util.List;
@@ -19,8 +19,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import com.dionialves.greendogdelivery.client.Client;
-import com.dionialves.greendogdelivery.item.Item;
+import com.dionialves.snapdogdelivery.client.Client;
+import com.dionialves.snapdogdelivery.item.Item;
 
 @Entity
 @Getter

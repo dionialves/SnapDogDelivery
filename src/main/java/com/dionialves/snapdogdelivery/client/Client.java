@@ -1,4 +1,4 @@
-package com.dionialves.greendogdelivery.client;
+package com.dionialves.snapdogdelivery.client;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -18,7 +18,7 @@ import lombok.Setter;
 import java.util.List;
 import org.hibernate.validator.constraints.Length;
 
-import com.dionialves.greendogdelivery.order.Order;
+import com.dionialves.snapdogdelivery.order.Order;
 
 @Entity
 @Getter

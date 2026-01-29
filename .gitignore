@@ -29,3 +29,7 @@ mvnw
 mvnw.cmd
 target/
 .tool-versions
+.classpath
+.factorypath
+.project
+.settings

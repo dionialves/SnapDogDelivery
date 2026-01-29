@@ -1,4 +1,4 @@
-package com.dionialves.greendogdelivery.client;
+package com.dionialves.snapdogdelivery.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
