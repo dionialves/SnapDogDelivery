@@ -1,4 +1,4 @@
-package com.dionialves.snapdogdelivery.client;
+package com.dionialves.snapdogdelivery.item;
 
 import java.util.List;
 
@@ -19,52 +19,52 @@ import org.springframework.web.server.ResponseStatusException;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/client")
-public class ClientController {
+@RequestMapping("/api/item")
+public class ItemController {
 
     @Autowired
-    private ClientRepository clientRepository;
+    private ItemRepository itemRepository;
 
     @GetMapping
-    public ResponseEntity<List<Client>> findAll() {
-        List<Client> clients = clientRepository.findAll();
-        return ResponseEntity.ok(clients);
+    public ResponseEntity<List<Item>> findAll() {
+        List<Item> items = itemRepository.findAll();
+        return ResponseEntity.ok(items);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Client> findById(@PathVariable Long id) {
-        return clientRepository.findById(id)
-                .map(client -> ResponseEntity.ok(client))
+    public ResponseEntity<Item> findById(@PathVariable Long id) {
+        return itemRepository.findById(id)
+                .map(item -> ResponseEntity.ok(item))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<Client> newClient(@Valid @RequestBody Client client) {
-        Client salvedClient = clientRepository.save(client);
+    public ResponseEntity<Item> newItem(@Valid @RequestBody Item item) {
+        Item salvedItem = itemRepository.save(item);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(salvedClient);
+                .body(salvedItem);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Client> update(@Valid @RequestBody Client client, @PathVariable Long id) {
+    public ResponseEntity<Item> update(@Valid @RequestBody Item item, @PathVariable Long id) {
 
-        Client updateClient = clientRepository.findById(id)
+        Item updateItem = itemRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        updateClient.setName(client.getName());
-        updateClient.setAddress(client.getAddress());
+        updateItem.setName(item.getName());
+        updateItem.setPrice(item.getPrice());
 
-        Client savedClient = clientRepository.save(updateClient);
-        return ResponseEntity.ok(savedClient);
+        Item savedItem = itemRepository.save(updateItem);
+        return ResponseEntity.ok(savedItem);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
-        if (!clientRepository.existsById(id)) {
+        if (!itemRepository.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-        clientRepository.deleteById(id);
+        itemRepository.deleteById(id);
     }
 }

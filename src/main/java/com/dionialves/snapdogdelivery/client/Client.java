@@ -8,17 +8,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.Setter;
 import java.util.List;
-import org.hibernate.validator.constraints.Length;
 
 import com.dionialves.snapdogdelivery.order.Order;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Getter
@@ -32,15 +30,14 @@ public class Client {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
-    @Length(min = 2, max = 30, message = "The name length must be between {min} and {max} characters")
+    @NotBlank(message = "Name is mandatory")
+    @Size(min = 2, max = 30, message = "The name length must be between {min} and {max} characters")
     private String name;
 
-    @NotNull
-    @Length(min = 2, max = 300, message = "The address length must be betwaan {min} and {max} characters")
+    @NotBlank(message = "Address is mandatory")
+    @Size(min = 2, max = 300, message = "The address length must be betwaan {min} and {max} characters")
     private String address;
 
-    @NonNull
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "client", fetch = FetchType.EAGER)
     private List<Order> orders;
 

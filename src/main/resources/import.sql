@@ -33,3 +33,4 @@ INSERT INTO tb_orders_items (order_id, items_id) VALUES (3, 3);
 --
 
 SELECT setval('tb_clients_id_seq', (SELECT MAX(id) FROM tb_clients));
+SELECT setval('tb_items_id_seq', (SELECT MAX(id) FROM tb_items));
