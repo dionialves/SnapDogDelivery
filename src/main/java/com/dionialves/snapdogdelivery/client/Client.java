@@ -18,6 +18,7 @@ import java.util.List;
 import org.hibernate.validator.constraints.Length;
 
 import com.dionialves.snapdogdelivery.order.Order;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Getter

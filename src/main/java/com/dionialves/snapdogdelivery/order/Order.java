@@ -21,6 +21,7 @@ import lombok.Setter;
 
 import com.dionialves.snapdogdelivery.client.Client;
 import com.dionialves.snapdogdelivery.item.Item;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Getter
@@ -35,6 +36,7 @@ public class Order {
     private Long id;
 
     @ManyToOne(optional = true)
+    @JsonBackReference
     private Client client;
 
     @ManyToMany(cascade = CascadeType.MERGE)
