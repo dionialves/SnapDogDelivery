@@ -103,15 +103,22 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                    <configuration>
-                        <annotationProcessorPaths>
-                            <path>
-                                <groupId>org.projectlombok</groupId>
-                                <artifactId>lombok</artifactId>
-                                <version>1.18.42</version>
-                            </path>
-                        </annotationProcessorPaths>
-                    </configuration>
+                <executions>
+                    <execution>
+                    <goals>
+                        <goal>sources</goal>
+                    </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.42</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
 			</plugin>
 		</plugins>
 	</build>
