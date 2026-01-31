@@ -1,4 +1,4 @@
-package com.dionialves.snapdogdelivery.item;
+package com.dionialves.snapdogdelivery.product;
 
 import java.util.List;
 
@@ -19,52 +19,52 @@ import org.springframework.web.server.ResponseStatusException;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/item")
-public class ItemController {
+@RequestMapping("/api/product")
+public class ProductController {
 
     @Autowired
-    private ItemRepository itemRepository;
+    private ProductRepository productRepository;
 
     @GetMapping
-    public ResponseEntity<List<Item>> findAll() {
-        List<Item> items = itemRepository.findAll();
-        return ResponseEntity.ok(items);
+    public ResponseEntity<List<Product>> findAll() {
+        List<Product> products = productRepository.findAll();
+        return ResponseEntity.ok(products);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Item> findById(@PathVariable Long id) {
-        return itemRepository.findById(id)
-                .map(item -> ResponseEntity.ok(item))
+    public ResponseEntity<Product> findById(@PathVariable Long id) {
+        return productRepository.findById(id)
+                .map(product -> ResponseEntity.ok(product))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<Item> newItem(@Valid @RequestBody Item item) {
-        Item salvedItem = itemRepository.save(item);
+    public ResponseEntity<Product> newItem(@Valid @RequestBody Product product) {
+        Product salvedProduct = productRepository.save(product);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(salvedItem);
+                .body(salvedProduct);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Item> update(@Valid @RequestBody Item item, @PathVariable Long id) {
+    public ResponseEntity<Product> update(@Valid @RequestBody Product product, @PathVariable Long id) {
 
-        Item updateItem = itemRepository.findById(id)
+        Product updateProduct = productRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        updateItem.setName(item.getName());
-        updateItem.setPrice(item.getPrice());
+        updateProduct.setName(product.getName());
+        updateProduct.setPrice(product.getPrice());
 
-        Item savedItem = itemRepository.save(updateItem);
-        return ResponseEntity.ok(savedItem);
+        Product savedProduct = productRepository.save(updateProduct);
+        return ResponseEntity.ok(savedProduct);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
-        if (!itemRepository.existsById(id)) {
+        if (!productRepository.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-        itemRepository.deleteById(id);
+        productRepository.deleteById(id);
     }
 }

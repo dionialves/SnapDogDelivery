@@ -1,28 +1,23 @@
-package com.dionialves.snapdogdelivery.client;
+package com.dionialves.snapdogdelivery.product;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import java.util.List;
-
-import com.dionialves.snapdogdelivery.order.Order;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "tb_clients")
-public class Client {
+@Table(name = "tb_products")
+public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,14 +26,10 @@ public class Client {
     @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(nullable = false, length = 200)
-    private String address;
+    @Column(nullable = false)
+    private Double price;
 
-    @OneToMany(mappedBy = "client")
-    private List<Order> orders;
+    @Column(length = 500)
+    private String description;
 
-    public Client(String name, String address) {
-        this.name = name;
-        this.address = address;
-    }
 }

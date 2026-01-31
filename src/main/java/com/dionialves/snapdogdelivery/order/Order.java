@@ -1,27 +1,27 @@
 package com.dionialves.snapdogdelivery.order;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
-
-import org.springframework.format.annotation.DateTimeFormat;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.CascadeType;
-import jakarta.validation.constraints.Min;
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import com.dionialves.snapdogdelivery.client.Client;
-import com.dionialves.snapdogdelivery.item.Item;
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.dionialves.snapdogdelivery.product.Product;
+import com.dionialves.snapdogdelivery.productorder.ProductOrder;
 
 @Entity
 @Getter
@@ -35,17 +35,21 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = true)
-    @JsonBackReference
+    @ManyToOne
+    @JoinColumn(name = "client_id", nullable = false)
     private Client client;
 
-    @ManyToMany(cascade = CascadeType.MERGE)
-    private List<Item> items;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductOrder> productOrders = new ArrayList<>();
 
-    @DateTimeFormat(pattern = "dd-mm-yyyy")
-    private Date date;
+    @Column(nullable = false)
+    private LocalDate date;
 
-    @Min(1)
+    @Column(nullable = false)
     private Double totalValue;
 
+    public void addProduct(Product product, Integer quantity, Double priceAtTime) {
+        ProductOrder productOrder = new ProductOrder(product, this, quantity, priceAtTime);
+        this.productOrders.add(productOrder);
+    }
 }
