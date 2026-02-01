@@ -1,12 +1,10 @@
 package com.dionialves.snapdogdelivery.order;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import com.dionialves.snapdogdelivery.client.Client;
-import com.dionialves.snapdogdelivery.client.dto.ClientCreateDTO;
 import com.dionialves.snapdogdelivery.client.ClientRepository;
 import com.dionialves.snapdogdelivery.exception.BusinessException;
 import com.dionialves.snapdogdelivery.exception.NotFoundException;
@@ -15,7 +13,6 @@ import com.dionialves.snapdogdelivery.order.dto.OrderResponseDTO;
 import com.dionialves.snapdogdelivery.order.dto.OrderUpdateDTO;
 import com.dionialves.snapdogdelivery.product.Product;
 import com.dionialves.snapdogdelivery.product.ProductRepository;
-import com.dionialves.snapdogdelivery.productorder.ProductOrder;
 import com.dionialves.snapdogdelivery.productorder.dto.ProductOrderDTO;
 
 import lombok.RequiredArgsConstructor;

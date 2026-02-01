@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class ClientService {
 
-    private static ClientRepository clientRepository;
+    private final ClientRepository clientRepository;
 
     public List<ClientResponseDTO> findAll() {
 
