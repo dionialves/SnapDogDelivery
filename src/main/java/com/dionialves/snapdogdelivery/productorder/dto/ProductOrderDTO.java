@@ -1,4 +1,6 @@
-package com.dionialves.snapdogdelivery.productorder;
+package com.dionialves.snapdogdelivery.productorder.dto;
+
+import com.dionialves.snapdogdelivery.productorder.ProductOrder;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -21,4 +23,8 @@ public class ProductOrderDTO {
     @Min(value = 1, message = "Quantity must be at least 1")
     @Max(value = 20, message = "Quantity must not exceed 20")
     private Integer quantity;
+
+    public static ProductOrderDTO fromEntity(ProductOrder productOrder) {
+        return new ProductOrderDTO(productOrder.getProduct().getId(), productOrder.getQuantity());
+    }
 }

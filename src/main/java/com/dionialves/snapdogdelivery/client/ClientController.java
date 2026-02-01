@@ -1,8 +1,8 @@
 package com.dionialves.snapdogdelivery.client;
 
+import java.net.URI;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,56 +15,67 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import com.dionialves.snapdogdelivery.client.dto.ClientCreateDTO;
+import com.dionialves.snapdogdelivery.client.dto.ClientResponseDTO;
+import com.dionialves.snapdogdelivery.client.dto.ClientUpdateDTO;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/client")
 public class ClientController {
 
-    @Autowired
-    private ClientRepository clientRepository;
+    private final ClientRepository clientRepository;
+    private final ClientService clientService;
 
     @GetMapping
-    public ResponseEntity<List<Client>> findAll() {
-        List<Client> clients = clientRepository.findAll();
+    public ResponseEntity<List<ClientResponseDTO>> findAll() {
+
+        List<ClientResponseDTO> clients = clientService.findAll();
         return ResponseEntity.ok(clients);
+
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Client> findById(@PathVariable Long id) {
-        return clientRepository.findById(id)
-                .map(client -> ResponseEntity.ok(client))
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<ClientResponseDTO> findById(@PathVariable Long id) {
+
+        ClientResponseDTO client = clientService.findById(id);
+        return ResponseEntity.ok(client);
+
     }
 
     @PostMapping
-    public ResponseEntity<Client> newClient(@Valid @RequestBody Client client) {
-        Client salvedClient = clientRepository.save(client);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(salvedClient);
+    public ResponseEntity<ClientResponseDTO> create(@Valid @RequestBody ClientCreateDTO client) {
+
+        ClientResponseDTO created = clientService.create(client);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.getId())
+                .toUri();
+
+        return ResponseEntity.created(location).body(created);
+
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Client> update(@Valid @RequestBody Client client, @PathVariable Long id) {
+    public ResponseEntity<ClientUpdateDTO> update(@Valid @RequestBody ClientUpdateDTO client, @PathVariable Long id) {
 
-        Client updateClient = clientRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        clientService.update(id, client);
+        return ResponseEntity.noContent().build();
 
-        updateClient.setName(client.getName());
-        updateClient.setAddress(client.getAddress());
-
-        Client savedClient = clientRepository.save(updateClient);
-        return ResponseEntity.ok(savedClient);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
-        if (!clientRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
-        clientRepository.deleteById(id);
+
+        clientService.delete(id);
+
     }
 }

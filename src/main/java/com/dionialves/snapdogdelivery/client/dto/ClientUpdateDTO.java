@@ -1,4 +1,4 @@
-package com.dionialves.snapdogdelivery.client;
+package com.dionialves.snapdogdelivery.client.dto;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
@@ -10,11 +10,12 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClientDTO {
+public class ClientUpdateDTO {
 
     @NotEmpty(message = "Name is mandatory")
     private String name;
 
     @NotEmpty(message = "Address is mandatory")
     private String address;
+
 }

@@ -8,7 +8,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.DecimalMin;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,7 +29,6 @@ public class Product {
     private String name;
 
     @Column(nullable = false)
-    @DecimalMin(value = "0.01", message = "Price must be positive")
     private BigDecimal price;
 
     @Column(length = 500)

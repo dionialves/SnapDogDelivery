@@ -29,8 +29,4 @@ public class Client {
     @Column(nullable = false, length = 200)
     private String address;
 
-    public Client(String name, String address) {
-        this.name = name;
-        this.address = address;
-    }
 }

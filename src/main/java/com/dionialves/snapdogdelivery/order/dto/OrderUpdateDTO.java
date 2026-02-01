@@ -1,11 +1,11 @@
-package com.dionialves.snapdogdelivery.order;
+package com.dionialves.snapdogdelivery.order.dto;
 
 import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.dionialves.snapdogdelivery.productorder.ProductOrderDTO;
+import com.dionialves.snapdogdelivery.productorder.dto.ProductOrderDTO;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.validation.Valid;
