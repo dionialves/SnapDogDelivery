@@ -1,5 +1,6 @@
 package com.dionialves.snapdogdelivery.order;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,9 +47,9 @@ public class Order {
     private LocalDate date;
 
     @Column(nullable = false)
-    private Double totalValue;
+    private BigDecimal totalValue;
 
-    public void addProduct(Product product, Integer quantity, Double priceAtTime) {
+    public void addProduct(Product product, Integer quantity, BigDecimal priceAtTime) {
         ProductOrder productOrder = new ProductOrder(product, this, quantity, priceAtTime);
         this.productOrders.add(productOrder);
     }

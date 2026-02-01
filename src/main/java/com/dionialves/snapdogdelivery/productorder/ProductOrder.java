@@ -1,5 +1,7 @@
 package com.dionialves.snapdogdelivery.productorder;
 
+import java.math.BigDecimal;
+
 import com.dionialves.snapdogdelivery.order.Order;
 import com.dionialves.snapdogdelivery.product.Product;
 
@@ -40,9 +42,9 @@ public class ProductOrder {
     private Integer quantity;
 
     @Column(name = "price_at_time", nullable = false)
-    private Double priceAtTime;
+    private BigDecimal priceAtTime;
 
-    public ProductOrder(Product product, Order order, Integer quantity, Double priceAtTime) {
+    public ProductOrder(Product product, Order order, Integer quantity, BigDecimal priceAtTime) {
         this.product = product;
         this.order = order;
         this.quantity = quantity;

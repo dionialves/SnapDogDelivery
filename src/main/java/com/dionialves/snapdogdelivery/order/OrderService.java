@@ -1,5 +1,6 @@
 package com.dionialves.snapdogdelivery.order;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,7 +79,7 @@ public class OrderService {
 
     private void processProducts(Order order, List<ProductOrderDTO> productOrderDTOs) {
 
-        double totalValue = 0.0;
+        BigDecimal totalValue = new BigDecimal("0.0");
 
         for (ProductOrderDTO productOrderDTO : productOrderDTOs) {
 
@@ -88,7 +89,7 @@ public class OrderService {
                             "Product not found with ID: " + productOrderDTO.getProductId()));
 
             order.addProduct(product, productOrderDTO.getQuantity(), product.getPrice());
-            totalValue += product.getPrice() * productOrderDTO.getQuantity();
+            totalValue = totalValue.add(product.getPrice().multiply(BigDecimal.valueOf(productOrderDTO.getQuantity())));
         }
 
         order.setTotalValue(totalValue);

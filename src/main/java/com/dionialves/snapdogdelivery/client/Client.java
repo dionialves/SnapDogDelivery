@@ -14,7 +14,6 @@ import lombok.Setter;
 import java.util.List;
 
 import com.dionialves.snapdogdelivery.order.Order;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Getter
