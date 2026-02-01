@@ -33,9 +33,6 @@ public class Client {
     @Column(nullable = false, length = 200)
     private String address;
 
-    @OneToMany(mappedBy = "client")
-    private List<Order> orders;
-
     public Client(String name, String address) {
         this.name = name;
         this.address = address;
