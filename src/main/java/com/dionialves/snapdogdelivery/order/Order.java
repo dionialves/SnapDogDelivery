@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
@@ -46,11 +47,18 @@ public class Order {
     @Column(nullable = false)
     private LocalDate date;
 
-    @Column(nullable = false)
+    @Transient
     private BigDecimal totalValue;
 
     public void addProduct(Product product, Integer quantity, BigDecimal priceAtTime) {
         ProductOrder productOrder = new ProductOrder(product, this, quantity, priceAtTime);
         this.productOrders.add(productOrder);
+    }
+
+    public BigDecimal getTotalValue() {
+        return this.getProductOrders().stream()
+                .map(productOrder -> productOrder.getPriceAtTime()
+                        .multiply(BigDecimal.valueOf(productOrder.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }
