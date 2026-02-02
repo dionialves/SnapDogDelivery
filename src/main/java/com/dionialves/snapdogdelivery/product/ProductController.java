@@ -1,5 +1,6 @@
 package com.dionialves.snapdogdelivery.product;
 
+import java.net.URI;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import com.dionialves.snapdogdelivery.product.dto.ProductDTO;
+import com.dionialves.snapdogdelivery.product.dto.ProductResponseDTO;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,48 +28,52 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/product")
 public class ProductController {
 
-    private final ProductRepository productRepository;
+    private final ProductService productService;
 
     @GetMapping
-    public ResponseEntity<List<Product>> findAll() {
-        List<Product> products = productRepository.findAll();
+    public ResponseEntity<List<ProductResponseDTO>> findAll() {
+
+        List<ProductResponseDTO> products = productService.findAll();
         return ResponseEntity.ok(products);
+
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> findById(@PathVariable Long id) {
-        return productRepository.findById(id)
-                .map(product -> ResponseEntity.ok(product))
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<ProductResponseDTO> findById(@PathVariable Long id) {
+
+        ProductResponseDTO product = productService.findById(id);
+        return ResponseEntity.ok(product);
+
     }
 
     @PostMapping
-    public ResponseEntity<Product> newItem(@Valid @RequestBody Product product) {
-        Product salvedProduct = productRepository.save(product);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(salvedProduct);
+    public ResponseEntity<ProductResponseDTO> newItem(@Valid @RequestBody ProductDTO product) {
+
+        ProductResponseDTO created = productService.create(product);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.getId())
+                .toUri();
+
+        return ResponseEntity.created(location).body(created);
+
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> update(@Valid @RequestBody Product product, @PathVariable Long id) {
+    public ResponseEntity<ProductResponseDTO> update(@Valid @RequestBody ProductDTO product, @PathVariable Long id) {
 
-        Product updateProduct = productRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        ProductResponseDTO updating = productService.update(id, product);
+        return ResponseEntity.ok(updating);
 
-        updateProduct.setName(product.getName());
-        updateProduct.setPrice(product.getPrice());
-
-        Product savedProduct = productRepository.save(updateProduct);
-        return ResponseEntity.ok(savedProduct);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
-        if (!productRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
-        productRepository.deleteById(id);
+
+        productService.delete(id);
+
     }
 }

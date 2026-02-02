@@ -3,6 +3,7 @@ package com.dionialves.snapdogdelivery.client;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.dionialves.snapdogdelivery.client.dto.ClientCreateDTO;
 import com.dionialves.snapdogdelivery.client.dto.ClientResponseDTO;
@@ -17,6 +18,7 @@ public class ClientService {
 
     private final ClientRepository clientRepository;
 
+    @Transactional(readOnly = true)
     public List<ClientResponseDTO> findAll() {
 
         return clientRepository.findAll()
@@ -25,6 +27,7 @@ public class ClientService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public ClientResponseDTO findById(Long id) {
 
         Client client = clientRepository.findById(id)
@@ -46,6 +49,7 @@ public class ClientService {
 
     }
 
+    @Transactional
     public ClientResponseDTO update(Long id, ClientUpdateDTO client) {
 
         Client updating = clientRepository.findById(id)

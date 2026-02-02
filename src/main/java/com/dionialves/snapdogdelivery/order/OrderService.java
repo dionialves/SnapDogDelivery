@@ -3,6 +3,7 @@ package com.dionialves.snapdogdelivery.order;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.dionialves.snapdogdelivery.client.Client;
 import com.dionialves.snapdogdelivery.client.ClientRepository;
@@ -25,6 +26,15 @@ public class OrderService {
     private final ClientRepository clientRepository;
     private final ProductRepository productRepository;
 
+    @Transactional(readOnly = true)
+    public List<OrderResponseDTO> findAll() {
+        return orderRepository.findAll()
+                .stream()
+                .map(OrderResponseDTO::fromEntity)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public OrderResponseDTO getOrderById(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(
@@ -33,14 +43,8 @@ public class OrderService {
         return OrderResponseDTO.fromEntity(order);
     }
 
-    public List<OrderResponseDTO> getAllOrders() {
-        return orderRepository.findAll()
-                .stream()
-                .map(OrderResponseDTO::fromEntity)
-                .toList();
-    }
-
-    public OrderResponseDTO createOrder(OrderCreateDTO dto) {
+    @Transactional
+    public OrderResponseDTO create(OrderCreateDTO dto) {
 
         Client client = clientRepository.findById(dto.getClientId())
                 .orElseThrow(() -> new NotFoundException(
@@ -57,7 +61,7 @@ public class OrderService {
 
     }
 
-    public void updateOrder(Long id, OrderUpdateDTO orderDTO) {
+    public void update(Long id, OrderUpdateDTO orderDTO) {
         throw new BusinessException("Orders cannot be modified after creation");
     }
 

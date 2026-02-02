@@ -33,7 +33,7 @@ public class OrderController {
     @GetMapping
     public ResponseEntity<List<OrderResponseDTO>> findAll() {
 
-        List<OrderResponseDTO> orders = orderService.getAllOrders();
+        List<OrderResponseDTO> orders = orderService.findAll();
         return ResponseEntity.ok(orders);
 
     }
@@ -49,7 +49,7 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<OrderResponseDTO> newOrder(@Valid @RequestBody OrderCreateDTO orderCreateDTO) {
 
-        OrderResponseDTO created = orderService.createOrder(orderCreateDTO);
+        OrderResponseDTO created = orderService.create(orderCreateDTO);
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -65,8 +65,8 @@ public class OrderController {
     public ResponseEntity<OrderResponseDTO> update(@Valid @RequestBody OrderUpdateDTO orderUpdateDTO,
             @PathVariable Long id) {
 
-        orderService.updateOrder(id, orderUpdateDTO);
-        return ResponseEntity.noContent().build();
+        orderService.update(id, orderUpdateDTO);
+        return ResponseEntity.ok().build();
 
     }
 
