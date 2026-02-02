@@ -59,8 +59,6 @@ public class ClientService {
         updating.setName(client.getName());
         updating.setAddress(client.getAddress());
 
-        clientRepository.save(updating);
-
         return ClientResponseDTO.fromEntity(updating);
 
     }

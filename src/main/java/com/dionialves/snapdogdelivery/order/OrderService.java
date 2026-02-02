@@ -62,6 +62,9 @@ public class OrderService {
     }
 
     public void update(Long id, OrderUpdateDTO orderDTO) {
+        if (!orderRepository.existsById(id))
+            throw new NotFoundException("Order not found with ID: " + id);
+
         throw new BusinessException("Orders cannot be modified after creation");
     }
 

@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.dionialves.snapdogdelivery.productorder.dto.ProductOrderDTO;
-import com.dionialves.snapdogdelivery.client.dto.ClientCreateDTO;
+import com.dionialves.snapdogdelivery.client.dto.ClientResponseDTO;
 import com.dionialves.snapdogdelivery.order.Order;
 
 @Getter
@@ -23,7 +23,7 @@ import com.dionialves.snapdogdelivery.order.Order;
 public class OrderResponseDTO {
 
     private Long id;
-    private ClientCreateDTO client;
+    private ClientResponseDTO client;
     private List<ProductOrderDTO> products;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -38,7 +38,7 @@ public class OrderResponseDTO {
         dto.setTotalValue(order.getTotalValue());
 
         // Mapeia Client
-        dto.setClient(ClientCreateDTO.fromEntity(order.getClient()));
+        dto.setClient(ClientResponseDTO.fromEntity(order.getClient()));
 
         // Mapeia ProductOrders
         List<ProductOrderDTO> products = order.getProductOrders().stream()

@@ -50,6 +50,7 @@ public class ProductService {
         return ProductResponseDTO.fromEntity(created);
     }
 
+    @Transactional
     public ProductResponseDTO update(Long id, ProductDTO product) {
 
         Product updating = productRepository.findById(id)
@@ -58,8 +59,6 @@ public class ProductService {
         updating.setName(product.getName());
         updating.setPrice(product.getPrice());
         updating.setDescription(product.getDescription());
-
-        productRepository.save(updating);
 
         return ProductResponseDTO.fromEntity(updating);
 

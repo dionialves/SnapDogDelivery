@@ -1,7 +1,5 @@
 package com.dionialves.snapdogdelivery.client.dto;
 
-import com.dionialves.snapdogdelivery.client.Client;
-
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,9 +17,5 @@ public class ClientCreateDTO {
 
     @NotEmpty(message = "Address is mandatory")
     private String address;
-
-    public static ClientCreateDTO fromEntity(Client client) {
-        return new ClientCreateDTO(client.getName(), client.getAddress());
-    }
 
 }
