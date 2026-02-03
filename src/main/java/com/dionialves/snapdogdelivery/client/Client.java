@@ -1,5 +1,7 @@
 package com.dionialves.snapdogdelivery.client;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -26,7 +28,21 @@ public class Client {
     @Column(nullable = false, length = 100)
     private String name;
 
+    @Column(nullable = false, length = 20)
+    private String phone;
+
+    @Column(nullable = false, length = 100)
+    private String email;
+
+    @Column(nullable = false, length = 50)
+    private String city;
+
+    @Column(nullable = false, length = 50)
+    private String state;
+
     @Column(nullable = false, length = 200)
     private String address;
 
+    @Column(nullable = false)
+    private LocalDate createdAt = LocalDate.now();
 }

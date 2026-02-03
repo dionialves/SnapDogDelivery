@@ -42,6 +42,10 @@ public class ClientService {
 
         Client salved = new Client();
         salved.setName(client.getName());
+        salved.setPhone(client.getPhone());
+        salved.setEmail(client.getEmail());
+        salved.setCity(client.getCity());
+        salved.setState(client.getState());
         salved.setAddress(client.getAddress());
 
         clientRepository.save(salved);
