@@ -5,9 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.dionialves.snapdogdelivery.client.dto.ClientCreateDTO;
-import com.dionialves.snapdogdelivery.client.dto.ClientResponseDTO;
-import com.dionialves.snapdogdelivery.client.dto.ClientUpdateDTO;
+import com.dionialves.snapdogdelivery.client.dto.ClientDTO;
 import com.dionialves.snapdogdelivery.exception.NotFoundException;
 
 import lombok.RequiredArgsConstructor;
@@ -19,26 +17,26 @@ public class ClientService {
     private final ClientRepository clientRepository;
 
     @Transactional(readOnly = true)
-    public List<ClientResponseDTO> findAll() {
+    public List<ClientDTO> findAll() {
 
         return clientRepository.findAll()
                 .stream()
-                .map(ClientResponseDTO::fromEntity)
+                .map(ClientDTO::fromEntity)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public ClientResponseDTO findById(Long id) {
+    public ClientDTO findById(Long id) {
 
         Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(
                         "Client not found with ID: " + id));
 
-        return ClientResponseDTO.fromEntity(client);
+        return ClientDTO.fromEntity(client);
 
     }
 
-    public ClientResponseDTO create(ClientCreateDTO client) {
+    public ClientDTO create(ClientDTO client) {
 
         Client salved = new Client();
         salved.setName(client.getName());
@@ -46,24 +44,36 @@ public class ClientService {
         salved.setEmail(client.getEmail());
         salved.setCity(client.getCity());
         salved.setState(client.getState());
-        salved.setAddress(client.getAddress());
+        salved.setNeighborhood(client.getNeighborhood());
+        salved.setStreet(client.getStreet());
+        salved.setZipCode(client.getZipCode());
+        salved.setNumber(client.getNumber());
+        salved.setComplement(client.getComplement());
 
         clientRepository.save(salved);
-        return ClientResponseDTO.fromEntity(salved);
+        return ClientDTO.fromEntity(salved);
 
     }
 
     @Transactional
-    public ClientResponseDTO update(Long id, ClientUpdateDTO client) {
+    public ClientDTO update(Long id, ClientDTO client) {
 
         Client updating = clientRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(
                         "Client not found with ID: " + id));
 
         updating.setName(client.getName());
-        updating.setAddress(client.getAddress());
+        updating.setPhone(client.getPhone());
+        updating.setEmail(client.getEmail());
+        updating.setCity(client.getCity());
+        updating.setState(client.getState());
+        updating.setNeighborhood(client.getNeighborhood());
+        updating.setStreet(client.getStreet());
+        updating.setZipCode(client.getZipCode());
+        updating.setNumber(client.getNumber());
+        updating.setComplement(client.getComplement());
 
-        return ClientResponseDTO.fromEntity(updating);
+        return ClientDTO.fromEntity(updating);
 
     }
 

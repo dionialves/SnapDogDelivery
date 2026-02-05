@@ -14,40 +14,38 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.dionialves.snapdogdelivery.client.dto.ClientCreateDTO;
-import com.dionialves.snapdogdelivery.client.dto.ClientResponseDTO;
-import com.dionialves.snapdogdelivery.client.dto.ClientUpdateDTO;
+import com.dionialves.snapdogdelivery.client.dto.ClientDTO;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/client")
+@RequestMapping("/api")
 public class ClientController {
 
     private final ClientService clientService;
 
-    @GetMapping
-    public ResponseEntity<List<ClientResponseDTO>> findAll() {
+    @GetMapping("/clients")
+    public ResponseEntity<List<ClientDTO>> findAll() {
 
-        List<ClientResponseDTO> clients = clientService.findAll();
+        List<ClientDTO> clients = clientService.findAll();
         return ResponseEntity.ok(clients);
 
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ClientResponseDTO> findById(@PathVariable Long id) {
+    @GetMapping("/client/{id}")
+    public ResponseEntity<ClientDTO> findById(@PathVariable Long id) {
 
-        ClientResponseDTO client = clientService.findById(id);
+        ClientDTO client = clientService.findById(id);
         return ResponseEntity.ok(client);
 
     }
 
-    @PostMapping
-    public ResponseEntity<ClientResponseDTO> create(@Valid @RequestBody ClientCreateDTO client) {
+    @PostMapping("/client")
+    public ResponseEntity<ClientDTO> create(@Valid @RequestBody ClientDTO client) {
 
-        ClientResponseDTO created = clientService.create(client);
+        ClientDTO created = clientService.create(client);
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -59,15 +57,15 @@ public class ClientController {
 
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ClientResponseDTO> update(@Valid @RequestBody ClientUpdateDTO client, @PathVariable Long id) {
+    @PutMapping("/client/{id}")
+    public ResponseEntity<ClientDTO> update(@Valid @RequestBody ClientDTO client, @PathVariable Long id) {
 
-        ClientResponseDTO response = clientService.update(id, client);
+        ClientDTO response = clientService.update(id, client);
         return ResponseEntity.ok(response);
 
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("client/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
 
         clientService.delete(id);

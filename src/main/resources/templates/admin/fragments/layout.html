@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" 
-      th:fragment="layout(pageTitle, activeMenu, pageSubtitle, headerActions, content)" 
-      lang="pt-BR">
+<html xmlns:th="http://www.thymeleaf.org"
+    th:fragment="layout(pageTitle, activeMenu, pageSubtitle, headerActions, content)" lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${pageTitle} ? ${pageTitle} + ' | SnapDog Admin' : 'SnapDog Admin'">SnapDog Admin</title>
-    
+
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+    <link rel="stylesheet" href="/style/style.css">
+
     <!-- Configuração customizada do Tailwind -->
     <script>
         tailwind.config = {
@@ -39,13 +40,14 @@
     <!-- Ícones - Lucide -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
+
 <body class="bg-gray-100 min-h-screen">
 
     <div class="flex min-h-screen">
-        
+
         <!-- Sidebar -->
         <aside class="w-64 bg-snapdog-700 text-white flex flex-col fixed h-full">
-            
+
             <!-- Logo -->
             <div class="p-6 border-b border-snapdog-600">
                 <a th:href="@{/admin/dashboard}" class="flex items-center gap-3">
@@ -64,41 +66,41 @@
             <nav class="flex-1 p-4">
                 <ul class="space-y-2">
                     <li>
-                        <a th:href="@{/admin/dashboard}" 
-                           th:classappend="${activeMenu == 'dashboard'} ? 'bg-snapdog-800 text-white' : 'text-snapdog-100 hover:bg-snapdog-600'"
-                           class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors">
+                        <a th:href="@{/admin/dashboard}"
+                            th:classappend="${activeMenu == 'dashboard'} ? 'bg-snapdog-800 text-white' : 'text-snapdog-100 hover:bg-snapdog-600'"
+                            class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors">
                             <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
                     <li>
-                        <a th:href="@{/admin/pedidos}" 
-                           th:classappend="${activeMenu == 'pedidos'} ? 'bg-snapdog-800 text-white' : 'text-snapdog-100 hover:bg-snapdog-600'"
-                           class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors">
+                        <a th:href="@{/admin/pedidos}"
+                            th:classappend="${activeMenu == 'pedidos'} ? 'bg-snapdog-800 text-white' : 'text-snapdog-100 hover:bg-snapdog-600'"
+                            class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors">
                             <i data-lucide="clipboard-list" class="w-5 h-5"></i>
                             <span>Pedidos</span>
                         </a>
                     </li>
                     <li>
-                        <a th:href="@{/admin/clients}" 
-                           th:classappend="${activeMenu == 'clientes'} ? 'bg-snapdog-800 text-white' : 'text-snapdog-100 hover:bg-snapdog-600'"
-                           class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors">
+                        <a th:href="@{/admin/clients}"
+                            th:classappend="${activeMenu == 'clientes'} ? 'bg-snapdog-800 text-white' : 'text-snapdog-100 hover:bg-snapdog-600'"
+                            class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors">
                             <i data-lucide="users" class="w-5 h-5"></i>
                             <span>Clientes</span>
                         </a>
                     </li>
                     <li>
-                        <a th:href="@{/admin/produtos}" 
-                           th:classappend="${activeMenu == 'produtos'} ? 'bg-snapdog-800 text-white' : 'text-snapdog-100 hover:bg-snapdog-600'"
-                           class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors">
+                        <a th:href="@{/admin/produtos}"
+                            th:classappend="${activeMenu == 'produtos'} ? 'bg-snapdog-800 text-white' : 'text-snapdog-100 hover:bg-snapdog-600'"
+                            class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors">
                             <i data-lucide="package" class="w-5 h-5"></i>
                             <span>Produtos</span>
                         </a>
                     </li>
                     <li>
-                        <a th:href="@{/admin/relatorios}" 
-                           th:classappend="${activeMenu == 'relatorios'} ? 'bg-snapdog-800 text-white' : 'text-snapdog-100 hover:bg-snapdog-600'"
-                           class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors">
+                        <a th:href="@{/admin/relatorios}"
+                            th:classappend="${activeMenu == 'relatorios'} ? 'bg-snapdog-800 text-white' : 'text-snapdog-100 hover:bg-snapdog-600'"
+                            class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors">
                             <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
                             <span>Relatórios</span>
                         </a>
@@ -114,7 +116,8 @@
                     </div>
                     <div class="flex-1 min-w-0">
                         <p th:text="${user?.name ?: 'Usuário'}" class="font-medium text-sm truncate">Usuário</p>
-                        <p th:text="${user?.role ?: 'Administrador'}" class="text-snapdog-200 text-xs truncate">Administrador</p>
+                        <p th:text="${user?.role ?: 'Administrador'}" class="text-snapdog-200 text-xs truncate">
+                            Administrador</p>
                     </div>
                     <a th:href="@{/logout}" class="p-2 hover:bg-snapdog-600 rounded-lg transition-colors" title="Sair">
                         <i data-lucide="log-out" class="w-5 h-5"></i>
@@ -126,15 +129,16 @@
 
         <!-- Conteúdo Principal -->
         <main class="flex-1 ml-64">
-            
+
             <!-- Header da Página -->
             <header class="bg-white shadow-sm border-b border-gray-200 px-8 py-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h1 th:text="${pageTitle ?: 'Dashboard'}" class="text-2xl font-bold text-gray-800">Dashboard</h1>
+                        <h1 th:text="${pageTitle ?: 'Dashboard'}" class="text-2xl font-bold text-gray-800">Dashboard
+                        </h1>
                         <p th:if="${pageSubtitle}" th:text="${pageSubtitle}" class="text-gray-500 text-sm mt-1"></p>
                     </div>
-                    
+
                     <!-- Slot para ações do header (botões, etc) -->
                     <th:block th:replace="${headerActions}"></th:block>
                 </div>
@@ -155,4 +159,5 @@
     </script>
 
 </body>
+
 </html>

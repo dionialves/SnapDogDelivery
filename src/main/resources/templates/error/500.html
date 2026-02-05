@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/fragments/layout :: layout(
+          pageTitle='Erro interno', 
+          activeMenu='', 
+          pageSubtitle='',
+          headerActions=~{::headerActions},
+          content=~{::content}
+      )}">
+
+<head>
+    <title>500 - Erro interno</title>
+</head>
+
+<body>
+
+    <!-- Header Actions (vazio) -->
+    <th:block th:fragment="headerActions">
+    </th:block>
+
+    <!-- Conteúdo -->
+    <th:block th:fragment="content">
+
+        <div class="flex flex-col items-center justify-center min-h-[60vh]">
+
+            <!-- Ilustração -->
+            <div class="text-9xl mb-6">
+                🔥
+            </div>
+
+            <!-- Código do erro -->
+            <h1 class="text-8xl font-bold text-snapdog-600 mb-4">500</h1>
+
+            <!-- Mensagem -->
+            <h2 class="text-2xl font-semibold text-gray-800 mb-2">Eita! Algo deu errado</h2>
+            <p class="text-gray-500 text-center max-w-md mb-8">
+                Nosso hot dog pegou fogo na cozinha...
+                Ocorreu um erro interno no servidor. Tente novamente em alguns instantes.
+            </p>
+
+            <!-- Botões de ação -->
+            <div class="flex items-center gap-4">
+                <a th:href="@{/admin/dashboard}"
+                    class="inline-flex items-center gap-2 bg-snapdog-600 hover:bg-snapdog-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    Voltar ao Dashboard
+                </a>
+                <button onclick="location.reload()"
+                    class="inline-flex items-center gap-2 border border-gray-300 hover:bg-gray-50 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors">
+                    <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                    Tentar novamente
+                </button>
+            </div>
+
+        </div>
+
+    </th:block>
+
+</body>
+
+</html>

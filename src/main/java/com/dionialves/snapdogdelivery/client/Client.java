@@ -4,6 +4,8 @@ import java.time.LocalDate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -37,11 +39,24 @@ public class Client {
     @Column(nullable = false, length = 50)
     private String city;
 
-    @Column(nullable = false, length = 50)
-    private String state;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 2)
+    private State state;
 
-    @Column(nullable = false, length = 200)
-    private String address;
+    @Column(nullable = false, length = 100)
+    private String neighborhood;
+
+    @Column(nullable = false, length = 100)
+    private String street;
+
+    @Column(nullable = false, length = 9)
+    private String zipCode;
+
+    @Column(nullable = false, length = 10)
+    private String number;
+
+    @Column(length = 100)
+    private String complement;
 
     @Column(nullable = false)
     private LocalDate createdAt = LocalDate.now();
