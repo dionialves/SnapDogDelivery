@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: postgres-snapdogdelivery
+    environment:
+      - POSTGRES_DB=snapdogdelivery
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgresadmin
+      - TZ=America/Sao_Paulo
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U snapdogdelivery"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  postgres-data:

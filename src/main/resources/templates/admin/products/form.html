@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/fragments/layout :: layout(
+          pageTitle=${pageTitle}, 
+          activeMenu=${activeMenu}, 
+          pageSubtitle=${pageSubtitle},
+          headerActions=~{::headerActions},
+          content=~{::content}
+      )}">
+
+<head>
+    <title>Formulário de Produtos</title>
+</head>
+
+<body>
+
+    <th:block th:fragment="headerActions">
+        <a th:href="@{/admin/produts}"
+            class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 px-4 py-2 rounded-lg font-medium transition-colors">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            Voltar
+        </a>
+    </th:block>
+
+    <!-- Conteúdo Principal -->
+    <th:block th:fragment="content">
+
+        <!-- Mensagem de Erro Geral -->
+        <div th:if="${erro}" class="mb-6 p-4 rounded-lg bg-red-100 text-red-800 flex items-center gap-3">
+            <i data-lucide="alert-circle" class="w-5 h-5"></i>
+            <span th:text="${erro}"></span>
+        </div>
+
+        <!-- Formulário -->
+        <form th:action="${product.id != null} ? @{/admin/products/{id}(id=${product.id})} : @{/admin/products/new}"
+            th:object="${product}" method="post" class="space-y-6">
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                        <i data-lucide="user" class="w-5 h-5 text-snapdog-600"></i>
+                        Dados Gerais
+                    </h2>
+                </div>
+                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nome <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="name" th:field="*{name}"
+                            th:classappend="${#fields.hasErrors('name')} ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500"
+                            placeholder="Digite o nome do produto">
+                        <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="mt-1 text-sm text-red-500">
+                        </p>
+                    </div>
+
+                    <div>
+                        <label for="price" class="block text-sm font-medium text-gray-700 mb-2">
+                            Preço <span class="text-red-500">*</span>
+                        </label>
+                        <input type='text' id="price" th:field="*{price}"
+                            th:classappend="${#fields.hasErrors('price')} ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500"
+                            placeholder="R$ 000,00">
+                        <p th:if="${#fields.hasErrors('price')}" th:errors="*{price}" class="mt-1 text-sm text-red-500">
+                        </p>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                            Description <span class="text-red-500">*</span>
+                        </label>
+                        <textarea 
+                                rows="4" 
+                                id="description" 
+                                th:field="*{description}"
+                                th:classappend="${#fields.hasErrors('description')} ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500"
+                                placeholder="Digite a descrição do produto">
+                        </textarea>
+                        <p th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="mt-1 text-sm text-red-500">
+                        </p>
+                    </div>
+                </div>
+            </div> 
+            <!-- Botões de Ação -->
+            <div class="flex items-center justify-end gap-4">
+                <a th:href="@{/admin/products}"
+                    class="px-6 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition-colors">
+                    Cancelar
+                </a>
+                <button type="submit"
+                    class="px-6 py-2 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg font-medium transition-colors inline-flex items-center gap-2">
+                    <i data-lucide="check" class="w-5 h-5"></i>
+                    <span th:text="${product.id != null} ? 'Salvar Alterações' : 'Cadastrar Produto'">Cadastrar Produto</span>
+                </button>
+            </div>
+
+        </form>
+
+        <script>
+            const priceInput = document.getElementById("price");
+
+            // Formatação visual
+            priceInput.addEventListener("input", function (e) {
+                let value = e.target.value.replace(/\D/g, "");
+
+                value = (parseInt(value || 0, 10) / 100).toFixed(2);
+
+                value = value.replace(".", ",");
+
+                value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+                e.target.value = "R$ " + value;
+            });
+
+            // Converter antes do submit
+            document.querySelector("form").addEventListener("submit", function () {
+                let value = priceInput.value;
+
+                value = value.replace("R$ ", "");
+                value = value.replace(/\./g, "");
+                value = value.replace(",", ".");
+
+                priceInput.value = value;
+            });
+        </script>
+        
+    </th:block>
+</body>
+
+</html>

@@ -32,7 +32,7 @@
         </div>
 
         <!-- Formulário -->
-        <form th:action="${client.id != null} ? @{/admin/client/{id}(id=${client.id})} : @{/admin/client/new}"
+        <form th:action="${client.id != null} ? @{/admin/clients/{id}(id=${client.id})} : @{/admin/clients/new}"
             th:object="${client}" method="post" class="space-y-6">
 
             <!-- Card: Dados Pessoais -->
