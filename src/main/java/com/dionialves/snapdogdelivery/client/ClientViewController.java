@@ -19,12 +19,12 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Controller
-@RequestMapping("/admin")
+@RequestMapping("/admin/clients")
 public class ClientViewController {
 
     private final ClientService clientService;
 
-    @GetMapping("/clients")
+    @GetMapping
     public String findAll(Model model) {
 
         model.addAttribute("activeMenu", "clientes");
@@ -37,7 +37,19 @@ public class ClientViewController {
         return "admin/clients/list";
     }
 
-    @GetMapping("/client/new")
+    @GetMapping("/{id}")
+    public String findById(@PathVariable Long id, Model model) {
+
+        var client = clientService.findById(id);
+        model.addAttribute("activeMenu", "clientes");
+        model.addAttribute("pageTitle", client.getName());
+        model.addAttribute("pageSubtitle", "Dados cadastrais do cliente");
+
+        model.addAttribute("client", client);
+        return "admin/clients/form";
+    }
+
+    @GetMapping("/new")
     public String newClient(Model model) {
 
         model.addAttribute("activeMenu", "clientes");
@@ -49,7 +61,7 @@ public class ClientViewController {
         return "admin/clients/form";
     }
 
-    @PostMapping("/client/new")
+    @PostMapping("/new")
     public String saved(
             @Valid @ModelAttribute("client") ClientDTO client,
             BindingResult result,
@@ -69,19 +81,7 @@ public class ClientViewController {
         return "redirect:/admin/clients";
     }
 
-    @GetMapping("/client/{id}")
-    public String findById(@PathVariable Long id, Model model) {
-
-        var client = clientService.findById(id);
-        model.addAttribute("activeMenu", "clientes");
-        model.addAttribute("pageTitle", client.getName());
-        model.addAttribute("pageSubtitle", "Dados cadastrais do cliente");
-
-        model.addAttribute("client", client);
-        return "admin/clients/form";
-    }
-
-    @PostMapping("/client/{id}")
+    @PostMapping("/{id}")
     public String update(
             @PathVariable Long id,
             @Valid @ModelAttribute("client") ClientDTO client,
@@ -107,7 +107,7 @@ public class ClientViewController {
         return "redirect:/admin/clients";
     }
 
-    @PostMapping("/client/delete/{id}")
+    @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, Model model) {
 
         clientService.delete(id);
