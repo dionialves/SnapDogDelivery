@@ -1,6 +1,6 @@
 # SnapDog Delivery
 
-Sistema de gerenciamento de pedidos para delivery de hot dogs, construido com Spring Boot e Thymeleaf.
+Sistema de gerenciamento de pedidos para delivery de hot dogs, construido com as tecnologias Spring Boot e Thymeleaf. Esse projeto é resultado dos estudos realizado junto ao livro <a href="https://www.casadocodigo.com.br/products/livro-spring-boot">Spring Boot - Acelere o Desenvolvimento de Micro Serviços</a>. O livro inicia um projeto chamado de GreenDogDelivery e qu quis criar a minha própria versão e aplicar os conhecimentos, por este livro adiquiridos.
 
 ![SnapDogDelivery Dashboard](https://github.com/dionialves/imagefiles/blob/main/snapdogdelivery/snapdogdelivery-dashboard.png)
 ![SnapDogDelivery Create Order](https://github.com/dionialves/imagefiles/blob/main/snapdogdelivery/snapdogdelivery-novopedido.png)
