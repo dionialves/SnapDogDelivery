@@ -5,25 +5,28 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.dionialves.snapdogdelivery.dashboard.dto.DashboardSummaryDTO;
+
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @Controller
 @RequestMapping("/admin")
-public class DashboardController {
+public class DashboardViewController {
+
+    private final DashboardService dashboardService;
 
     @GetMapping({ "/", "/dashboard" })
     public String dashboard(Model model) {
 
-        // Por enquanto dados mockados - depois integra com seus Services
         model.addAttribute("pageTitle", "Dashboard");
         model.addAttribute("pageSubtitle", "Visão geral do seu negócio");
         model.addAttribute("activeMenu", "dashboard");
 
-        // Mock do usuário logado - depois vem do Spring Security
-        model.addAttribute("user", new UserInfo("Dioni", "Administrador"));
+        model.addAttribute("dashboardSummary", dashboardService.getDashboardSummary());
+        model.addAttribute("recentOrders", dashboardService.getRecentOrders());
+        model.addAttribute("topProducts", dashboardService.getTopSellingProducts());
 
         return "admin/dashboard/index";
-    }
-
-    // Inner class temporária pro usuário - depois usa sua entidade real
-    public record UserInfo(String name, String role) {
     }
 }
