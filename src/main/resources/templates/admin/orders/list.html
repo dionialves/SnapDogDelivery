@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/fragments/layout :: layout(
+          pageTitle=${pageTitle}, 
+          activeMenu=${activeMenu}, 
+          pageSubtitle=${pageSubtitle},
+          headerActions=~{::headerActions},
+          content=~{::content}
+      )}">
+
+<head>
+    <title>Pedidos</title>
+</head>
+
+<body>
+
+    <!-- Ações do Header - Botão Novo Pedido -->
+    <th:block th:fragment="headerActions">
+        <a th:href="@{/admin/orders/new}"
+            class="inline-flex items-center gap-2 bg-snapdog-600 hover:bg-snapdog-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            <i data-lucide="plus" class="w-5 h-5"></i>
+            Novo Pedido
+        </a>
+    </th:block>
+
+    <!-- Conteúdo Principal -->
+    <th:block th:fragment="content">
+
+        <!-- Mensagens de Feedback -->
+        <div th:if="${message}" class="mb-6 p-4 rounded-lg flex items-center gap-3"
+            th:classappend="${messageType == 'success'} ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+            <i th:if="${messageType == 'success'}" data-lucide="check-circle" class="w-5 h-5"></i>
+            <i th:if="${messageType == 'error'}" data-lucide="alert-circle" class="w-5 h-5"></i>
+            <span th:text="${message}"></span>
+        </div>
+
+        <!-- Filtros por Status -->
+        <div class="mb-6 flex flex-wrap gap-2">
+            <a th:href="@{/admin/orders}"
+                th:classappend="${statusFilter == null} ? 'bg-snapdog-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'"
+                class="px-4 py-2 rounded-lg font-medium border border-gray-200 transition-colors">
+                Todos
+            </a>
+            <a th:href="@{/admin/orders(status='PENDING')}"
+                th:classappend="${statusFilter == 'PENDING'} ? 'bg-yellow-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'"
+                class="px-4 py-2 rounded-lg font-medium border border-gray-200 transition-colors">
+                🕐 Pendentes
+            </a>
+            <a th:href="@{/admin/orders(status='PREPARING')}"
+                th:classappend="${statusFilter == 'PREPARING'} ? 'bg-orange-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'"
+                class="px-4 py-2 rounded-lg font-medium border border-gray-200 transition-colors">
+                👨‍🍳 Preparando
+            </a>
+            <a th:href="@{/admin/orders(status='OUT_FOR_DELIVERY')}"
+                th:classappend="${statusFilter == 'OUT_FOR_DELIVERY'} ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'"
+                class="px-4 py-2 rounded-lg font-medium border border-gray-200 transition-colors">
+                🛵 Em Entrega
+            </a>
+            <a th:href="@{/admin/orders(status='DELIVERED')}"
+                th:classappend="${statusFilter == 'DELIVERED'} ? 'bg-green-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'"
+                class="px-4 py-2 rounded-lg font-medium border border-gray-200 transition-colors">
+                ✅ Entregues
+            </a>
+            <a th:href="@{/admin/orders(status='CANCELED')}"
+                th:classappend="${statusFilter == 'CANCELED'} ? 'bg-red-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'"
+                class="px-4 py-2 rounded-lg font-medium border border-gray-200 transition-colors">
+                ❌ Cancelados
+            </a>
+        </div>
+
+        <!-- Card da Tabela -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+
+            <!-- Header -->
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-800">Lista de Pedidos</h2>
+                        <p class="text-gray-500 text-sm mt-1">
+                            <span th:text="${orders != null ? orders.size() : 0}">0</span> pedido(s)
+                        </p>
+                    </div>
+
+                    <!-- Busca -->
+                    <form th:action="@{/admin/orders}" method="get" class="flex gap-2">
+                        <input type="hidden" name="status" th:value="${statusFilter}">
+                        <div class="relative">
+                            <i data-lucide="search"
+                                class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" name="q" th:value="${search}" placeholder="Buscar por nº ou cliente..."
+                                class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500 w-64">
+                        </div>
+                        <button type="submit"
+                            class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">
+                            Buscar
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tabela -->
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-10">
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Pedido</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Cliente</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Data</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Total</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+
+                        <!-- Linha vazia -->
+                        <tr th:if="${orders == null or #lists.isEmpty(orders)}">
+                            <td colspan="7" class="px-6 py-12 text-center">
+                                <div class="flex flex-col items-center">
+                                    <i data-lucide="clipboard-list" class="w-12 h-12 text-gray-300 mb-4"></i>
+                                    <p class="text-gray-500 font-medium">Nenhum pedido encontrado</p>
+                                    <p class="text-gray-400 text-sm mt-1">Crie um novo pedido clicando no botão acima
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Linhas dos pedidos -->
+                        <th:block th:each="order, iterStat : ${orders}">
+                            <!-- Linha principal -->
+                            <tr class="hover:bg-gray-50 cursor-pointer" th:data-order-id="${order.id}"
+                                onclick="toggleDetails(this)">
+                                <td class="px-6 py-4">
+                                    <i data-lucide="chevron-right"
+                                        class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                                        th:id="'chevron-' + ${order.id}"></i>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-bold text-snapdog-600" th:text="'#' + ${order.id}">#1234</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-8 h-8 bg-snapdog-100 rounded-full flex items-center justify-center">
+                                            <span th:text="${#strings.substring(order.client.name, 0, 1).toUpperCase()}"
+                                                class="font-semibold text-snapdog-600 text-sm">D</span>
+                                        </div>
+                                        <span th:text="${order.client.name}" class="text-gray-800">Nome do
+                                            Cliente</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span th:if="${order.createdAt}"
+                                        th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}"
+                                        class="text-gray-600">01/01/2025 14:30</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <!-- Status Badges -->
+                                    <span th:if="${order.status == 'PENDING'}"
+                                        class="px-3 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+                                        🕐 Pendente
+                                    </span>
+                                    <span th:if="${order.status == 'PREPARING'}"
+                                        class="px-3 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-800">
+                                        👨‍🍳 Preparando
+                                    </span>
+                                    <span th:if="${order.status == 'OUT_FOR_DELIVERY'}"
+                                        class="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                                        🛵 Em Entrega
+                                    </span>
+                                    <span th:if="${order.status == 'DELIVERED'}"
+                                        class="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                        ✅ Entregue
+                                    </span>
+                                    <span th:if="${order.status == 'CANCELED'}"
+                                        class="px-3 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
+                                        ❌ Cancelado
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span th:text="${#numbers.formatCurrency(order.totalValue)}"
+                                        class="font-semibold text-gray-800">R$ 0,00</span>
+                                </td>
+                                <td class="px-6 py-4" onclick="event.stopPropagation()">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <!-- Botão Avançar Status -->
+                                        <th:block th:if="${order.status == 'PENDING'}">
+                                            <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post"
+                                                class="inline">
+                                                <input type="hidden" name="status" value="PREPARING">
+                                                <button type="submit" title="Iniciar Preparo"
+                                                    class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-100 text-orange-700 hover:bg-orange-200 transition-colors">
+                                                    <i data-lucide="chef-hat" class="w-3.5 h-3.5"></i>
+                                                    Preparar
+                                                </button>
+                                            </form>
+                                        </th:block>
+                                        <th:block th:if="${order.status == 'PREPARING'}">
+                                            <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post"
+                                                class="inline">
+                                                <input type="hidden" name="status" value="OUT_FOR_DELIVERY">
+                                                <button type="submit" title="Enviar para Entrega"
+                                                    class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors">
+                                                    <i data-lucide="truck" class="w-3.5 h-3.5"></i>
+                                                    Entregar
+                                                </button>
+                                            </form>
+                                        </th:block>
+                                        <th:block th:if="${order.status == 'OUT_FOR_DELIVERY'}">
+                                            <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post"
+                                                class="inline">
+                                                <input type="hidden" name="status" value="DELIVERED">
+                                                <button type="submit" title="Confirmar Entrega"
+                                                    class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg bg-green-100 text-green-700 hover:bg-green-200 transition-colors">
+                                                    <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                                                    Finalizar
+                                                </button>
+                                            </form>
+                                        </th:block>
+
+                                        <!-- Botão Cancelar (apenas PENDING) -->
+                                        <th:block th:if="${order.status == 'PENDING'}">
+                                            <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post"
+                                                class="inline"
+                                                onsubmit="return confirm('Tem certeza que deseja cancelar este pedido?')">
+                                                <input type="hidden" name="status" value="CANCELED">
+                                                <button type="submit" title="Cancelar Pedido"
+                                                    class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                                    <i data-lucide="ban" class="w-4 h-4"></i>
+                                                </button>
+                                            </form>
+                                        </th:block>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Linha expandível - Resumo do pedido -->
+                            <tr th:id="'details-' + ${order.id}" class="hidden">
+                                <td colspan="7" class="px-6 py-0">
+                                    <div class="py-4 pl-12">
+                                        <div class="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+                                            <table class="w-full text-sm">
+                                                <thead class="bg-gray-100">
+                                                    <tr>
+                                                        <th class="px-4 py-2 text-left font-medium text-gray-600">
+                                                            Produto</th>
+                                                        <th
+                                                            class="px-4 py-2 text-center font-medium text-gray-600 w-24">
+                                                            Qtd</th>
+                                                        <th class="px-4 py-2 text-right font-medium text-gray-600 w-32">
+                                                            Unitário</th>
+                                                        <th class="px-4 py-2 text-right font-medium text-gray-600 w-32">
+                                                            Subtotal</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-200">
+                                                    <tr th:each="item : ${order.products}">
+                                                        <td class="px-4 py-2 text-gray-800"
+                                                            th:text="${item.productName}">Produto</td>
+                                                        <td class="px-4 py-2 text-center text-gray-600"
+                                                            th:text="${item.quantity}">1</td>
+                                                        <td class="px-4 py-2 text-right text-gray-600"
+                                                            th:text="${#numbers.formatCurrency(item.priceAtTime)}">R$
+                                                            0,00</td>
+                                                        <td class="px-4 py-2 text-right font-medium text-gray-800"
+                                                            th:text="${#numbers.formatCurrency(item.priceAtTime * item.quantity)}">
+                                                            R$ 0,00</td>
+                                                    </tr>
+                                                </tbody>
+                                                <tfoot class="bg-gray-100">
+                                                    <tr>
+                                                        <td colspan="3"
+                                                            class="px-4 py-2 text-right font-semibold text-gray-700">
+                                                            Total</td>
+                                                        <td class="px-4 py-2 text-right font-bold text-snapdog-600"
+                                                            th:text="${#numbers.formatCurrency(order.totalValue)}">R$
+                                                            0,00</td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                        </th:block>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <script>
+            function toggleDetails(row) {
+                const orderId = row.dataset.orderId;
+                const details = document.getElementById('details-' + orderId);
+                const chevron = document.getElementById('chevron-' + orderId);
+
+                if (details.classList.contains('hidden')) {
+                    details.classList.remove('hidden');
+                    chevron.style.transform = 'rotate(90deg)';
+                } else {
+                    details.classList.add('hidden');
+                    chevron.style.transform = 'rotate(0deg)';
+                }
+            }
+
+        </script>
+
+    </th:block>
+
+</body>
+
+</html>

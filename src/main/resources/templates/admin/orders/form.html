@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/fragments/layout :: layout(
+          pageTitle=${pageTitle}, 
+          activeMenu=${activeMenu}, 
+          pageSubtitle=${pageSubtitle},
+          headerActions=~{::headerActions},
+          content=~{::content}
+      )}">
+
+<head>
+    <title>Novo Pedido</title>
+</head>
+
+<body>
+
+    <!-- Ações do Header - Botão Voltar -->
+    <th:block th:fragment="headerActions">
+        <a th:href="@{/admin/orders}"
+            class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 px-4 py-2 rounded-lg font-medium transition-colors">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            Voltar
+        </a>
+    </th:block>
+
+    <!-- Conteúdo Principal -->
+    <th:block th:fragment="content">
+
+        <!-- Mensagem de Erro Geral -->
+        <div th:if="${errorMessage}" class="mb-6 p-4 rounded-lg bg-red-100 text-red-800 flex items-center gap-3">
+            <i data-lucide="alert-circle" class="w-5 h-5"></i>
+            <span th:text="${errorMessage}"></span>
+        </div>
+
+        <form th:action="@{/admin/orders/new}" method="post" id="orderForm" class="space-y-6">
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- Coluna Principal -->
+                <div class="lg:col-span-2 space-y-6">
+
+                    <!-- Card: Selecionar Cliente -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                        <div class="p-6 border-b border-gray-200">
+                            <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                                <i data-lucide="user" class="w-5 h-5 text-snapdog-600"></i>
+                                Cliente
+                            </h2>
+                        </div>
+                        <div class="p-6">
+                            <!-- Campo de busca autocomplete -->
+                            <div class="relative">
+                                <label for="clientSearch" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Buscar Cliente <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <i data-lucide="search"
+                                        class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                    <input type="text" id="clientSearch"
+                                        placeholder="Digite o nome ou telefone do cliente..." autocomplete="off"
+                                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500">
+                                </div>
+                                <!-- Lista de sugestões -->
+                                <div id="clientSuggestions"
+                                    class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                </div>
+                            </div>
+
+                            <!-- Cliente selecionado -->
+                            <div id="selectedClient"
+                                class="hidden mt-4 p-4 bg-snapdog-50 rounded-lg border border-snapdog-200">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-12 h-12 bg-snapdog-200 rounded-full flex items-center justify-center">
+                                            <span id="clientInitial" class="font-bold text-snapdog-700 text-lg">D</span>
+                                        </div>
+                                        <div>
+                                            <p id="clientName" class="font-semibold text-gray-800">Nome do Cliente</p>
+                                            <p id="clientInfo" class="text-sm text-gray-600">Telefone • Endereço</p>
+                                        </div>
+                                    </div>
+                                    <button type="button" onclick="clearClient()"
+                                        class="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                        <i data-lucide="x" class="w-5 h-5"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Campo hidden com ID do cliente -->
+                            <input type="hidden" name="clientId" id="clientId" required>
+                        </div>
+                    </div>
+
+                    <!-- Card: Adicionar Produtos -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                        <div class="p-6 border-b border-gray-200">
+                            <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                                <i data-lucide="package" class="w-5 h-5 text-snapdog-600"></i>
+                                Produtos
+                            </h2>
+                        </div>
+                        <div class="p-6">
+                            <!-- Busca de produto -->
+                            <div class="relative mb-4">
+                                <label for="productSearch" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Adicionar Produto
+                                </label>
+                                <div class="flex gap-2">
+                                    <div class="relative flex-1">
+                                        <i data-lucide="search"
+                                            class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                        <input type="text" id="productSearch" placeholder="Buscar produto..."
+                                            autocomplete="off"
+                                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500">
+                                    </div>
+                                </div>
+                                <!-- Lista de sugestões de produtos -->
+                                <div id="productSuggestions"
+                                    class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                </div>
+                            </div>
+
+                            <!-- Lista de produtos adicionados -->
+                            <div id="productList" class="space-y-3">
+                                <!-- Mensagem quando vazio -->
+                                <div id="emptyProducts" class="text-center py-8 text-gray-500">
+                                    <i data-lucide="shopping-cart" class="w-12 h-12 mx-auto mb-3 text-gray-300"></i>
+                                    <p>Nenhum produto adicionado</p>
+                                    <p class="text-sm">Busque e adicione produtos ao pedido</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Coluna Lateral - Resumo -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 sticky top-8">
+                        <div class="p-6 border-b border-gray-200">
+                            <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                                <i data-lucide="receipt" class="w-5 h-5 text-snapdog-600"></i>
+                                Resumo do Pedido
+                            </h2>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            <!-- Itens -->
+                            <div id="summaryItems" class="space-y-2 text-sm">
+                                <p class="text-gray-500 text-center">Nenhum item</p>
+                            </div>
+
+                            <div class="border-t border-gray-200 pt-4">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Subtotal</span>
+                                    <span id="subtotal" class="font-medium">R$ 0,00</span>
+                                </div>
+                                <div class="flex justify-between items-center mt-2">
+                                    <span class="text-gray-600">Taxa de entrega</span>
+                                    <span class="font-medium text-green-600">Grátis</span>
+                                </div>
+                            </div>
+
+                            <div class="border-t border-gray-200 pt-4">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-lg font-semibold text-gray-800">Total</span>
+                                    <span id="total" class="text-2xl font-bold text-snapdog-600">R$ 0,00</span>
+                                </div>
+                            </div>
+
+                            <!-- Botão de enviar -->
+                            <button type="submit" id="submitBtn" disabled
+                                class="w-full py-3 bg-snapdog-600 hover:bg-snapdog-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
+                                <i data-lucide="check" class="w-5 h-5"></i>
+                                Criar Pedido
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Campos hidden para os produtos -->
+            <div id="hiddenProducts"></div>
+
+        </form>
+
+        <!-- Script de gerenciamento do pedido -->
+        <script th:inline="javascript">
+            // URLs das APIs
+            const clientsApiUrl = /*[[@{/admin/api/clients/search}]]*/ '/admin/api/clients/search';
+            const productsApiUrl = /*[[@{/admin/api/products/search}]]*/ '/admin/api/products/search';
+
+            let selectedClientId = null;
+            let addedProducts = [];
+
+            // ===== AUTOCOMPLETE CLIENTE =====
+            const clientSearch = document.getElementById('clientSearch');
+            const clientSuggestions = document.getElementById('clientSuggestions');
+
+            let clientTimeout;
+            clientSearch.addEventListener('input', function () {
+                clearTimeout(clientTimeout);
+                const query = this.value.trim();
+
+                if (query.length < 2) {
+                    clientSuggestions.classList.add('hidden');
+                    return;
+                }
+
+                clientTimeout = setTimeout(() => searchClients(query), 300);
+            });
+
+            async function searchClients(query) {
+                try {
+                    const response = await fetch(`${clientsApiUrl}?q=${encodeURIComponent(query)}`);
+                    const clients = await response.json();
+
+                    if (clients.length === 0) {
+                        clientSuggestions.innerHTML = `
+                            <div class="p-4 text-center text-gray-500">
+                                Nenhum cliente encontrado
+                            </div>
+                        `;
+                    } else {
+                        clientSuggestions.innerHTML = clients.map(c => `
+                            <div class="p-3 hover:bg-gray-50 cursor-pointer flex items-center gap-3 border-b border-gray-100 last:border-0"
+                                 onclick="selectClient(${c.id}, '${c.name}', '${c.phone}', '${c.address || ''}')">
+                                <div class="w-10 h-10 bg-snapdog-100 rounded-full flex items-center justify-center">
+                                    <span class="font-semibold text-snapdog-600">${c.name.charAt(0).toUpperCase()}</span>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-800">${c.name}</p>
+                                    <p class="text-sm text-gray-500">${c.phone}</p>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+
+                    clientSuggestions.classList.remove('hidden');
+                } catch (error) {
+                    console.error('Erro ao buscar clientes:', error);
+                }
+            }
+
+            function selectClient(id, name, phone, address) {
+                selectedClientId = id;
+                document.getElementById('clientId').value = id;
+                document.getElementById('clientInitial').textContent = name.charAt(0).toUpperCase();
+                document.getElementById('clientName').textContent = name;
+                document.getElementById('clientInfo').textContent = `${phone} • ${address || 'Endereço não informado'}`;
+
+                document.getElementById('selectedClient').classList.remove('hidden');
+                document.getElementById('clientSearch').classList.add('hidden');
+                clientSuggestions.classList.add('hidden');
+
+                validateForm();
+            }
+
+            function clearClient() {
+                selectedClientId = null;
+                document.getElementById('clientId').value = '';
+                document.getElementById('selectedClient').classList.add('hidden');
+                document.getElementById('clientSearch').classList.remove('hidden');
+                document.getElementById('clientSearch').value = '';
+
+                validateForm();
+            }
+
+            // ===== AUTOCOMPLETE PRODUTO =====
+            const productSearch = document.getElementById('productSearch');
+            const productSuggestions = document.getElementById('productSuggestions');
+
+            let productTimeout;
+            productSearch.addEventListener('input', function () {
+                clearTimeout(productTimeout);
+                const query = this.value.trim();
+
+                if (query.length < 1) {
+                    productSuggestions.classList.add('hidden');
+                    return;
+                }
+
+                productTimeout = setTimeout(() => searchProducts(query), 300);
+            });
+
+            async function searchProducts(query) {
+                try {
+                    const response = await fetch(`${productsApiUrl}?q=${encodeURIComponent(query)}`);
+                    const products = await response.json();
+
+                    if (products.length === 0) {
+                        productSuggestions.innerHTML = `
+                            <div class="p-4 text-center text-gray-500">
+                                Nenhum produto encontrado
+                            </div>
+                        `;
+                    } else {
+                        productSuggestions.innerHTML = products.map(p => `
+                            <div class="p-3 hover:bg-gray-50 cursor-pointer flex items-center justify-between border-b border-gray-100 last:border-0"
+                                 onclick="addProduct(${p.id}, '${p.name}', ${p.price})">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-10 h-10 bg-snapdog-100 rounded-lg flex items-center justify-center text-xl">🌭</span>
+                                    <div>
+                                        <p class="font-medium text-gray-800">${p.name}</p>
+                                        <p class="text-sm text-gray-500">${p.description || ''}</p>
+                                    </div>
+                                </div>
+                                <span class="font-semibold text-snapdog-600">${formatCurrency(p.price)}</span>
+                            </div>
+                        `).join('');
+                    }
+
+                    productSuggestions.classList.remove('hidden');
+                } catch (error) {
+                    console.error('Erro ao buscar produtos:', error);
+                }
+            }
+
+            function addProduct(id, name, price) {
+                // Verifica se já existe
+                const existing = addedProducts.find(p => p.id === id);
+
+                if (existing) {
+                    existing.quantity++;
+                } else {
+                    addedProducts.push({
+                        id: id,
+                        name: name,
+                        price: price,
+                        quantity: 1
+                    });
+                }
+
+                productSearch.value = '';
+                productSuggestions.classList.add('hidden');
+
+                updateProductList();
+                validateForm();
+            }
+
+            function removeProduct(id) {
+                addedProducts = addedProducts.filter(p => p.id !== id);
+                updateProductList();
+                validateForm();
+            }
+
+            function changeQuantity(id, delta) {
+                const product = addedProducts.find(p => p.id === id);
+                if (product) {
+                    product.quantity += delta;
+                    if (product.quantity <= 0) {
+                        removeProduct(id);
+                        return;
+                    }
+                }
+                updateProductList();
+                validateForm();
+            }
+
+            function updateProductList() {
+                const list = document.getElementById('productList');
+                const empty = document.getElementById('emptyProducts');
+                const summaryItems = document.getElementById('summaryItems');
+                const hiddenProducts = document.getElementById('hiddenProducts');
+
+                if (addedProducts.length === 0) {
+                    if (empty) empty.classList.remove('hidden');
+                    list.innerHTML = '';
+                    list.appendChild(empty || createEmptyElement());
+                    summaryItems.innerHTML = '<p class="text-gray-500 text-center">Nenhum item</p>';
+                    hiddenProducts.innerHTML = '';
+                    updateTotal();
+                    return;
+                }
+
+                // Lista visual
+                list.innerHTML = addedProducts.map((p, index) => `
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="flex items-center gap-3">
+                            <span class="w-10 h-10 bg-snapdog-100 rounded-lg flex items-center justify-center text-xl">🌭</span>
+                            <div>
+                                <p class="font-medium text-gray-800">${p.name}</p>
+                                <p class="text-sm text-gray-500">${formatCurrency(p.price)} cada</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center gap-2 bg-white rounded-lg border border-gray-200">
+                                <button type="button" onclick="changeQuantity(${p.id}, -1)" 
+                                        class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-snapdog-600 hover:bg-snapdog-50 rounded-l-lg transition-colors">
+                                    <i data-lucide="minus" class="w-4 h-4"></i>
+                                </button>
+                                <span class="w-8 text-center font-medium">${p.quantity}</span>
+                                <button type="button" onclick="changeQuantity(${p.id}, 1)" 
+                                        class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-snapdog-600 hover:bg-snapdog-50 rounded-r-lg transition-colors">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                            <span class="font-semibold text-snapdog-600 w-24 text-right">${formatCurrency(p.price * p.quantity)}</span>
+                            <button type="button" onclick="removeProduct(${p.id})" 
+                                    class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Resumo lateral
+                summaryItems.innerHTML = addedProducts.map(p => `
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">${p.quantity}x ${p.name}</span>
+                        <span class="font-medium">${formatCurrency(p.price * p.quantity)}</span>
+                    </div>
+                `).join('');
+
+                // Campos hidden para envio
+                hiddenProducts.innerHTML = addedProducts.map((p, index) => `
+                    <input type="hidden" name="products[${index}].productId" value="${p.id}">
+                    <input type="hidden" name="products[${index}].quantity" value="${p.quantity}">
+                `).join('');
+
+                updateTotal();
+                lucide.createIcons();
+            }
+
+            function updateTotal() {
+                const total = addedProducts.reduce((sum, p) => sum + (p.price * p.quantity), 0);
+                document.getElementById('subtotal').textContent = formatCurrency(total);
+                document.getElementById('total').textContent = formatCurrency(total);
+            }
+
+            function validateForm() {
+                const btn = document.getElementById('submitBtn');
+                const valid = selectedClientId && addedProducts.length > 0;
+                btn.disabled = !valid;
+            }
+
+            function formatCurrency(value) {
+                return new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(value);
+            }
+
+            // Fecha sugestões ao clicar fora
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('#clientSearch') && !e.target.closest('#clientSuggestions')) {
+                    clientSuggestions.classList.add('hidden');
+                }
+                if (!e.target.closest('#productSearch') && !e.target.closest('#productSuggestions')) {
+                    productSuggestions.classList.add('hidden');
+                }
+            });
+        </script>
+
+    </th:block>
+
+</body>
+
+</html>

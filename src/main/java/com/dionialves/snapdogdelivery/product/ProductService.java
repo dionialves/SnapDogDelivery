@@ -38,6 +38,16 @@ public class ProductService {
 
     }
 
+    @Transactional(readOnly = true)
+    public List<ProductResponseDTO> searchByName(String name) {
+
+        return productRepository.findByNameContainingIgnoreCase(name)
+                .stream()
+                .map(ProductResponseDTO::fromEntity)
+                .toList();
+
+    }
+
     public ProductResponseDTO create(ProductDTO product) {
 
         Product created = new Product();

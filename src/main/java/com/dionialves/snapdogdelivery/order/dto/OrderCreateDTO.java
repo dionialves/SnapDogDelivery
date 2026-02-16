@@ -1,6 +1,6 @@
 package com.dionialves.snapdogdelivery.order.dto;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -30,7 +30,6 @@ public class OrderCreateDTO {
     @Valid
     private List<ProductOrderDTO> products;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate date;
-
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createdAt = LocalDateTime.now();
 }

@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,16 +25,17 @@ public class OrderResponseDTO {
     private Long id;
     private ClientDTO client;
     private List<ProductOrderDTO> products;
+    private String status;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate date;
+    private LocalDateTime createdAt;
 
     private BigDecimal totalValue;
 
     public static OrderResponseDTO fromEntity(Order order) {
         OrderResponseDTO dto = new OrderResponseDTO();
         dto.setId(order.getId());
-        dto.setDate(order.getDate());
+        dto.setCreatedAt(order.getCreatedAt());
         dto.setTotalValue(order.getTotalValue());
 
         // Mapeia Client
@@ -45,6 +46,8 @@ public class OrderResponseDTO {
                 .map(ProductOrderDTO::fromEntity)
                 .collect(Collectors.toList());
         dto.setProducts(products);
+
+        dto.setStatus(order.getStatus().name());
 
         return dto;
     }

@@ -36,6 +36,15 @@ public class ClientService {
 
     }
 
+    @Transactional(readOnly = true)
+    public List<ClientDTO> searchByNameOrPhone(String search) {
+
+        return clientRepository.findByNameContainingIgnoreCaseOrPhoneContaining(search, search)
+                .stream()
+                .map(ClientDTO::fromEntity)
+                .toList();
+    }
+
     public ClientDTO create(ClientDTO client) {
 
         Client salved = new Client();
