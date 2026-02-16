@@ -2,7 +2,8 @@
 
 Sistema de gerenciamento de pedidos para delivery de hot dogs, construido com Spring Boot e Thymeleaf.
 
-![SnapDogDelivery Preview](https://github.com/dionialves/imagefiles/blob/main/snapdogdelivery/snapdogdelivery-dashboard.png)
+![SnapDogDelivery Dashboard](https://github.com/dionialves/imagefiles/blob/main/snapdogdelivery/snapdogdelivery-dashboard.png)
+![SnapDogDelivery Create Order](https://github.com/dionialves/imagefiles/blob/main/snapdogdelivery/snapdogdelivery-novopedido.png)
 
 ## Tecnologias
 
