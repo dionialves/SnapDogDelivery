@@ -103,15 +103,3 @@ mvn spring-boot:run
 A aplicacao estara disponivel em `http://localhost:8080/admin/`.
 
 O `DataSeeder` popula automaticamente o banco com 10 clientes, 10 produtos e 50 pedidos de exemplo.
-
-### Testes
-
-```bash
-mvn test
-```
-
-### Empacotar (sem testes)
-
-```bash
-mvn clean package -DskipTests
-```
