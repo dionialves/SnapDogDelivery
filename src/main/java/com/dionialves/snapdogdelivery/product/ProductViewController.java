@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.dionialves.snapdogdelivery.exception.BusinessException;
 import com.dionialves.snapdogdelivery.product.dto.ProductDTO;
 import com.dionialves.snapdogdelivery.product.dto.ProductResponseDTO;
 
@@ -78,8 +79,12 @@ public class ProductViewController {
             return "admin/products/form";
         }
 
-        productService.create(product);
-        redirectAttributes.addFlashAttribute("successMessage", "Produto salvo com sucesso!");
+        try {
+            productService.create(product);
+            redirectAttributes.addFlashAttribute("successMessage", "Produto salvo com sucesso!");
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Erro ao criar o produto" + e.getMessage());
+        }
 
         return "redirect:/admin/products";
     }
@@ -100,16 +105,25 @@ public class ProductViewController {
             return "admin/products/form";
         }
 
-        productService.update(id, product);
-        redirectAttributes.addFlashAttribute("successMessage", "Produto atualizado com sucesso!");
+        try {
+            productService.update(id, product);
+            redirectAttributes.addFlashAttribute("successMessage", "Produto atualizado com sucesso!");
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Erro ao atualizar o produto: " + e.getMessage());
+        }
 
         return "redirect:/admin/products";
     }
 
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        productService.delete(id);
-        redirectAttributes.addFlashAttribute("successMessage", "Produto deletado com sucesso!");
+
+        try {
+            productService.delete(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Produto deletado com sucesso!");
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Erro ao deletar o produto: " + e.getMessage());
+        }
 
         return "redirect:/admin/products";
     }
