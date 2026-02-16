@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.dionialves.snapdogdelivery.client.dto.ClientDTO;
+import com.dionialves.snapdogdelivery.exception.BusinessException;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -76,7 +77,12 @@ public class ClientViewController {
             return "admin/clients/form";
         }
 
-        clientService.create(client);
+        try {
+            clientService.create(client);
+            redirectAttributes.addFlashAttribute("successMessage", "Cliente criado com sucesso!");
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Erro ao criar cliente: " + e.getMessage());
+        }
 
         return "redirect:/admin/clients";
     }
@@ -98,11 +104,12 @@ public class ClientViewController {
             return "admin/clients/form";
         }
 
-        clientService.update(id, client);
-
-        model.addAttribute("activeMenu", "clientes");
-        model.addAttribute("pageTitle", "Clientes");
-        model.addAttribute("pageSubtitle", "Gerencie os clientes cadastrados");
+        try {
+            clientService.update(id, client);
+            redirectAttributes.addFlashAttribute("successMessage", "Cliente atualizado com sucesso!");
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Erro ao atualizar cliente: " + e.getMessage());
+        }
 
         return "redirect:/admin/clients";
     }
@@ -110,11 +117,12 @@ public class ClientViewController {
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, Model model) {
 
-        clientService.delete(id);
-
-        model.addAttribute("activeMenu", "clientes");
-        model.addAttribute("pageTitle", "Clientes");
-        model.addAttribute("pageSubtitle", "Gerencie os clientes cadastrados");
+        try {
+            clientService.delete(id);
+            model.addAttribute("successMessage", "Cliente deletado com sucesso!");
+        } catch (BusinessException e) {
+            model.addAttribute("errorMessage", "Erro ao deletar cliente: " + e.getMessage());
+        }
 
         return "redirect:/admin/clients";
     }
