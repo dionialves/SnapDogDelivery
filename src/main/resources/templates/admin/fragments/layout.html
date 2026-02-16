@@ -97,14 +97,6 @@
                             <span>Produtos</span>
                         </a>
                     </li>
-                    <li>
-                        <a th:href="@{/admin/relatorios}"
-                            th:classappend="${activeMenu == 'relatorios'} ? 'bg-snapdog-800 text-white' : 'text-snapdog-100 hover:bg-snapdog-600'"
-                            class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors">
-                            <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
-                            <span>Relatórios</span>
-                        </a>
-                    </li>
                 </ul>
             </nav>
 
@@ -119,7 +111,7 @@
                         <p th:text="${user?.role ?: 'Administrador'}" class="text-snapdog-200 text-xs truncate">
                             Administrador</p>
                     </div>
-                    <a th:href="@{/logout}" class="p-2 hover:bg-snapdog-600 rounded-lg transition-colors" title="Sair">
+                    <a class="p-2 hover:bg-snapdog-600 rounded-lg transition-colors" title="Sair">
                         <i data-lucide="log-out" class="w-5 h-5"></i>
                     </a>
                 </div>
