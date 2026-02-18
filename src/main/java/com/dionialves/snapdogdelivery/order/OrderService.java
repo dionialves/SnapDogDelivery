@@ -28,14 +28,6 @@ public class OrderService {
     private final ProductRepository productRepository;
 
     @Transactional(readOnly = true)
-    public List<OrderResponseDTO> findAll() {
-        return orderRepository.findAll()
-                .stream()
-                .map(OrderResponseDTO::fromEntity)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
     public OrderResponseDTO findById(Long id) {
 
         Order order = orderRepository.findById(id)
