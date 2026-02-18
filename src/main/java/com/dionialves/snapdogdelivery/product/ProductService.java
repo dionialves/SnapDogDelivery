@@ -18,13 +18,12 @@ public class ProductService {
     public final ProductRepository productRepository;
 
     @Transactional(readOnly = true)
-    public List<ProductResponseDTO> findAll() {
+    public List<ProductResponseDTO> search(String search) {
 
-        return productRepository.findAll()
+        return productRepository.findByNameContainingIgnoreCase(search)
                 .stream()
                 .map(ProductResponseDTO::fromEntity)
                 .toList();
-
     }
 
     @Transactional(readOnly = true)

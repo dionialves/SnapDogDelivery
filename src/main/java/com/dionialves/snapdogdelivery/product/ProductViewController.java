@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.dionialves.snapdogdelivery.exception.BusinessException;
@@ -27,13 +28,14 @@ public class ProductViewController {
     private final ProductService productService;
 
     @GetMapping
-    public String findAll(Model model) {
+    public String findAll(Model model,
+            @RequestParam(required = false, defaultValue = "") String search) {
 
         model.addAttribute("activeMenu", "produtos");
         model.addAttribute("pageTitle", "Produtos");
         model.addAttribute("pageSubtitle", "Gerencie os produtos cadastrados");
 
-        List<ProductResponseDTO> products = productService.findAll();
+        List<ProductResponseDTO> products = productService.search(search);
         model.addAttribute("products", products);
 
         return "admin/products/list";
