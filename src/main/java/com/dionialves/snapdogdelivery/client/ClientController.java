@@ -21,9 +21,9 @@ public class ClientController {
 
     @GetMapping("/search")
     public ResponseEntity<List<ClientDTO>> searchByName(
-            @RequestParam(required = false, defaultValue = "") String q) {
+            @RequestParam(required = false, defaultValue = "") String search) {
 
-        List<ClientDTO> clients = clientService.searchByNameOrPhone(q);
+        List<ClientDTO> clients = clientService.searchByNameOrPhone(search);
         return ResponseEntity.ok(clients);
 
     }

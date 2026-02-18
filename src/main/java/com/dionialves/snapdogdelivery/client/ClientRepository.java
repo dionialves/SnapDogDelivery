@@ -10,11 +10,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ClientRepository extends JpaRepository<Client, Long> {
-    @Query("SELECT c FROM Client c " +
-            "WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
-            "OR c.phone LIKE CONCAT('%', :search, '%')")
-    List<Client> searchByNameOrPhone(@Param("search") String search);
-
     List<Client> findByNameContainingIgnoreCaseOrPhoneContaining(String name, String phone);
 
     long countByCreatedAt(LocalDate date);

@@ -17,9 +17,9 @@ public class ClientService {
     private final ClientRepository clientRepository;
 
     @Transactional(readOnly = true)
-    public List<ClientDTO> findAll() {
+    public List<ClientDTO> search(String search) {
 
-        return clientRepository.findAll()
+        return clientRepository.findByNameContainingIgnoreCaseOrPhoneContaining(search, search)
                 .stream()
                 .map(ClientDTO::fromEntity)
                 .toList();
