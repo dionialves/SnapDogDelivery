@@ -16,8 +16,12 @@ import com.dionialves.snapdogdelivery.order.OrderRepository;
 import com.dionialves.snapdogdelivery.order.OrderStatus;
 import com.dionialves.snapdogdelivery.product.Product;
 import com.dionialves.snapdogdelivery.product.ProductRepository;
+import com.dionialves.snapdogdelivery.user.Role;
+import com.dionialves.snapdogdelivery.user.User;
+import com.dionialves.snapdogdelivery.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 @RequiredArgsConstructor
@@ -26,9 +30,15 @@ public class DataSeeder implements CommandLineRunner {
     private final ClientRepository clientRepository;
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) {
+        if (userRepository.count() == 0) {
+            seedUsers();
+        }
+
         if (clientRepository.count() == 0) {
             seedClients();
         }
@@ -40,6 +50,16 @@ public class DataSeeder implements CommandLineRunner {
         if (orderRepository.count() == 0) {
             seedOrders();
         }
+    }
+
+    private void seedUsers() {
+        List<User> users = List.of(
+            createUser("Administrador", "admin@snapdog.com", "admin123", Role.ADMIN),
+            createUser("Super Admin", "superadmin@snapdog.com", "super123", Role.SUPER_ADMIN),
+            createUser("Usuário", "user@snapdog.com", "user123", Role.USER)
+        );
+
+        userRepository.saveAll(users);
     }
 
     private void seedClients() {
@@ -146,5 +166,14 @@ public class DataSeeder implements CommandLineRunner {
         product.setPrice(price);
         product.setDescription(description);
         return product;
+    }
+
+    private User createUser(String name, String email, String password, Role role) {
+        User user = new User();
+        user.setName(name);
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setRole(role);
+        return user;
     }
 }
