@@ -2,6 +2,8 @@ package com.dionialves.snapdogdelivery.order;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -48,6 +50,19 @@ public class OrderService {
                 .stream()
                 .map(OrderResponseDTO::fromEntity)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<OrderResponseDTO> search(OrderStatus status, String clientSearch, int page, int size) {
+
+        Specification<Order> spec = Specification
+                .where(OrderSpecifications.hasStatus(status))
+                .and(OrderSpecifications.clientSearchContains(clientSearch));
+
+        PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        return orderRepository.findAll(spec, pageable)
+                .map(OrderResponseDTO::fromEntity);
     }
 
     @Transactional

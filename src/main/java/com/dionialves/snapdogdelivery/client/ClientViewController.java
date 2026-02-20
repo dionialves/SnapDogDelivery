@@ -1,7 +1,6 @@
 package com.dionialves.snapdogdelivery.client;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -26,16 +25,23 @@ public class ClientViewController {
 
     private final ClientService clientService;
 
+    private static final int PAGE_SIZE = 10;
+
     @GetMapping
     public String findAll(Model model,
-            @RequestParam(required = false, defaultValue = "") String search) {
+            @RequestParam(required = false, defaultValue = "") String search,
+            @RequestParam(required = false, defaultValue = "0") int page) {
 
         model.addAttribute("activeMenu", "clientes");
         model.addAttribute("pageTitle", "Clientes");
         model.addAttribute("pageSubtitle", "Gerencie os clientes cadastrados");
 
-        List<ClientDTO> clients = clientService.search(search);
-        model.addAttribute("clients", clients);
+        Page<ClientDTO> clientPage = clientService.search(search, page, PAGE_SIZE);
+        model.addAttribute("clients", clientPage.getContent());
+        model.addAttribute("currentPage", clientPage.getNumber());
+        model.addAttribute("totalPages", clientPage.getTotalPages());
+        model.addAttribute("totalElements", clientPage.getTotalElements());
+        model.addAttribute("search", search);
 
         return "admin/clients/list";
     }

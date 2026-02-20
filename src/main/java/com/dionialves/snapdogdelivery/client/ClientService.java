@@ -2,6 +2,9 @@ package com.dionialves.snapdogdelivery.client;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +26,15 @@ public class ClientService {
                 .stream()
                 .map(ClientDTO::fromEntity)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ClientDTO> search(String search, int page, int size) {
+
+        PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
+
+        return clientRepository.findByNameContainingIgnoreCaseOrPhoneContaining(search, search, pageable)
+                .map(ClientDTO::fromEntity);
     }
 
     @Transactional(readOnly = true)

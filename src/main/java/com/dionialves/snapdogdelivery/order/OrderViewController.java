@@ -3,6 +3,7 @@ package com.dionialves.snapdogdelivery.order;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -27,20 +28,26 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/admin/orders")
 public class OrderViewController {
 
+    private static final int PAGE_SIZE = 10;
+
     private final OrderService orderService;
 
     @GetMapping
     public String findAll(Model model,
             @RequestParam(required = false, defaultValue = "") OrderStatus status,
-            @RequestParam(required = false, defaultValue = "") String q) {
+            @RequestParam(required = false, defaultValue = "") String q,
+            @RequestParam(required = false, defaultValue = "0") int page) {
 
         model.addAttribute("activeMenu", "Pedidos");
         model.addAttribute("pageTitle", "Pedidos");
         model.addAttribute("pageSubtitle", "Gerencie os pedidos cadastrados");
 
-        List<OrderResponseDTO> orders = orderService.search(status, q);
+        Page<OrderResponseDTO> orderPage = orderService.search(status, q, page, PAGE_SIZE);
 
-        model.addAttribute("orders", orders);
+        model.addAttribute("orders", orderPage.getContent());
+        model.addAttribute("currentPage", orderPage.getNumber());
+        model.addAttribute("totalPages", orderPage.getTotalPages());
+        model.addAttribute("totalElements", orderPage.getTotalElements());
         model.addAttribute("statusFilter", status != null ? status.name() : null);
         model.addAttribute("search", q);
 
@@ -130,6 +137,7 @@ public class OrderViewController {
             @RequestParam String status,
             @RequestParam(required = false, defaultValue = "") String filterStatus,
             @RequestParam(required = false, defaultValue = "") String q,
+            @RequestParam(required = false, defaultValue = "0") int page,
             RedirectAttributes redirectAttributes) {
 
         try {
@@ -142,7 +150,7 @@ public class OrderViewController {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 
-        String redirect = "/admin/orders?status=" + filterStatus + "&q=" + q;
+        String redirect = "/admin/orders?status=" + filterStatus + "&q=" + q + "&page=" + page;
         return "redirect:" + redirect;
     }
 
@@ -150,6 +158,7 @@ public class OrderViewController {
     public String delete(@PathVariable Long id,
             @RequestParam(required = false, defaultValue = "") String filterStatus,
             @RequestParam(required = false, defaultValue = "") String q,
+            @RequestParam(required = false, defaultValue = "0") int page,
             RedirectAttributes redirectAttributes) {
 
         try {
@@ -159,7 +168,7 @@ public class OrderViewController {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 
-        String redirect = "/admin/orders?status=" + filterStatus + "&q=" + q;
+        String redirect = "/admin/orders?status=" + filterStatus + "&q=" + q + "&page=" + page;
         return "redirect:" + redirect;
     }
 }

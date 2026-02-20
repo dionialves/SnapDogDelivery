@@ -1,7 +1,6 @@
 package com.dionialves.snapdogdelivery.product;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -27,16 +26,23 @@ public class ProductViewController {
 
     private final ProductService productService;
 
+    private static final int PAGE_SIZE = 10;
+
     @GetMapping
     public String findAll(Model model,
-            @RequestParam(required = false, defaultValue = "") String search) {
+            @RequestParam(required = false, defaultValue = "") String search,
+            @RequestParam(required = false, defaultValue = "0") int page) {
 
         model.addAttribute("activeMenu", "produtos");
         model.addAttribute("pageTitle", "Produtos");
         model.addAttribute("pageSubtitle", "Gerencie os produtos cadastrados");
 
-        List<ProductResponseDTO> products = productService.search(search);
-        model.addAttribute("products", products);
+        Page<ProductResponseDTO> productPage = productService.search(search, page, PAGE_SIZE);
+        model.addAttribute("products", productPage.getContent());
+        model.addAttribute("currentPage", productPage.getNumber());
+        model.addAttribute("totalPages", productPage.getTotalPages());
+        model.addAttribute("totalElements", productPage.getTotalElements());
+        model.addAttribute("search", search);
 
         return "admin/products/list";
     }
