@@ -128,6 +128,8 @@ public class OrderViewController {
     @PostMapping("/{id}/status")
     public String updateStatus(@PathVariable Long id,
             @RequestParam String status,
+            @RequestParam(required = false, defaultValue = "") String filterStatus,
+            @RequestParam(required = false, defaultValue = "") String q,
             RedirectAttributes redirectAttributes) {
 
         try {
@@ -140,11 +142,15 @@ public class OrderViewController {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 
-        return "redirect:/admin/orders";
+        String redirect = "/admin/orders?status=" + filterStatus + "&q=" + q;
+        return "redirect:" + redirect;
     }
 
     @PostMapping("/{id}/delete")
-    public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String delete(@PathVariable Long id,
+            @RequestParam(required = false, defaultValue = "") String filterStatus,
+            @RequestParam(required = false, defaultValue = "") String q,
+            RedirectAttributes redirectAttributes) {
 
         try {
             orderService.delete(id);
@@ -153,6 +159,7 @@ public class OrderViewController {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 
-        return "redirect:/admin/orders";
+        String redirect = "/admin/orders?status=" + filterStatus + "&q=" + q;
+        return "redirect:" + redirect;
     }
 }

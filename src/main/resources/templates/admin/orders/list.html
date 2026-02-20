@@ -196,6 +196,8 @@
                                             <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post"
                                                 class="inline">
                                                 <input type="hidden" name="status" value="PREPARING">
+                                                <input type="hidden" name="filterStatus" th:value="${statusFilter}">
+                                                <input type="hidden" name="q" th:value="${search}">
                                                 <button type="submit" title="Iniciar Preparo"
                                                     class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-100 text-orange-700 hover:bg-orange-200 transition-colors">
                                                     <i data-lucide="chef-hat" class="w-3.5 h-3.5"></i>
@@ -207,6 +209,8 @@
                                             <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post"
                                                 class="inline">
                                                 <input type="hidden" name="status" value="OUT_FOR_DELIVERY">
+                                                <input type="hidden" name="filterStatus" th:value="${statusFilter}">
+                                                <input type="hidden" name="q" th:value="${search}">
                                                 <button type="submit" title="Enviar para Entrega"
                                                     class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors">
                                                     <i data-lucide="truck" class="w-3.5 h-3.5"></i>
@@ -218,6 +222,8 @@
                                             <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post"
                                                 class="inline">
                                                 <input type="hidden" name="status" value="DELIVERED">
+                                                <input type="hidden" name="filterStatus" th:value="${statusFilter}">
+                                                <input type="hidden" name="q" th:value="${search}">
                                                 <button type="submit" title="Confirmar Entrega"
                                                     class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg bg-green-100 text-green-700 hover:bg-green-200 transition-colors">
                                                     <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
@@ -232,6 +238,8 @@
                                                 class="inline"
                                                 onsubmit="return confirm('Tem certeza que deseja cancelar este pedido?')">
                                                 <input type="hidden" name="status" value="CANCELED">
+                                                <input type="hidden" name="filterStatus" th:value="${statusFilter}">
+                                                <input type="hidden" name="q" th:value="${search}">
                                                 <button type="submit" title="Cancelar Pedido"
                                                     class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                                                     <i data-lucide="ban" class="w-4 h-4"></i>

@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class ProductService {
 
-    public final ProductRepository productRepository;
+    private final ProductRepository productRepository;
 
     @Transactional(readOnly = true)
     public List<ProductResponseDTO> search(String search) {

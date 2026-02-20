@@ -123,7 +123,7 @@ public class GlobalExceptionHandler {
         String path = request.getRequestURI();
         String acceptHeader = request.getHeader("Accept");
 
-        if (path != null && path.startsWith("/api/")) {
+        if (path != null && (path.startsWith("/api/") || path.startsWith("/admin/api/"))) {
             return true;
         }
 
