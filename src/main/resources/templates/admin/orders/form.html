@@ -35,7 +35,8 @@
             <span th:text="${errorMessage}"></span>
         </div>
 
-        <form th:action="@{/admin/orders/new}" method="post" id="orderForm" class="space-y-6">
+        <form th:action="${order != null and order.id != null} ? @{/admin/orders/{id}(id=${order.id})} : @{/admin/orders/new}"
+            method="post" id="orderForm" class="space-y-6">
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 

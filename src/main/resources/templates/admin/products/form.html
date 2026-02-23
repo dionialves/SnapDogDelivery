@@ -14,7 +14,7 @@
 <body>
 
     <th:block th:fragment="headerActions">
-        <a th:href="@{/admin/produts}"
+        <a th:href="@{/admin/products}"
             class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 px-4 py-2 rounded-lg font-medium transition-colors">
             <i data-lucide="arrow-left" class="w-5 h-5"></i>
             Voltar
@@ -24,10 +24,14 @@
     <!-- Conteúdo Principal -->
     <th:block th:fragment="content">
 
-        <!-- Mensagem de Erro Geral -->
-        <div th:if="${erro}" class="mb-6 p-4 rounded-lg bg-red-100 text-red-800 flex items-center gap-3">
+        <!-- Mensagens de Feedback -->
+        <div th:if="${successMessage}" class="mb-6 p-4 rounded-lg bg-green-100 text-green-800 flex items-center gap-3">
+            <i data-lucide="check-circle" class="w-5 h-5"></i>
+            <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="mb-6 p-4 rounded-lg bg-red-100 text-red-800 flex items-center gap-3">
             <i data-lucide="alert-circle" class="w-5 h-5"></i>
-            <span th:text="${erro}"></span>
+            <span th:text="${errorMessage}"></span>
         </div>
 
         <!-- Formulário -->

@@ -399,11 +399,11 @@ os módulos:
 
 ### 3.3 Typo na URL do Botão "Voltar" em Produtos
 
-**Arquivo:** `templates/admin/products/form.html`, linha 17
+> **CONCLUÍDO** (fevereiro/2026)
 
-**Problema:** Link aponta para `/admin/produts` (faltando o `c`).
-
-**Solução:** Corrigir para `/admin/products`.
+**Solução aplicada:** Corrigido `/admin/produts` → `/admin/products` em `products/form.html`.
+Aproveitado para corrigir também a chave de flash message do formulário: `${erro}` → `${errorMessage}` /
+`${successMessage}`, alinhando com o padrão do restante do projeto.
 
 ---
 
@@ -435,28 +435,26 @@ necessária no serviço.
 
 ### 3.6 `BusinessException` Renderiza Template `error/500`
 
-**Arquivo:** `GlobalExceptionHandler.java`, linha ~47
+> **CONCLUÍDO** (fevereiro/2026)
 
-**Problema:** Erros de negócio (HTTP 400) renderizam o template `error/500.html`, o que
-é semanticamente incorreto (o template diz "Erro interno do servidor").
-
-**Solução:** Criar `templates/error/400.html` com mensagem adequada para erros de
-validação/negócio, ou reusar `error/500.html` com título e mensagem dinâmicos via
-variável de modelo.
+**Solução aplicada:**
+- Criado `templates/error/400.html` com visual adequado para erros de regra de negócio
+  (título "Operação não permitida", mensagem dinâmica via `${message}`, botões "Voltar" e "Dashboard")
+- `GlobalExceptionHandler.handleBusiness()` atualizado para apontar para `error/400` com `status=400`
+- Removidos `System.out.println` remanescentes de `handleGeneric()` (bug 3.1 que não havia sido
+  corrigido no rollback)
 
 ---
 
 ### 3.7 Formulário de Pedido Existente Posta para Rota Errada
 
-**Arquivo:** `templates/admin/orders/form.html`, linha 34
+> **CONCLUÍDO** (fevereiro/2026)
 
-**Problema:** Ao visualizar um pedido existente (`GET /admin/orders/{id}`), o `action`
-do formulário está fixo em `/admin/orders/new`, fazendo com que um possível submit crie
-um pedido duplicado em vez de atualizar.
-
-**Solução:** Usar `th:action` dinâmico:
+**Solução aplicada:** `th:action` tornado dinâmico em `orders/form.html`:
 ```html
-th:action="${order.id != null} ? @{/admin/orders/{id}(id=${order.id})} : @{/admin/orders/new}"
+th:action="${order != null and order.id != null}
+    ? @{/admin/orders/{id}(id=${order.id})}
+    : @{/admin/orders/new}"
 ```
 
 ---
@@ -476,14 +474,12 @@ th:action="${order.id != null} ? @{/admin/orders/{id}(id=${order.id})} : @{/admi
 
 ### 3.9 CSRF Desabilitado
 
-**Arquivo:** `SecurityConfig.java`, linha 39 — `csrf.disable()`
+> **CONCLUÍDO** (fevereiro/2026)
 
-**Contexto:** CSRF foi desabilitado para simplificar o desenvolvimento. Em produção,
-formulários Thymeleaf incluem o token automaticamente via `th:action`.
-
-**Solução para v1.0:** Reativar CSRF e garantir que todos os formulários usem `th:action`
-(o que já é o caso na maioria). Verificar endpoints AJAX (`fetch()`) que precisarão
-incluir o header `X-CSRF-TOKEN`.
+**Solução aplicada:** Removida a linha `http.csrf(csrf -> csrf.disable())` de `SecurityConfig.java`.
+Todos os formulários de mutação já usavam `th:action` (Thymeleaf injeta o token automaticamente).
+Os `fetch()` existentes são exclusivamente `GET` para APIs de busca — nenhum envia dados de escrita,
+portanto não requerem o header `X-CSRF-TOKEN`.
 
 ---
 
@@ -495,6 +491,8 @@ incluir o header `X-CSRF-TOKEN`.
 com emoji no lugar do logo.
 
 **Solução:** Criar/adicionar o SVG ou imagem real do logo Snap Dog.
+
+> ⏳ **Pendente** — requer asset de logo (SVG/imagem) que ainda não existe no projeto.
 
 ---
 

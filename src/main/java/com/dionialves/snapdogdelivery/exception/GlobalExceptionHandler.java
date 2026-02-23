@@ -44,9 +44,9 @@ public class GlobalExceptionHandler {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
         }
 
-        ModelAndView modelAndView = new ModelAndView("error/500");
+        ModelAndView modelAndView = new ModelAndView("error/400");
         modelAndView.setStatus(HttpStatus.BAD_REQUEST);
-        modelAndView.addObject("status", 500);
+        modelAndView.addObject("status", 400);
         modelAndView.addObject("message", ex.getMessage());
         return modelAndView;
     }
@@ -61,9 +61,6 @@ public class GlobalExceptionHandler {
                     LocalDateTime.now());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
-
-        System.out.println(request);
-        System.out.println(ex.getMessage());
 
         ModelAndView modelAndView = new ModelAndView("error/500");
         modelAndView.setStatus(HttpStatus.BAD_REQUEST);
