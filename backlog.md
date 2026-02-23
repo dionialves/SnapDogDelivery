@@ -542,12 +542,15 @@ todas as tabelas a cada restart da aplicação. **Todos os dados são perdidos.*
 
 ### 4.2 Nome da Classe Principal
 
-**Arquivo:** `GreendogdeliveryApplication.java`
+> **CONCLUÍDO** (fevereiro/2026)
 
-**Problema:** O nome da classe ainda reflete o nome antigo do projeto ("Greendog").
+**Arquivo:** ~~`GreendogdeliveryApplication.java`~~ → `SnapdogDeliveryApplication.java`
 
-**Solução:** Renomear para `SnapdogDeliveryApplication.java` e atualizar a referência
-no `application.properties` se houver.
+**Problema:** O nome da classe ainda refletia o nome antigo do projeto ("Greendog").
+
+**Solução aplicada:** Renomeados `GreendogdeliveryApplication.java` → `SnapdogDeliveryApplication.java`
+e `GreendogdeliveryApplicationTests.java` → `SnapdogDeliveryApplicationTests.java`.
+Nenhuma referência encontrada em `application.properties`.
 
 ---
 
