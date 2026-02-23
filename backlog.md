@@ -26,44 +26,46 @@ do zero para o lançamento da v1.0.
 
 ### 1.1 Autenticação de Clientes (Cadastro e Login)
 
-**Contexto:** Clientes finais precisam se cadastrar e fazer login para acessar o catálogo
-e realizar compras. O sistema de autenticação atual (`/login`) é exclusivo para usuários
-admin — os clientes precisam de um fluxo separado.
+**Contexto:** Clientes finais precisam se cadastrar e fazer login para realizar compras.
+O sistema de autenticação atual (`/admin/login`) é exclusivo para usuários admin —
+os clientes precisam de um fluxo separado com rotas e templates próprios.
 
-**Decisão de arquitetura:** O cliente logado é vinculado à entidade `Client` já existente
-(`tb_clients`). O login/cadastro público cria ou localiza um `Client` associado ao usuário.
+**Decisão de arquitetura:** Reutilizar a entidade `User` já existente (`tb_users`).
+O cadastro público adiciona `role = CUSTOMER` à enum `Role` e cria um relacionamento
+`@OneToOne` entre `User` e `Client`. Usuários admin não possuem `Client` vinculado (campo nullable).
+
+**Alterações na entidade `User`:**
+
+- Adicionar `role = CUSTOMER` na enum `Role` (`com.dionialves.snapdogdelivery.user.Role`)
+- Adicionar campo `client` (`@OneToOne`, FK `client_id`, nullable) em `User`
+  — usuários admin: `client = null`; clientes públicos: `client` aponta para o `Client` criado no cadastro
 
 **O que criar:**
 
-- **Entidade `CustomerAccount`** (ou adicionar campos em `User`) — conta do cliente público
-  - Campos: `id`, `client` (FK para `Client`), `email` (único), `password` (BCrypt),
-    `emailVerified`, `createdAt`
-  - Alternativa mais simples: adicionar `role = CUSTOMER` na enum `Role` existente e
-    vincular `User` a `Client` com relacionamento `@OneToOne`
-
-- **Pacote `com.dionialves.snapdogdelivery.auth.customer`**
-  - `CustomerAuthController` (`@Controller`, rotas públicas sob `/`)
-  - `CustomerRegisterDTO` — dados do formulário de cadastro (nome, e-mail, senha, telefone,
-    endereço completo)
-  - `CustomerLoginDTO`
+- **`CustomerAuthController`** no pacote `com.dionialves.snapdogdelivery.auth`
+  (`@Controller`, rotas públicas sob `/`)
+  - `CustomerRegisterDTO` — nome, e-mail, senha, telefone, endereço completo (todos os
+    campos de `Client`)
+  - `CustomerLoginDTO` — e-mail e senha
 
 - **Endpoints públicos de autenticação:**
-  - `GET /cadastro` → formulário de registro
-  - `POST /cadastro` → cria `Client` + conta de acesso, redireciona para `/catalogo`
-  - `GET /entrar` → formulário de login público
-  - `POST /entrar` → autenticação, redireciona para `/catalogo`
-  - `POST /sair` → logout do cliente
+  - `GET /register` → formulário de cadastro do cliente
+  - `POST /register` → cria `Client` + `User` (role `CUSTOMER`) vinculados, redireciona para `/catalog`
+  - `GET /login` → formulário de login público (rota separada do admin `/admin/login`)
+  - `POST /login` → autenticação Spring Security, redireciona para `/catalog`
+  - `POST /logout` → logout do cliente
 
 - **Configuração de segurança (`SecurityConfig`):**
   - Criar segunda cadeia de filtros (`SecurityFilterChain`) para a área pública
-  - Rotas públicas: `/`, `/catalogo`, `/entrar`, `/cadastro`, `/error`, recursos estáticos
-  - Rotas autenticadas (cliente): `/catalogo/**`, `/carrinho/**`, `/checkout/**`, `/minha-conta/**`
-  - Rotas admin mantidas em cadeia separada: `/admin/**`
+  - Rotas **totalmente públicas** (sem autenticação): `/`, `/catalog`, `/catalog/**`,
+    `/register`, `/login`, `/error`, recursos estáticos
+  - Rotas autenticadas (cliente com role `CUSTOMER`): `/cart/**`, `/checkout/**`, `/account/**`
+  - Rotas admin mantidas em cadeia separada: `/admin/**` (roles `ADMIN` / `SUPER_ADMIN`)
 
 - **Templates Thymeleaf públicos:**
-  - `templates/public/auth/register.html` — formulário de cadastro com validação
+  - `templates/public/auth/register.html` — formulário de cadastro com validação em tempo real
   - `templates/public/auth/login.html` — formulário de login público (separado do admin)
-  - Layout público: `templates/public/fragments/layout.html` (ver item 1.6)
+  - Layout público: `templates/public/fragments/layout.html` (ver item 1.7)
 
 ---
 
@@ -99,18 +101,20 @@ atual não possui campo de imagem.
 ### 1.3 Catálogo Público de Produtos
 
 **Contexto:** Página principal da loja — lista todos os produtos disponíveis com foto,
-nome, descrição e preço. Visível apenas para clientes logados.
+nome, descrição e preço. O catálogo é **público** (não requer login). O login só é exigido
+quando o cliente tenta adicionar um produto ao carrinho — nesse momento é redirecionado
+para `/login` e, após autenticação, retorna ao catálogo.
 
 **O que criar:**
 
 - **Pacote `com.dionialves.snapdogdelivery.store`**
-  - `StoreController` (`@Controller`, `@RequestMapping("/catalogo")`)
-  - Usa `ProductService` já existente (sem duplicação de lógica)
+  - `StoreController` (`@Controller`, `@RequestMapping("/catalog")`)
+  - Reutiliza `ProductService` já existente (sem duplicação de lógica)
 
 - **Endpoints:**
-  - `GET /catalogo` → lista todos os produtos ativos, paginados
-  - `GET /catalogo/{id}` → detalhe de um produto (foto ampliada, descrição completa, preço,
-    botão "Adicionar ao carrinho")
+  - `GET /catalog` → lista todos os produtos ativos, paginados (público)
+  - `GET /catalog/{id}` → detalhe de um produto — foto ampliada, descrição completa, preço,
+    botão "Add to cart" (público para visualizar; exige login ao clicar)
 
 - **Campo `active` no `Product`** (booleano, default `true`) — permite o admin ocultar
   produtos do catálogo sem excluí-los. Filtrar no `StoreController` por `active = true`.
@@ -124,51 +128,52 @@ nome, descrição e preço. Visível apenas para clientes logados.
 
 ### 1.4 Carrinho de Compras
 
-**Contexto:** Cliente adiciona produtos ao carrinho antes de finalizar o pedido.
-Implementação via sessão HTTP (sem persistência em banco — se fechar o browser, perde).
+**Contexto:** Cliente autenticado adiciona produtos ao carrinho antes de finalizar o pedido.
+Implementação via sessão HTTP (sem persistência em banco — se fechar o browser, o carrinho
+é perdido). Tentativa de adicionar ao carrinho sem estar logado redireciona para `/login`.
 
 **O que criar:**
 
-- **Classe `Cart`** (não é entidade JPA — é um POJO `Serializable` para a sessão)
+- **Classe `Cart`** (não é entidade JPA — POJO `Serializable` armazenado na sessão HTTP)
   - `Map<Long, CartItem> items` (chave: `productId`)
   - Métodos: `addItem(Long productId, String name, BigDecimal price, int qty)`,
     `removeItem(Long productId)`, `updateQuantity(Long productId, int qty)`,
     `getTotal()`, `clear()`
 
 - **Classe `CartItem`** (POJO Serializable)
-  - `productId`, `productName`, `imageUrl`, `unitPrice`, `quantity`
-  - Método `getSubtotal()`
+  - Campos: `productId`, `productName`, `imageUrl`, `unitPrice`, `quantity`
+  - Método: `getSubtotal()`
 
 - **Pacote `com.dionialves.snapdogdelivery.cart`**
   - `CartService` — gerencia `Cart` na `HttpSession` (chave `"cart"`)
-  - `CartController` (`@Controller`, `@RequestMapping("/carrinho")`)
+  - `CartController` (`@Controller`, `@RequestMapping("/cart")`)
 
-- **Endpoints:**
-  - `POST /carrinho/adicionar` → adiciona item (recebe `productId` e `quantity`)
-  - `POST /carrinho/remover/{productId}` → remove item
-  - `POST /carrinho/atualizar/{productId}` → atualiza quantidade
-  - `GET /carrinho` → visualização do carrinho
-  - `POST /carrinho/limpar` → esvazia o carrinho
+- **Endpoints** (todos exigem autenticação com role `CUSTOMER`):
+  - `POST /cart/add` → adiciona item (recebe `productId` e `quantity`)
+  - `POST /cart/remove/{productId}` → remove item
+  - `POST /cart/update/{productId}` → atualiza quantidade
+  - `GET /cart` → visualização do carrinho
+  - `POST /cart/clear` → esvazia o carrinho
 
-- **Templates:**
-  - `templates/public/cart/cart.html` — tabela de itens, subtotais, total, botão "Finalizar pedido"
+- **Template:**
+  - `templates/public/cart/cart.html` — tabela de itens, subtotais, total, botão "Checkout"
 
-- **UX no catálogo:** botão "Adicionar ao carrinho" em cada card de produto faz `POST`
-  e exibe feedback (toast ou atualização do ícone de carrinho no header com contador de itens)
+- **UX no catálogo:** botão "Add to cart" em cada card faz `POST /cart/add`. Se não
+  autenticado, Spring Security redireciona para `/login` e retorna após login. Se autenticado,
+  responde com atualização do contador de itens no header (toast ou redirect).
 
 ---
 
 ### 1.5 Checkout e Finalização do Pedido
 
 **Contexto:** Cliente revisa o carrinho, confirma endereço de entrega e finaliza o pedido.
-O pedido é criado na entidade `Order` já existente, com origem `ONLINE`.
+O pedido é criado na entidade `Order` já existente com origem `ONLINE`.
 
 **Alterações na entidade `Order`:**
 
 - Adicionar campo `origin` (enum `OrderOrigin`: `ONLINE`, `MANUAL`, default `MANUAL`)
-- Adicionar campo `deliveryAddress` (`String`, nullable) — endereço de entrega registrado
-  no momento do pedido (snapshot, assim como `priceAtTime` no produto)
-- Considerar adicionar `notes` (`String`, nullable, max 500) — observações do cliente
+- Adicionar campo `deliveryAddress` (`String`, nullable) — snapshot do endereço de entrega
+  no momento do pedido (mesmo padrão de `priceAtTime` no `ProductOrder`)
 
 **O que criar:**
 
@@ -176,16 +181,17 @@ O pedido é criado na entidade `Order` já existente, com origem `ONLINE`.
 
 - **Pacote `com.dionialves.snapdogdelivery.checkout`**
   - `CheckoutController` (`@Controller`, `@RequestMapping("/checkout")`)
-  - `CheckoutService` — converte `Cart` (sessão) em `Order` persistida
+  - `CheckoutService` — converte `Cart` (sessão) em `Order` persistida:
     - Valida que o carrinho não está vazio
-    - Busca o `Client` vinculado ao usuário logado
+    - Busca o `Client` vinculado ao `User` autenticado via `user.getClient()`
     - Cria `OrderCreateDTO` internamente e delega para `OrderService.create()`
+    - Registra `deliveryAddress` como snapshot do endereço atual do `Client`
     - Limpa o carrinho após criação bem-sucedida
 
-- **Endpoints:**
-  - `GET /checkout` → tela de revisão (resumo do carrinho + endereço do cliente)
-  - `POST /checkout/confirmar` → cria o pedido, redireciona para confirmação
-  - `GET /checkout/confirmacao/{orderId}` → tela de sucesso com resumo do pedido
+- **Endpoints** (exigem autenticação com role `CUSTOMER`):
+  - `GET /checkout` → tela de revisão — resumo do carrinho + endereço do cliente
+  - `POST /checkout/confirm` → cria o pedido, redireciona para confirmação
+  - `GET /checkout/confirmation/{orderId}` → tela de sucesso com número e resumo do pedido
 
 - **Templates:**
   - `templates/public/checkout/review.html` — resumo do pedido, endereço, total
@@ -194,22 +200,22 @@ O pedido é criado na entidade `Order` já existente, com origem `ONLINE`.
 
 ---
 
-### 1.6 Área do Cliente — Minha Conta
+### 1.6 Área do Cliente — My Account
 
-**Contexto:** Cliente logado pode consultar seu histórico de pedidos e dados cadastrais.
+**Contexto:** Cliente logado consulta histórico de pedidos e gerencia seus dados cadastrais.
 
 **O que criar:**
 
-- **Pacote `com.dionialves.snapdogdelivery.customer`**
-  - `CustomerAreaController` (`@Controller`, `@RequestMapping("/minha-conta")`)
+- **Pacote `com.dionialves.snapdogdelivery.account`**
+  - `AccountController` (`@Controller`, `@RequestMapping("/account")`)
 
-- **Endpoints:**
-  - `GET /minha-conta` → painel do cliente (resumo de pedidos recentes)
-  - `GET /minha-conta/pedidos` → histórico completo de pedidos paginado
-  - `GET /minha-conta/pedidos/{id}` → detalhe de um pedido (produtos, status, valor)
-  - `GET /minha-conta/dados` → formulário de edição de dados cadastrais (nome, telefone,
+- **Endpoints** (exigem autenticação com role `CUSTOMER`):
+  - `GET /account` → painel do cliente com resumo dos pedidos recentes
+  - `GET /account/orders` → histórico completo de pedidos, paginado
+  - `GET /account/orders/{id}` → detalhe de um pedido (produtos, status, valor total)
+  - `GET /account/profile` → formulário de edição de dados cadastrais (nome, telefone,
     endereço)
-  - `POST /minha-conta/dados` → salva alterações cadastrais
+  - `POST /account/profile` → salva alterações cadastrais
 
 - **Templates:**
   - `templates/public/account/dashboard.html`
@@ -227,18 +233,18 @@ de delivery.
 
 **O que criar:**
 
-- `templates/public/fragments/layout.html` — layout base público
-  - Header com: logo Snap Dog, link "Cardápio" (`/catalogo`), ícone de carrinho com
-    contador de itens (lê da sessão), menu do usuário (nome + "Sair") ou botões
-    "Entrar" / "Cadastrar-se"
+- `templates/public/fragments/layout.html` — layout base público:
+  - Header com: logo Snap Dog, link "Menu" (`/catalog`), ícone de carrinho com contador
+    de itens (lê da sessão — exibido apenas para clientes autenticados), menu do usuário
+    (nome + "Sign out") ou botões "Sign in" / "Register"
   - Footer com informações da loja (horário, telefone, redes sociais)
   - Mesmo stack de CSS: Tailwind CDN + Lucide Icons
 
-- `templates/public/index.html` — landing page pública (home):
-  - Hero com nome da marca e chamada para ação ("Ver cardápio")
-  - Seção de produtos em destaque (3–6 itens)
+- `templates/public/index.html` — landing page pública (home `GET /`):
+  - Hero com nome da marca e chamada para ação ("View menu")
+  - Seção de produtos em destaque (3–6 itens) — **visível sem login**
   - Informações sobre a entrega (horários, área de cobertura)
-  - Acesso sem login para visualizar a home; catálogo completo requer login
+  - Catálogo completo acessível sem autenticação; apenas a ação de compra exige login
 
 ---
 
@@ -261,26 +267,26 @@ O `UserDTO` existe no código mas não é usado por nenhum controller.
   - `update(Long, UserUpdateDTO)` — permite alterar nome, role e senha
   - `delete(Long)` — não permite excluir o próprio usuário logado
 
-- **`UserController`** (`@RestController`, `/admin/api/users`) — endpoints JSON
+- **`UserController`** (`@RestController`, `@RequestMapping("/admin/api/users")`) — endpoints JSON
 
-- **`UserViewController`** (`@Controller`, `/admin/users`) — CRUD via Thymeleaf
+- **`UserViewController`** (`@Controller`, `@RequestMapping("/admin/users")`) — CRUD via Thymeleaf:
   - `GET /admin/users` → lista paginada de usuários
-  - `GET /admin/users/novo` → formulário de criação
-  - `POST /admin/users/novo` → cria usuário
+  - `GET /admin/users/new` → formulário de criação
+  - `POST /admin/users/new` → cria usuário
   - `GET /admin/users/{id}` → formulário de edição
   - `POST /admin/users/{id}` → atualiza usuário
-  - `POST /admin/users/{id}/excluir` → remove usuário
+  - `POST /admin/users/{id}/delete` → remove usuário
 
 - **DTOs:**
-  - `UserCreateDTO` — nome, e-mail, senha, role (com validações)
-  - `UserUpdateDTO` — nome, role, senha (opcional — só atualiza se preenchida)
-  - `UserResponseDTO` — id, nome, e-mail, role, createdAt (sem senha)
+  - `UserCreateDTO` — name, email, password, role (com validações)
+  - `UserUpdateDTO` — name, role, password (opcional — só atualiza se preenchida)
+  - `UserResponseDTO` — id, name, email, role, createdAt (sem senha)
 
 - **Templates:**
   - `templates/admin/users/list.html`
   - `templates/admin/users/form.html`
 
-- **Sidebar** (`layout.html`) — adicionar link "Usuários" visível apenas para `SUPER_ADMIN`
+- **Sidebar** (`layout.html`) — adicionar link "Users" visível apenas para `SUPER_ADMIN`
 
 ---
 
@@ -288,6 +294,7 @@ O `UserDTO` existe no código mas não é usado por nenhum controller.
 
 **Contexto:** A enum `Role` tem três níveis (`USER`, `ADMIN`, `SUPER_ADMIN`) mas o
 `SecurityConfig` atual só exige `authenticated()` — qualquer usuário logado acessa tudo.
+Com a adição de `CUSTOMER`, é essencial separar claramente o acesso.
 
 **O que implementar:**
 
@@ -296,7 +303,7 @@ O `UserDTO` existe no código mas não é usado por nenhum controller.
   - `/admin/**` (restante) → `ADMIN` ou `SUPER_ADMIN`
 
 - **Templates** — ocultar links de menu com `sec:authorize` (Thymeleaf Security extras):
-  - Link "Usuários" no sidebar → só aparece para `SUPER_ADMIN`
+  - Link "Users" no sidebar → só aparece para `SUPER_ADMIN`
   - Botões de exclusão de pedidos/clientes → considerar restringir a `SUPER_ADMIN`
 
 - **Dependência a adicionar no `pom.xml`:**
@@ -330,9 +337,9 @@ precisa distingui-los.
 
 **O que alterar:**
 
-- `templates/admin/orders/list.html` — adicionar coluna ou badge "Origem" (Online / Manual)
-- `templates/admin/orders/form.html` — exibir origem no modo de visualização do pedido
-- Filtro opcional por origem na listagem de pedidos
+- `templates/admin/orders/list.html` — adicionar coluna ou badge "Origin" (Online / Manual)
+- `templates/admin/orders/form.html` — exibir origin no modo de visualização do pedido
+- Filtro opcional por origin na listagem de pedidos
 
 ---
 
@@ -343,8 +350,8 @@ poder ativar/desativar produtos do catálogo público.
 
 **O que alterar:**
 
-- `templates/admin/products/list.html` — coluna de status (Ativo/Inativo) com toggle
-- `templates/admin/products/form.html` — checkbox "Exibir no catálogo público"
+- `templates/admin/products/list.html` — coluna de status (Active/Inactive) com toggle
+- `templates/admin/products/form.html` — checkbox "Show in public catalog"
 - `ProductService.update()` — processar o campo `active`
 
 ---
@@ -528,6 +535,7 @@ todas as tabelas a cada restart da aplicação. **Todos os dados são perdidos.*
    - `V3__add_product_active.sql` — campo `active` em `tb_products`
    - `V4__add_order_origin.sql` — campo `origin` em `tb_orders`
    - `V5__add_order_delivery_address.sql` — campo `delivery_address` em `tb_orders`
+   - `V6__add_user_client_fk.sql` — campo `client_id` (FK nullable) em `tb_users`
    - (migrations seguintes conforme novas features)
 
 ---
@@ -573,7 +581,7 @@ pronta (H2, `@ActiveProfiles("test")`). Testes são necessários antes do lança
 | `ProductServiceTest` | `create`, `update`, `delete`, `search` |
 | `OrderServiceTest` | `create` (fluxo completo), `updateStatus` (todas as transições válidas e inválidas), `delete` |
 | `DashboardServiceTest` | `getDashboardSummary` (mocks de repositório), cálculo de crescimento |
-| `CheckoutServiceTest` (novo) | conversão de `Cart` em `Order`, carrinho vazio |
+| `CheckoutServiceTest` (novo) | conversão de `Cart` em `Order`, carrinho vazio, endereço snapshot |
 
 ---
 
@@ -584,7 +592,7 @@ pronta (H2, `@ActiveProfiles("test")`). Testes são necessários antes do lança
 | `ClientControllerTest` | `GET /admin/api/clients/search` — resultado, lista vazia |
 | `ProductControllerTest` | `GET /admin/api/products/search` |
 | `OrderViewControllerTest` | criação de pedido, avanço de status, cancelamento |
-| `StoreControllerTest` (novo) | catálogo sem login (redirect), catálogo com login |
+| `StoreControllerTest` (novo) | `GET /catalog` sem login (deve funcionar), `POST /cart/add` sem login (redirect para `/login`) |
 | `CartControllerTest` (novo) | adicionar, remover, atualizar quantidade |
 | `CheckoutControllerTest` (novo) | confirmar pedido, carrinho vazio |
 
@@ -605,7 +613,8 @@ Itens identificados como desejáveis mas fora do escopo imediato do lançamento.
 
 | Funcionalidade | Descrição |
 |---|---|
-| **Login com Google (OAuth2)** | `spring-boot-starter-oauth2-client` + configuração no Google Cloud Console. Cria/vincula `Client` automaticamente. |
+| **Login com Google (OAuth2)** | `spring-boot-starter-oauth2-client` + configuração no Google Cloud Console. Cria/vincula `Client` automaticamente ao `User`. |
+| **Campo `notes` em `Order`** | Campo `String` (max 500, nullable) para observações do cliente no pedido (ex.: "sem cebola"). Exibido no checkout e visível na área admin. |
 | **E-mail de confirmação de pedido** | Spring Mail + template de e-mail (HTML) enviado após checkout bem-sucedido. |
 | **Notificação de mudança de status** | E-mail ou push notification quando o status do pedido avança (ex.: "Seu pedido saiu para entrega!"). |
 | **Taxa de entrega dinâmica** | Campo `deliveryFee` em `Order`, calculada por CEP/distância ou valor fixo por bairro. Hoje exibe "Grátis" fixo no formulário. |
