@@ -556,16 +556,22 @@ Nenhuma referência encontrada em `application.properties`.
 
 ### 4.3 Senha Padrão no `application.properties`
 
-**Arquivo:** `src/main/resources/application.properties`
+> **CONCLUÍDO** (fevereiro/2026)
 
 **Problema:** Credenciais de banco (`postgresadmin`) hardcoded no arquivo versionado.
 
-**Solução:** Usar variáveis de ambiente:
-```properties
-spring.datasource.password=${DB_PASSWORD:postgresadmin}
-```
-E adicionar `application.properties` ao `.gitignore` ou criar um `application-prod.properties`
-fora do repositório.
+**Solução aplicada:** Separação em três profiles:
+
+| Profile | Arquivo | Uso | Versionado |
+|---|---|---|---|
+| `dev` (padrão) | `application-dev.properties` | Desenvolvimento local | Sim |
+| `prod` | `application-prod.properties` | Servidor / produção | **Não** (`.gitignore`) |
+| `test` | `application-test.yml` | Testes automatizados (H2) | Sim |
+
+- `application.properties` mantém apenas configurações comuns e define `spring.profiles.active=dev`
+- `application-prod.properties` usa variáveis de ambiente: `${DB_URL}`, `${DB_USERNAME}`, `${DB_PASSWORD}`
+- `application-prod.properties.example` versionado como referência para o time
+- Ativar produção com `--spring.profiles.active=prod` ou `SPRING_PROFILES_ACTIVE=prod`
 
 ---
 
