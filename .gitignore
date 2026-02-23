@@ -38,6 +38,8 @@ target/
 AGENTS.md
 CLAUDE.md
 
-
 # Lazyvim
 .markdownlint.json
+
+# IntelliJ
+.idea/

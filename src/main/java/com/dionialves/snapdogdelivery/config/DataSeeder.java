@@ -21,10 +21,12 @@ import com.dionialves.snapdogdelivery.user.User;
 import com.dionialves.snapdogdelivery.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 @RequiredArgsConstructor
+@Profile("!test")
 public class DataSeeder implements CommandLineRunner {
 
     private final ClientRepository clientRepository;
