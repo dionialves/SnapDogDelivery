@@ -568,42 +568,51 @@ fora do repositório.
 
 ## 5. Cobertura de Testes
 
-O projeto possui apenas um teste (`contextLoads()`). A infraestrutura de testes está
-pronta (H2, `@ActiveProfiles("test")`). Testes são necessários antes do lançamento da v1.0.
+> **CONCLUÍDO** (fevereiro/2026) — Suite de **76 testes** implementada e enviada para `develop`.
+> Resultado: **76 testes, 0 falhas, BUILD SUCCESS**.
+>
+> Infraestrutura corrigida junto com a entrega:
+> - `annotationProcessorPaths` do Lombok movido para `maven-compiler-plugin` no `pom.xml`
+> - `spring-security-test` adicionado ao `pom.xml`
+> - `@Profile("!test")` adicionado ao `DataSeeder` para evitar dados de seed no H2
+> - `NotFoundException` passa a estender `BusinessException`
+>
+> Testes pendentes dependem de funcionalidades ainda não implementadas (seções 1.3, 1.4, 1.5).
+> Consulte `report-test.md` para estratégia detalhada, justificativa por teste e mapa de cobertura.
 
 ---
 
 ### 5.1 Testes de Serviço (Unitários)
 
-| Classe de Teste | Casos prioritários |
-|---|---|
-| `ClientServiceTest` | `create`, `update`, `delete` (com e sem pedidos), `search` paginado |
-| `ProductServiceTest` | `create`, `update`, `delete`, `search` |
-| `OrderServiceTest` | `create` (fluxo completo), `updateStatus` (todas as transições válidas e inválidas), `delete` |
-| `DashboardServiceTest` | `getDashboardSummary` (mocks de repositório), cálculo de crescimento |
-| `CheckoutServiceTest` (novo) | conversão de `Cart` em `Order`, carrinho vazio, endereço snapshot |
+| Classe de Teste | Status | Testes |
+|---|---|---|
+| `ClientServiceTest` | ✅ Concluído | 10 — `create`, `update`, `delete` (com e sem pedidos), `search` paginado |
+| `ProductServiceTest` | ✅ Concluído | 9 — `create`, `update`, `delete`, `search` |
+| `OrderServiceTest` | ✅ Concluído | 16 — `create` (fluxo completo), `updateStatus` (todas as transições válidas e inválidas), `delete` |
+| `DashboardServiceTest` | ✅ Concluído | 7 — `getDashboardSummary` (mocks de repositório), cálculo de crescimento |
+| `CheckoutServiceTest` | ⏳ Pendente | Depende da feature 1.5 (Checkout) |
 
 ---
 
 ### 5.2 Testes de Controller (Integração)
 
-| Classe de Teste | Casos prioritários |
-|---|---|
-| `ClientControllerTest` | `GET /admin/api/clients/search` — resultado, lista vazia |
-| `ProductControllerTest` | `GET /admin/api/products/search` |
-| `OrderViewControllerTest` | criação de pedido, avanço de status, cancelamento |
-| `StoreControllerTest` (novo) | `GET /catalog` sem login (deve funcionar), `POST /cart/add` sem login (redirect para `/login`) |
-| `CartControllerTest` (novo) | adicionar, remover, atualizar quantidade |
-| `CheckoutControllerTest` (novo) | confirmar pedido, carrinho vazio |
+| Classe de Teste | Status | Testes |
+|---|---|---|
+| `ClientControllerTest` | ✅ Concluído | 3 — `GET /admin/api/clients/search`: com resultado, termo vazio, sem resultado |
+| `ProductControllerTest` | ✅ Concluído | 3 — `GET /admin/api/products/search`: com resultado, termo vazio, sem resultado |
+| `OrderViewControllerTest` | ✅ Concluído | 13 — listagem, criação, atualização de status, exclusão (sucessos e erros) |
+| `StoreControllerTest` | ⏳ Pendente | Depende da feature 1.3 (Catálogo Público) |
+| `CartControllerTest` | ⏳ Pendente | Depende da feature 1.4 (Carrinho) |
+| `CheckoutControllerTest` | ⏳ Pendente | Depende da feature 1.5 (Checkout) |
 
 ---
 
 ### 5.3 Testes de Repositório
 
-| Classe de Teste | Casos prioritários |
-|---|---|
-| `OrderRepositoryTest` | `sumRevenueByCreatedAtBetween`, `findTopSellingProducts`, `existsByClientId` |
-| `ClientRepositoryTest` | `findByNameContainingIgnoreCaseOrPhoneContaining`, `countByCreatedAt` |
+| Classe de Teste | Status | Testes |
+|---|---|---|
+| `OrderRepositoryTest` | ✅ Concluído | 6 — `sumRevenueByCreatedAtBetween`, `findTopSellingProducts`, `existsByClientId` |
+| `ClientRepositoryTest` | ✅ Concluído | 8 — `findByNameContainingIgnoreCaseOrPhoneContaining`, `countByCreatedAt` |
 
 ---
 
