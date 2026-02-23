@@ -1,0 +1,132 @@
+package com.dionialves.snapdogdelivery.client;
+
+import java.time.LocalDate;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@SpringBootTest
+@ActiveProfiles("test")
+@Transactional
+class ClientRepositoryTest {
+
+    @Autowired
+    private ClientRepository clientRepository;
+
+    private Client joao;
+    private Client maria;
+
+    @BeforeEach
+    void setUp() {
+        joao = clientRepository.save(criarClient("João Silva", "(11) 91234-5678", "joao@email.com"));
+        maria = clientRepository.save(criarClient("Maria Santos", "(21) 99876-5432", "maria@email.com"));
+    }
+
+    // --- findByNameContainingIgnoreCaseOrPhoneContaining (lista) ---
+
+    @Test
+    @DisplayName("findByNameOrPhone por nome (case-insensitive) retorna cliente correto")
+    void findByNameOrPhone_porNome_retornaCliente() {
+        var result = clientRepository
+                .findByNameContainingIgnoreCaseOrPhoneContaining("joão", "joão");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getEmail()).isEqualTo("joao@email.com");
+    }
+
+    @Test
+    @DisplayName("findByNameOrPhone por telefone retorna cliente correto")
+    void findByNameOrPhone_porTelefone_retornaCliente() {
+        var result = clientRepository
+                .findByNameContainingIgnoreCaseOrPhoneContaining("99876", "99876");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getName()).isEqualTo("Maria Santos");
+    }
+
+    @Test
+    @DisplayName("findByNameOrPhone com termo parcial retorna resultado correto")
+    void findByNameOrPhone_termoGeral_retornaResultado() {
+        var result = clientRepository
+                .findByNameContainingIgnoreCaseOrPhoneContaining("silva", "silva");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getName()).isEqualTo("João Silva");
+    }
+
+    @Test
+    @DisplayName("findByNameOrPhone sem correspondência retorna lista vazia")
+    void findByNameOrPhone_semCorrespondencia_retornaVazio() {
+        var result = clientRepository
+                .findByNameContainingIgnoreCaseOrPhoneContaining("xyz", "xyz");
+
+        assertThat(result).isEmpty();
+    }
+
+    // --- findByNameOrPhone paginado ---
+
+    @Test
+    @DisplayName("findByNameOrPhone paginado retorna Page com resultado correto")
+    void findByNameOrPhone_paginado_retornaPage() {
+        var pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "name"));
+        var result = clientRepository
+                .findByNameContainingIgnoreCaseOrPhoneContaining("", "", pageable);
+
+        assertThat(result.getTotalElements()).isGreaterThanOrEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("findByNameOrPhone paginado com tamanho 1 retorna apenas 1 resultado por página")
+    void findByNameOrPhone_paginadoTamanho1_retornaUmPorPagina() {
+        var pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.ASC, "name"));
+        var result = clientRepository
+                .findByNameContainingIgnoreCaseOrPhoneContaining("", "", pageable);
+
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getTotalElements()).isGreaterThanOrEqualTo(2);
+    }
+
+    // --- countByCreatedAt ---
+
+    @Test
+    @DisplayName("countByCreatedAt conta clientes criados hoje")
+    void countByCreatedAt_hoje_retornaContagem() {
+        // clientes criados no setUp usam LocalDate.now() via inicializador de campo
+        long count = clientRepository.countByCreatedAt(LocalDate.now());
+
+        assertThat(count).isGreaterThanOrEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("countByCreatedAt para data sem clientes retorna zero")
+    void countByCreatedAt_dataSemClientes_retornaZero() {
+        long count = clientRepository.countByCreatedAt(LocalDate.now().minusYears(1));
+
+        assertThat(count).isEqualTo(0);
+    }
+
+    // --- helper privado ---
+
+    private Client criarClient(String nome, String telefone, String email) {
+        var c = new Client();
+        c.setName(nome);
+        c.setPhone(telefone);
+        c.setEmail(email);
+        c.setCity("São Paulo");
+        c.setState(State.SP);
+        c.setNeighborhood("Centro");
+        c.setStreet("Rua das Flores");
+        c.setZipCode("01310-100");
+        c.setNumber("10");
+        return c;
+    }
+}
