@@ -25,11 +25,13 @@
     <th:block th:fragment="content">
 
         <!-- Mensagens de Feedback -->
-        <div th:if="${messagem}" class="mb-6 p-4 rounded-lg flex items-center gap-3"
-            th:classappend="${messageType == 'sucesso'} ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
-            <i th:if="${messageType == 'sucesso'}" data-lucide="check-circle" class="w-5 h-5"></i>
-            <i th:if="${messageType == 'erro'}" data-lucide="alert-circle" class="w-5 h-5"></i>
-            <span th:text="${messagem}"></span>
+        <div th:if="${successMessage}" class="mb-6 p-4 rounded-lg flex items-center gap-3 bg-green-100 text-green-800">
+            <i data-lucide="check-circle" class="w-5 h-5"></i>
+            <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="mb-6 p-4 rounded-lg flex items-center gap-3 bg-red-100 text-red-800">
+            <i data-lucide="alert-circle" class="w-5 h-5"></i>
+            <span th:text="${errorMessage}"></span>
         </div>
 
         <!-- Card da Tabela -->

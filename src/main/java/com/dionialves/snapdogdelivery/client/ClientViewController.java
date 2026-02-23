@@ -42,7 +42,6 @@ public class ClientViewController {
         model.addAttribute("totalPages", clientPage.getTotalPages());
         model.addAttribute("totalElements", clientPage.getTotalElements());
         model.addAttribute("search", search);
-        System.out.println(model.asMap());
         return "admin/clients/list";
     }
 
@@ -87,11 +86,9 @@ public class ClientViewController {
 
         try {
             clientService.create(client);
-            redirectAttributes.addFlashAttribute("messagem", "Cliente criado com sucesso!");
-            redirectAttributes.addFlashAttribute("messageType", "sucesso");
+            redirectAttributes.addFlashAttribute("successMessage", "Cliente criado com sucesso!");
         } catch (BusinessException e) {
-            redirectAttributes.addFlashAttribute("messagem", "Erro ao criar cliente: " + e.getMessage());
-            redirectAttributes.addFlashAttribute("messageType", "erro");
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 
         return "redirect:/admin/clients";
@@ -116,11 +113,9 @@ public class ClientViewController {
 
         try {
             clientService.update(id, client);
-            redirectAttributes.addFlashAttribute("messagem", "Cliente atualizado com sucesso!");
-            redirectAttributes.addFlashAttribute("messageType", "sucesso");
+            redirectAttributes.addFlashAttribute("successMessage", "Cliente atualizado com sucesso!");
         } catch (BusinessException e) {
-            redirectAttributes.addFlashAttribute("messagem", "Erro ao atualizar cliente: " + e.getMessage());
-            redirectAttributes.addFlashAttribute("messageType", "erro");
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 
         return "redirect:/admin/clients";
@@ -131,11 +126,9 @@ public class ClientViewController {
 
         try {
             clientService.delete(id);
-            redirectAttributes.addFlashAttribute("messagem", "Cliente deletado com sucesso!");
-            redirectAttributes.addFlashAttribute("messageType", "sucesso");
+            redirectAttributes.addFlashAttribute("successMessage", "Cliente deletado com sucesso!");
         } catch (BusinessException e) {
-            redirectAttributes.addFlashAttribute("messagem", "Erro ao deletar cliente: " + e.getMessage());
-            redirectAttributes.addFlashAttribute("messageType", "erro");
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 
         return "redirect:/admin/clients";

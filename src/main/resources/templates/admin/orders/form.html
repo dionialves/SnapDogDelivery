@@ -25,7 +25,11 @@
     <!-- Conteúdo Principal -->
     <th:block th:fragment="content">
 
-        <!-- Mensagem de Erro Geral -->
+        <!-- Mensagens de Feedback -->
+        <div th:if="${successMessage}" class="mb-6 p-4 rounded-lg bg-green-100 text-green-800 flex items-center gap-3">
+            <i data-lucide="check-circle" class="w-5 h-5"></i>
+            <span th:text="${successMessage}"></span>
+        </div>
         <div th:if="${errorMessage}" class="mb-6 p-4 rounded-lg bg-red-100 text-red-800 flex items-center gap-3">
             <i data-lucide="alert-circle" class="w-5 h-5"></i>
             <span th:text="${errorMessage}"></span>

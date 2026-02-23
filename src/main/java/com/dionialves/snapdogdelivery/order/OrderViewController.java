@@ -38,7 +38,7 @@ public class OrderViewController {
             @RequestParam(required = false, defaultValue = "") String q,
             @RequestParam(required = false, defaultValue = "0") int page) {
 
-        model.addAttribute("activeMenu", "Pedidos");
+        model.addAttribute("activeMenu", "pedidos");
         model.addAttribute("pageTitle", "Pedidos");
         model.addAttribute("pageSubtitle", "Gerencie os pedidos cadastrados");
 
@@ -58,7 +58,7 @@ public class OrderViewController {
     public String findById(@PathVariable Long id, Model model) {
 
         var order = orderService.findById(id);
-        model.addAttribute("activeMenu", "Pedidos");
+        model.addAttribute("activeMenu", "pedidos");
         model.addAttribute("pageTitle", "Pedido #" + order.getId());
         model.addAttribute("pageSubtitle", "Detalhes do pedido");
 
@@ -69,7 +69,7 @@ public class OrderViewController {
     @GetMapping("/new")
     public String newOrder(Model model) {
 
-        model.addAttribute("activeMenu", "Pedidos");
+        model.addAttribute("activeMenu", "pedidos");
         model.addAttribute("pageTitle", "Novo Pedido");
         model.addAttribute("pageSubtitle", "Adicione um novo pedido a sua base");
 
@@ -88,7 +88,7 @@ public class OrderViewController {
             Model model) {
 
         if (result.hasErrors()) {
-            model.addAttribute("activeMenu", "Pedidos");
+            model.addAttribute("activeMenu", "pedidos");
             model.addAttribute("pageTitle", "Novo Pedido");
             model.addAttribute("pageSubtitle", "Adicione um novo pedido a sua base");
 
@@ -115,7 +115,7 @@ public class OrderViewController {
             Model model) {
 
         if (result.hasErrors()) {
-            model.addAttribute("activeMenu", "Pedidos");
+            model.addAttribute("activeMenu", "pedidos");
             model.addAttribute("pageTitle", "Editar Pedido");
             model.addAttribute("pageSubtitle", "Edite os dados do pedido");
 
