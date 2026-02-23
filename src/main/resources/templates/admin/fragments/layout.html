@@ -111,9 +111,11 @@
                         <p th:text="${user?.role ?: 'Administrador'}" class="text-snapdog-200 text-xs truncate">
                             Administrador</p>
                     </div>
-                    <a th:href="@{/admin/logout}" class="p-2 hover:bg-snapdog-600 rounded-lg transition-colors" title="Sair">
-                        <i data-lucide="log-out" class="w-5 h-5"></i>
-                    </a>
+                    <form th:action="@{/admin/logout}" method="post">
+                        <button type="submit" class="p-2 hover:bg-snapdog-600 rounded-lg transition-colors" title="Sair">
+                            <i data-lucide="log-out" class="w-5 h-5"></i>
+                        </button>
+                    </form>
                 </div>
             </div>
 
