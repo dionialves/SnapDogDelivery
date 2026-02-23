@@ -7,8 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${pageTitle} ? ${pageTitle} + ' | SnapDog Admin' : 'SnapDog Admin'">SnapDog Admin</title>
 
-    <!-- Tailwind CSS via CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS -->
+    <script src="/js/tailwind.js"></script>
     <link rel="stylesheet" href="/style/style.css">
 
     <!-- Configuração customizada do Tailwind -->
@@ -38,7 +38,7 @@
     </script>
 
     <!-- Ícones - Lucide -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/js/lucide.min.js"></script>
 </head>
 
 <body class="bg-gray-100 min-h-screen">
@@ -111,9 +111,11 @@
                         <p th:text="${user?.role ?: 'Administrador'}" class="text-snapdog-200 text-xs truncate">
                             Administrador</p>
                     </div>
-                    <a class="p-2 hover:bg-snapdog-600 rounded-lg transition-colors" title="Sair">
-                        <i data-lucide="log-out" class="w-5 h-5"></i>
-                    </a>
+                    <form th:action="@{/admin/logout}" method="post">
+                        <button type="submit" class="p-2 hover:bg-snapdog-600 rounded-lg transition-colors" title="Sair">
+                            <i data-lucide="log-out" class="w-5 h-5"></i>
+                        </button>
+                    </form>
                 </div>
             </div>
 

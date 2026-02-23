@@ -26,11 +26,13 @@
     <th:block th:fragment="content">
 
         <!-- Mensagens de Feedback -->
-        <div th:if="${message}" class="mb-6 p-4 rounded-lg flex items-center gap-3"
-            th:classappend="${messageType == 'success'} ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
-            <i th:if="${messageType == 'success'}" data-lucide="check-circle" class="w-5 h-5"></i>
-            <i th:if="${messageType == 'error'}" data-lucide="alert-circle" class="w-5 h-5"></i>
-            <span th:text="${message}"></span>
+        <div th:if="${successMessage}" class="mb-6 p-4 rounded-lg flex items-center gap-3 bg-green-100 text-green-800">
+            <i data-lucide="check-circle" class="w-5 h-5"></i>
+            <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="mb-6 p-4 rounded-lg flex items-center gap-3 bg-red-100 text-red-800">
+            <i data-lucide="alert-circle" class="w-5 h-5"></i>
+            <span th:text="${errorMessage}"></span>
         </div>
 
         <!-- Filtros por Status -->
@@ -73,27 +75,50 @@
             <!-- Header -->
             <div class="p-6 border-b border-gray-200">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-800">Lista de Pedidos</h2>
-                        <p class="text-gray-500 text-sm mt-1">
-                            <span th:text="${orders != null ? orders.size() : 0}">0</span> pedido(s)
-                        </p>
-                    </div>
 
-                    <!-- Busca -->
+                    <!-- Busca (esquerda) -->
                     <form th:action="@{/admin/orders}" method="get" class="flex gap-2">
                         <input type="hidden" name="status" th:value="${statusFilter}">
                         <div class="relative">
                             <i data-lucide="search"
                                 class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                             <input type="text" name="q" th:value="${search}" placeholder="Buscar por nº ou cliente..."
-                                class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500 w-64">
+                                class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500 w-72">
                         </div>
                         <button type="submit"
                             class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">
                             Buscar
                         </button>
                     </form>
+
+                    <!-- Paginação (direita) -->
+                    <div class="flex items-center gap-3">
+                        <a th:if="${currentPage > 0}"
+                            th:href="@{/admin/orders(status=${statusFilter}, q=${search}, page=${currentPage - 1})}"
+                            class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium">
+                            Anterior
+                        </a>
+                        <span th:unless="${currentPage > 0}"
+                            class="px-4 py-2 bg-gray-50 text-gray-300 rounded-lg text-sm font-medium cursor-not-allowed">
+                            Anterior
+                        </span>
+
+                        <span class="text-sm text-gray-600 whitespace-nowrap">
+                            Página <span th:text="${currentPage + 1}">1</span>
+                            de <span th:text="${totalPages > 0 ? totalPages : 1}">1</span>
+                        </span>
+
+                        <a th:if="${currentPage + 1 < totalPages}"
+                            th:href="@{/admin/orders(status=${statusFilter}, q=${search}, page=${currentPage + 1})}"
+                            class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium">
+                            Próxima
+                        </a>
+                        <span th:unless="${currentPage + 1 < totalPages}"
+                            class="px-4 py-2 bg-gray-50 text-gray-300 rounded-lg text-sm font-medium cursor-not-allowed">
+                            Próxima
+                        </span>
+                    </div>
+
                 </div>
             </div>
 
@@ -196,6 +221,9 @@
                                             <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post"
                                                 class="inline">
                                                 <input type="hidden" name="status" value="PREPARING">
+                                                <input type="hidden" name="filterStatus" th:value="${statusFilter}">
+                                                <input type="hidden" name="q" th:value="${search}">
+                                                <input type="hidden" name="page" th:value="${currentPage}">
                                                 <button type="submit" title="Iniciar Preparo"
                                                     class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-100 text-orange-700 hover:bg-orange-200 transition-colors">
                                                     <i data-lucide="chef-hat" class="w-3.5 h-3.5"></i>
@@ -207,6 +235,9 @@
                                             <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post"
                                                 class="inline">
                                                 <input type="hidden" name="status" value="OUT_FOR_DELIVERY">
+                                                <input type="hidden" name="filterStatus" th:value="${statusFilter}">
+                                                <input type="hidden" name="q" th:value="${search}">
+                                                <input type="hidden" name="page" th:value="${currentPage}">
                                                 <button type="submit" title="Enviar para Entrega"
                                                     class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors">
                                                     <i data-lucide="truck" class="w-3.5 h-3.5"></i>
@@ -218,6 +249,9 @@
                                             <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post"
                                                 class="inline">
                                                 <input type="hidden" name="status" value="DELIVERED">
+                                                <input type="hidden" name="filterStatus" th:value="${statusFilter}">
+                                                <input type="hidden" name="q" th:value="${search}">
+                                                <input type="hidden" name="page" th:value="${currentPage}">
                                                 <button type="submit" title="Confirmar Entrega"
                                                     class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg bg-green-100 text-green-700 hover:bg-green-200 transition-colors">
                                                     <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
@@ -232,6 +266,9 @@
                                                 class="inline"
                                                 onsubmit="return confirm('Tem certeza que deseja cancelar este pedido?')">
                                                 <input type="hidden" name="status" value="CANCELED">
+                                                <input type="hidden" name="filterStatus" th:value="${statusFilter}">
+                                                <input type="hidden" name="q" th:value="${search}">
+                                                <input type="hidden" name="page" th:value="${currentPage}">
                                                 <button type="submit" title="Cancelar Pedido"
                                                     class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                                                     <i data-lucide="ban" class="w-4 h-4"></i>

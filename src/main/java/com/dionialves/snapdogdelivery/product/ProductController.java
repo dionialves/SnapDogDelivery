@@ -20,12 +20,11 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping("/search")
-    public ResponseEntity<List<ProductResponseDTO>> searchByName(
-            @RequestParam(required = false, defaultValue = "") String q) {
+    public ResponseEntity<List<ProductResponseDTO>> search(@RequestParam(name = "q", defaultValue = "") String q) {
 
-        List<ProductResponseDTO> products = productService.searchByName(q);
+        List<ProductResponseDTO> products = productService.search(q);
+
         return ResponseEntity.ok(products);
-
     }
 
 }

@@ -22,7 +22,7 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
             "FROM Order o JOIN o.productOrders po " +
             "WHERE o.createdAt BETWEEN :start AND :end")
     BigDecimal sumRevenueByCreatedAtBetween(@Param("start") LocalDateTime start,
-                                            @Param("end") LocalDateTime end);
+            @Param("end") LocalDateTime end);
 
     List<Order> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
@@ -32,4 +32,6 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
             "GROUP BY p.id, p.name, p.price " +
             "ORDER BY SUM(po.quantity) DESC")
     List<DashboardTopProductDTO> findTopSellingProducts(Pageable pageable);
+
+    boolean existsByClientId(Long clientId);
 }

@@ -33,3 +33,16 @@ target/
 .factorypath
 .project
 .settings
+
+# IA
+AGENTS.md
+CLAUDE.md
+
+# Lazyvim
+.markdownlint.json
+
+# IntelliJ
+.idea/
+
+# Configuração de produção (contém credenciais — nunca versionar)
+**/application-prod.properties

@@ -26,40 +26,65 @@
     <th:block th:fragment="content">
 
         <!-- Mensagens de Feedback -->
-        <div th:if="${messagem}" class="mb-6 p-4 rounded-lg flex items-center gap-3"
-            th:classappend="${messageType == 'sucesso'} ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
-            <i th:if="${messageType == 'sucesso'}" data-lucide="check-circle" class="w-5 h-5"></i>
-            <i th:if="${messageType == 'erro'}" data-lucide="alert-circle" class="w-5 h-5"></i>
-            <span th:text="${messagem}"></span>
+        <div th:if="${successMessage}" class="mb-6 p-4 rounded-lg flex items-center gap-3 bg-green-100 text-green-800">
+            <i data-lucide="check-circle" class="w-5 h-5"></i>
+            <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="mb-6 p-4 rounded-lg flex items-center gap-3 bg-red-100 text-red-800">
+            <i data-lucide="alert-circle" class="w-5 h-5"></i>
+            <span th:text="${errorMessage}"></span>
         </div>
 
         <!-- Card da Tabela -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200">
 
-            <!-- Header com Busca -->
+            <!-- Header com Busca e Paginação -->
             <div class="p-6 border-b border-gray-200">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-800">Lista de Clientes</h2>
-                        <p class="text-gray-500 text-sm mt-1">
-                            <span th:text="${clients != null ? clients.size() : 0}">0</span> cliente(s) cadastrado(s)
-                        </p>
-                    </div>
 
-                    <!-- Busca -->
+                    <!-- Busca (esquerda) -->
                     <form th:action="@{/admin/clients}" method="get" class="flex gap-2">
                         <div class="relative">
                             <i data-lucide="search"
                                 class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                             <input type="text" name="search" th:value="${search}"
-                                placeholder="Buscar por nome, email..."
-                                class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500 w-64">
+                                placeholder="Buscar por nome ou telefone..."
+                                class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500 w-72">
                         </div>
                         <button type="submit"
                             class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">
                             Buscar
                         </button>
                     </form>
+
+                    <!-- Paginação (direita) -->
+                    <div class="flex items-center gap-3">
+                        <a th:if="${currentPage > 0}"
+                            th:href="@{/admin/clients(search=${search}, page=${currentPage - 1})}"
+                            class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium">
+                            Anterior
+                        </a>
+                        <span th:unless="${currentPage > 0}"
+                            class="px-4 py-2 bg-gray-50 text-gray-300 rounded-lg text-sm font-medium cursor-not-allowed">
+                            Anterior
+                        </span>
+
+                        <span class="text-sm text-gray-600 whitespace-nowrap">
+                            Página <span th:text="${currentPage + 1}">1</span>
+                            de <span th:text="${totalPages > 0 ? totalPages : 1}">1</span>
+                        </span>
+
+                        <a th:if="${currentPage + 1 < totalPages}"
+                            th:href="@{/admin/clients(search=${search}, page=${currentPage + 1})}"
+                            class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium">
+                            Próxima
+                        </a>
+                        <span th:unless="${currentPage + 1 < totalPages}"
+                            class="px-4 py-2 bg-gray-50 text-gray-300 rounded-lg text-sm font-medium cursor-not-allowed">
+                            Próxima
+                        </span>
+                    </div>
+
                 </div>
             </div>
 
@@ -127,7 +152,7 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-end gap-2">
-                                    <a th:href="@{/admin/client/{id}(id=${client.id})}"
+                                    <a th:href="@{/admin/clients/{id}(id=${client.id})}"
                                         class="p-2 text-gray-500 hover:text-snapdog-600 hover:bg-snapdog-50 rounded-lg transition-colors"
                                         title="Editar">
                                         <i data-lucide="pencil" class="w-4 h-4"></i>

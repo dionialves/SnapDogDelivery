@@ -25,13 +25,18 @@
     <!-- Conteúdo Principal -->
     <th:block th:fragment="content">
 
-        <!-- Mensagem de Erro Geral -->
+        <!-- Mensagens de Feedback -->
+        <div th:if="${successMessage}" class="mb-6 p-4 rounded-lg bg-green-100 text-green-800 flex items-center gap-3">
+            <i data-lucide="check-circle" class="w-5 h-5"></i>
+            <span th:text="${successMessage}"></span>
+        </div>
         <div th:if="${errorMessage}" class="mb-6 p-4 rounded-lg bg-red-100 text-red-800 flex items-center gap-3">
             <i data-lucide="alert-circle" class="w-5 h-5"></i>
             <span th:text="${errorMessage}"></span>
         </div>
 
-        <form th:action="@{/admin/orders/new}" method="post" id="orderForm" class="space-y-6">
+        <form th:action="${order != null and order.id != null} ? @{/admin/orders/{id}(id=${order.id})} : @{/admin/orders/new}"
+            method="post" id="orderForm" class="space-y-6">
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -52,7 +57,7 @@
                                 <label for="clientSearch" class="block text-sm font-medium text-gray-700 mb-2">
                                     Buscar Cliente <span class="text-red-500">*</span>
                                 </label>
-                                <div class="relative">
+                                <div id="clientSearchWrapper" class="relative">
                                     <i data-lucide="search"
                                         class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                                     <input type="text" id="clientSearch"
@@ -222,9 +227,12 @@
                             </div>
                         `;
                     } else {
-                        clientSuggestions.innerHTML = clients.map(c => `
+                        clientSuggestions.innerHTML = clients.map(c => {
+                            const address = [c.street, c.number, c.neighborhood, c.city]
+                                .filter(Boolean).join(', ');
+                            return `
                             <div class="p-3 hover:bg-gray-50 cursor-pointer flex items-center gap-3 border-b border-gray-100 last:border-0"
-                                 onclick="selectClient(${c.id}, '${c.name}', '${c.phone}', '${c.address || ''}')">
+                                 onclick="selectClient(${c.id}, '${c.name}', '${c.phone}', '${address}')">
                                 <div class="w-10 h-10 bg-snapdog-100 rounded-full flex items-center justify-center">
                                     <span class="font-semibold text-snapdog-600">${c.name.charAt(0).toUpperCase()}</span>
                                 </div>
@@ -233,7 +241,8 @@
                                     <p class="text-sm text-gray-500">${c.phone}</p>
                                 </div>
                             </div>
-                        `).join('');
+                        `;
+                        }).join('');
                     }
 
                     clientSuggestions.classList.remove('hidden');
@@ -250,7 +259,7 @@
                 document.getElementById('clientInfo').textContent = `${phone} • ${address || 'Endereço não informado'}`;
 
                 document.getElementById('selectedClient').classList.remove('hidden');
-                document.getElementById('clientSearch').classList.add('hidden');
+                document.getElementById('clientSearchWrapper').classList.add('hidden');
                 clientSuggestions.classList.add('hidden');
 
                 validateForm();
@@ -260,7 +269,7 @@
                 selectedClientId = null;
                 document.getElementById('clientId').value = '';
                 document.getElementById('selectedClient').classList.add('hidden');
-                document.getElementById('clientSearch').classList.remove('hidden');
+                document.getElementById('clientSearchWrapper').classList.remove('hidden');
                 document.getElementById('clientSearch').value = '';
 
                 validateForm();

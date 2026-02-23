@@ -2,11 +2,16 @@ package com.dionialves.snapdogdelivery.client;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.dionialves.snapdogdelivery.client.dto.ClientDTO;
+import com.dionialves.snapdogdelivery.exception.BusinessException;
 import com.dionialves.snapdogdelivery.exception.NotFoundException;
+import com.dionialves.snapdogdelivery.order.OrderRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class ClientService {
 
     private final ClientRepository clientRepository;
+    private final OrderRepository orderRepository;
 
     @Transactional(readOnly = true)
     public List<ClientDTO> search(String search) {
@@ -23,6 +29,15 @@ public class ClientService {
                 .stream()
                 .map(ClientDTO::fromEntity)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ClientDTO> search(String search, int page, int size) {
+
+        PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
+
+        return clientRepository.findByNameContainingIgnoreCaseOrPhoneContaining(search, search, pageable)
+                .map(ClientDTO::fromEntity);
     }
 
     @Transactional(readOnly = true)
@@ -90,6 +105,10 @@ public class ClientService {
 
         if (!clientRepository.existsById(id)) {
             throw new NotFoundException("Client not found with ID: " + id);
+        }
+
+        if (orderRepository.existsByClientId(id)) {
+            throw new BusinessException("Customer cannot be deleted because it is associated with orders");
         }
         clientRepository.deleteById(id);
 

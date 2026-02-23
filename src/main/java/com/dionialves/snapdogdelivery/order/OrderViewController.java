@@ -3,6 +3,7 @@ package com.dionialves.snapdogdelivery.order;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -27,20 +28,26 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/admin/orders")
 public class OrderViewController {
 
+    private static final int PAGE_SIZE = 10;
+
     private final OrderService orderService;
 
     @GetMapping
     public String findAll(Model model,
             @RequestParam(required = false, defaultValue = "") OrderStatus status,
-            @RequestParam(required = false, defaultValue = "") String q) {
+            @RequestParam(required = false, defaultValue = "") String q,
+            @RequestParam(required = false, defaultValue = "0") int page) {
 
-        model.addAttribute("activeMenu", "Pedidos");
+        model.addAttribute("activeMenu", "pedidos");
         model.addAttribute("pageTitle", "Pedidos");
         model.addAttribute("pageSubtitle", "Gerencie os pedidos cadastrados");
 
-        List<OrderResponseDTO> orders = orderService.search(status, q);
+        Page<OrderResponseDTO> orderPage = orderService.search(status, q, page, PAGE_SIZE);
 
-        model.addAttribute("orders", orders);
+        model.addAttribute("orders", orderPage.getContent());
+        model.addAttribute("currentPage", orderPage.getNumber());
+        model.addAttribute("totalPages", orderPage.getTotalPages());
+        model.addAttribute("totalElements", orderPage.getTotalElements());
         model.addAttribute("statusFilter", status != null ? status.name() : null);
         model.addAttribute("search", q);
 
@@ -51,7 +58,7 @@ public class OrderViewController {
     public String findById(@PathVariable Long id, Model model) {
 
         var order = orderService.findById(id);
-        model.addAttribute("activeMenu", "Pedidos");
+        model.addAttribute("activeMenu", "pedidos");
         model.addAttribute("pageTitle", "Pedido #" + order.getId());
         model.addAttribute("pageSubtitle", "Detalhes do pedido");
 
@@ -62,7 +69,7 @@ public class OrderViewController {
     @GetMapping("/new")
     public String newOrder(Model model) {
 
-        model.addAttribute("activeMenu", "Pedidos");
+        model.addAttribute("activeMenu", "pedidos");
         model.addAttribute("pageTitle", "Novo Pedido");
         model.addAttribute("pageSubtitle", "Adicione um novo pedido a sua base");
 
@@ -81,7 +88,7 @@ public class OrderViewController {
             Model model) {
 
         if (result.hasErrors()) {
-            model.addAttribute("activeMenu", "Pedidos");
+            model.addAttribute("activeMenu", "pedidos");
             model.addAttribute("pageTitle", "Novo Pedido");
             model.addAttribute("pageSubtitle", "Adicione um novo pedido a sua base");
 
@@ -108,7 +115,7 @@ public class OrderViewController {
             Model model) {
 
         if (result.hasErrors()) {
-            model.addAttribute("activeMenu", "Pedidos");
+            model.addAttribute("activeMenu", "pedidos");
             model.addAttribute("pageTitle", "Editar Pedido");
             model.addAttribute("pageSubtitle", "Edite os dados do pedido");
 
@@ -128,6 +135,9 @@ public class OrderViewController {
     @PostMapping("/{id}/status")
     public String updateStatus(@PathVariable Long id,
             @RequestParam String status,
+            @RequestParam(required = false, defaultValue = "") String filterStatus,
+            @RequestParam(required = false, defaultValue = "") String q,
+            @RequestParam(required = false, defaultValue = "0") int page,
             RedirectAttributes redirectAttributes) {
 
         try {
@@ -140,11 +150,16 @@ public class OrderViewController {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 
-        return "redirect:/admin/orders";
+        String redirect = "/admin/orders?status=" + filterStatus + "&q=" + q + "&page=" + page;
+        return "redirect:" + redirect;
     }
 
     @PostMapping("/{id}/delete")
-    public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String delete(@PathVariable Long id,
+            @RequestParam(required = false, defaultValue = "") String filterStatus,
+            @RequestParam(required = false, defaultValue = "") String q,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            RedirectAttributes redirectAttributes) {
 
         try {
             orderService.delete(id);
@@ -153,6 +168,7 @@ public class OrderViewController {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 
-        return "redirect:/admin/orders";
+        String redirect = "/admin/orders?status=" + filterStatus + "&q=" + q + "&page=" + page;
+        return "redirect:" + redirect;
     }
 }

@@ -1,23 +1,644 @@
-# Backlog sistema administrativo Snap Dog Delivery
+# Backlog — Sistema Snap Dog Delivery
 
-## Funcionalidades pendentes
+Documento de levantamento completo de funcionalidades pendentes para a versão 1.0.
+Baseado na análise do código-fonte atual (fevereiro/2026).
 
-### Dashboard
+---
 
-- Criar dashboard com atualização dinamica
+## Sumário
 
-### Pedidos
+1. [Área Pública — Novas Funcionalidades (v1.0)](#1-área-pública--novas-funcionalidades-v10)
+2. [Área Administrativa — Novas Funcionalidades](#2-área-administrativa--novas-funcionalidades)
+3. [Correções de Bugs e Dívidas Técnicas](#3-correções-de-bugs-e-dívidas-técnicas)
+4. [Infraestrutura e Banco de Dados](#4-infraestrutura-e-banco-de-dados)
+5. [Cobertura de Testes](#5-cobertura-de-testes)
+6. [Funcionalidades Futuras (pós v1.0)](#6-funcionalidades-futuras-pós-v10)
 
-- Criar menu de pedidos, onde pedidos podem ser adicionado manualmente
-- Cada pedido precisa ter obrigatoriamente um cliente
-- Cada pedido precisa ter obrigatoriamente um produto
-- O produto precisa ter pelo a quantidade 1 ou mais
-- O sistema não deve permitir a solicitação de 20 quantidades ou mais do mesmo produto
-- O pedido deve ter possibilidade de mudança de status, sendo elas, Solicitado, Confirmado, Em preparação e Finalizado
-- O pedido pode ser cancelado, apenas nos status Solicitado e Confirmado.
-- O pedido não pode ser excluído, apenas cancelado.
+---
 
-### Produtos
+## 1. Área Pública — Novas Funcionalidades (v1.0)
 
-- Permitir o cadastro de produtos com nome, descrição, foto, preço
-- Produtos vinculados em um pedido não podem ser excluídos, apenas desativados
+Toda a área pública é **inexistente** no projeto atual. O sistema hoje é exclusivamente
+administrativo (rotas sob `/admin/**`). Esta seção descreve tudo que precisa ser criado
+do zero para o lançamento da v1.0.
+
+---
+
+### 1.1 Autenticação de Clientes (Cadastro e Login)
+
+**Contexto:** Clientes finais precisam se cadastrar e fazer login para realizar compras.
+O sistema de autenticação atual (`/admin/login`) é exclusivo para usuários admin —
+os clientes precisam de um fluxo separado com rotas e templates próprios.
+
+**Decisão de arquitetura:** Reutilizar a entidade `User` já existente (`tb_users`).
+O cadastro público adiciona `role = CUSTOMER` à enum `Role` e cria um relacionamento
+`@OneToOne` entre `User` e `Client`. Usuários admin não possuem `Client` vinculado (campo nullable).
+
+**Alterações na entidade `User`:**
+
+- Adicionar `role = CUSTOMER` na enum `Role` (`com.dionialves.snapdogdelivery.user.Role`)
+- Adicionar campo `client` (`@OneToOne`, FK `client_id`, nullable) em `User`
+  — usuários admin: `client = null`; clientes públicos: `client` aponta para o `Client` criado no cadastro
+
+**O que criar:**
+
+- **`CustomerAuthController`** no pacote `com.dionialves.snapdogdelivery.auth`
+  (`@Controller`, rotas públicas sob `/`)
+  - `CustomerRegisterDTO` — nome, e-mail, senha, telefone, endereço completo (todos os
+    campos de `Client`)
+  - `CustomerLoginDTO` — e-mail e senha
+
+- **Endpoints públicos de autenticação:**
+  - `GET /register` → formulário de cadastro do cliente
+  - `POST /register` → cria `Client` + `User` (role `CUSTOMER`) vinculados, redireciona para `/catalog`
+  - `GET /login` → formulário de login público (rota separada do admin `/admin/login`)
+  - `POST /login` → autenticação Spring Security, redireciona para `/catalog`
+  - `POST /logout` → logout do cliente
+
+- **Configuração de segurança (`SecurityConfig`):**
+  - Criar segunda cadeia de filtros (`SecurityFilterChain`) para a área pública
+  - Rotas **totalmente públicas** (sem autenticação): `/`, `/catalog`, `/catalog/**`,
+    `/register`, `/login`, `/error`, recursos estáticos
+  - Rotas autenticadas (cliente com role `CUSTOMER`): `/cart/**`, `/checkout/**`, `/account/**`
+  - Rotas admin mantidas em cadeia separada: `/admin/**` (roles `ADMIN` / `SUPER_ADMIN`)
+
+- **Templates Thymeleaf públicos:**
+  - `templates/public/auth/register.html` — formulário de cadastro com validação em tempo real
+  - `templates/public/auth/login.html` — formulário de login público (separado do admin)
+  - Layout público: `templates/public/fragments/layout.html` (ver item 1.7)
+
+---
+
+### 1.2 Imagem de Produto
+
+**Contexto:** O catálogo público precisa exibir foto dos produtos. A entidade `Product`
+atual não possui campo de imagem.
+
+**O que alterar:**
+
+- **Entidade `Product`** — adicionar campos:
+  - `imageUrl` (`String`, nullable, max 500) — URL externa da imagem (ex.: Imgur, CDN próprio)
+  - Futuramente: `imagePath` para upload local (ver item 1.2.1)
+
+- **`ProductDTO`** — adicionar campo `imageUrl` com `@Size(max = 500)`
+
+- **`ProductResponseDTO`** — incluir `imageUrl` na resposta
+
+- **Formulário admin (`admin/products/form.html`)** — adicionar campo de URL de imagem
+  com preview em tempo real via JavaScript
+
+**1.2.1 — Upload de arquivo (fase seguinte ao imageUrl):**
+
+- Dependência `spring-boot-starter-web` já inclui suporte a `MultipartFile`
+- Criar `StorageService` — salva arquivo em diretório configurável (`/uploads/products/`)
+  ou futuramente em S3/bucket
+- `ProductViewController` — aceitar `@RequestParam MultipartFile image`
+- Servir arquivos estáticos uploadados via `ResourceHandler` no `WebMvcConfig`
+- Adicionar campo de upload no formulário admin (com fallback para URL externa)
+
+---
+
+### 1.3 Catálogo Público de Produtos
+
+**Contexto:** Página principal da loja — lista todos os produtos disponíveis com foto,
+nome, descrição e preço. O catálogo é **público** (não requer login). O login só é exigido
+quando o cliente tenta adicionar um produto ao carrinho — nesse momento é redirecionado
+para `/login` e, após autenticação, retorna ao catálogo.
+
+**O que criar:**
+
+- **Pacote `com.dionialves.snapdogdelivery.store`**
+  - `StoreController` (`@Controller`, `@RequestMapping("/catalog")`)
+  - Reutiliza `ProductService` já existente (sem duplicação de lógica)
+
+- **Endpoints:**
+  - `GET /catalog` → lista todos os produtos ativos, paginados (público)
+  - `GET /catalog/{id}` → detalhe de um produto — foto ampliada, descrição completa, preço,
+    botão "Add to cart" (público para visualizar; exige login ao clicar)
+
+- **Campo `active` no `Product`** (booleano, default `true`) — permite o admin ocultar
+  produtos do catálogo sem excluí-los. Filtrar no `StoreController` por `active = true`.
+
+- **Templates:**
+  - `templates/public/store/catalog.html` — grid de cards de produtos com foto, nome,
+    preço e botão de carrinho
+  - `templates/public/store/product-detail.html` — página de detalhe do produto
+
+---
+
+### 1.4 Carrinho de Compras
+
+**Contexto:** Cliente autenticado adiciona produtos ao carrinho antes de finalizar o pedido.
+Implementação via sessão HTTP (sem persistência em banco — se fechar o browser, o carrinho
+é perdido). Tentativa de adicionar ao carrinho sem estar logado redireciona para `/login`.
+
+**O que criar:**
+
+- **Classe `Cart`** (não é entidade JPA — POJO `Serializable` armazenado na sessão HTTP)
+  - `Map<Long, CartItem> items` (chave: `productId`)
+  - Métodos: `addItem(Long productId, String name, BigDecimal price, int qty)`,
+    `removeItem(Long productId)`, `updateQuantity(Long productId, int qty)`,
+    `getTotal()`, `clear()`
+
+- **Classe `CartItem`** (POJO Serializable)
+  - Campos: `productId`, `productName`, `imageUrl`, `unitPrice`, `quantity`
+  - Método: `getSubtotal()`
+
+- **Pacote `com.dionialves.snapdogdelivery.cart`**
+  - `CartService` — gerencia `Cart` na `HttpSession` (chave `"cart"`)
+  - `CartController` (`@Controller`, `@RequestMapping("/cart")`)
+
+- **Endpoints** (todos exigem autenticação com role `CUSTOMER`):
+  - `POST /cart/add` → adiciona item (recebe `productId` e `quantity`)
+  - `POST /cart/remove/{productId}` → remove item
+  - `POST /cart/update/{productId}` → atualiza quantidade
+  - `GET /cart` → visualização do carrinho
+  - `POST /cart/clear` → esvazia o carrinho
+
+- **Template:**
+  - `templates/public/cart/cart.html` — tabela de itens, subtotais, total, botão "Checkout"
+
+- **UX no catálogo:** botão "Add to cart" em cada card faz `POST /cart/add`. Se não
+  autenticado, Spring Security redireciona para `/login` e retorna após login. Se autenticado,
+  responde com atualização do contador de itens no header (toast ou redirect).
+
+---
+
+### 1.5 Checkout e Finalização do Pedido
+
+**Contexto:** Cliente revisa o carrinho, confirma endereço de entrega e finaliza o pedido.
+O pedido é criado na entidade `Order` já existente com origem `ONLINE`.
+
+**Alterações na entidade `Order`:**
+
+- Adicionar campo `origin` (enum `OrderOrigin`: `ONLINE`, `MANUAL`, default `MANUAL`)
+- Adicionar campo `deliveryAddress` (`String`, nullable) — snapshot do endereço de entrega
+  no momento do pedido (mesmo padrão de `priceAtTime` no `ProductOrder`)
+
+**O que criar:**
+
+- **Enum `OrderOrigin`** em `com.dionialves.snapdogdelivery.order`
+
+- **Pacote `com.dionialves.snapdogdelivery.checkout`**
+  - `CheckoutController` (`@Controller`, `@RequestMapping("/checkout")`)
+  - `CheckoutService` — converte `Cart` (sessão) em `Order` persistida:
+    - Valida que o carrinho não está vazio
+    - Busca o `Client` vinculado ao `User` autenticado via `user.getClient()`
+    - Cria `OrderCreateDTO` internamente e delega para `OrderService.create()`
+    - Registra `deliveryAddress` como snapshot do endereço atual do `Client`
+    - Limpa o carrinho após criação bem-sucedida
+
+- **Endpoints** (exigem autenticação com role `CUSTOMER`):
+  - `GET /checkout` → tela de revisão — resumo do carrinho + endereço do cliente
+  - `POST /checkout/confirm` → cria o pedido, redireciona para confirmação
+  - `GET /checkout/confirmation/{orderId}` → tela de sucesso com número e resumo do pedido
+
+- **Templates:**
+  - `templates/public/checkout/review.html` — resumo do pedido, endereço, total
+  - `templates/public/checkout/confirmation.html` — tela de sucesso com número do pedido
+    e status atual
+
+---
+
+### 1.6 Área do Cliente — My Account
+
+**Contexto:** Cliente logado consulta histórico de pedidos e gerencia seus dados cadastrais.
+
+**O que criar:**
+
+- **Pacote `com.dionialves.snapdogdelivery.account`**
+  - `AccountController` (`@Controller`, `@RequestMapping("/account")`)
+
+- **Endpoints** (exigem autenticação com role `CUSTOMER`):
+  - `GET /account` → painel do cliente com resumo dos pedidos recentes
+  - `GET /account/orders` → histórico completo de pedidos, paginado
+  - `GET /account/orders/{id}` → detalhe de um pedido (produtos, status, valor total)
+  - `GET /account/profile` → formulário de edição de dados cadastrais (nome, telefone,
+    endereço)
+  - `POST /account/profile` → salva alterações cadastrais
+
+- **Templates:**
+  - `templates/public/account/dashboard.html`
+  - `templates/public/account/orders.html`
+  - `templates/public/account/order-detail.html`
+  - `templates/public/account/profile.html`
+
+---
+
+### 1.7 Layout Público (Brand Snap Dog)
+
+**Contexto:** A área pública precisa de identidade visual própria, separada do painel admin.
+Deve usar a paleta "snapdog" (vermelho `#dc2626`) já definida no Tailwind, com foco em UX
+de delivery.
+
+**O que criar:**
+
+- `templates/public/fragments/layout.html` — layout base público:
+  - Header com: logo Snap Dog, link "Menu" (`/catalog`), ícone de carrinho com contador
+    de itens (lê da sessão — exibido apenas para clientes autenticados), menu do usuário
+    (nome + "Sign out") ou botões "Sign in" / "Register"
+  - Footer com informações da loja (horário, telefone, redes sociais)
+  - Mesmo stack de CSS: Tailwind CDN + Lucide Icons
+
+- `templates/public/index.html` — landing page pública (home `GET /`):
+  - Hero com nome da marca e chamada para ação ("View menu")
+  - Seção de produtos em destaque (3–6 itens) — **visível sem login**
+  - Informações sobre a entrega (horários, área de cobertura)
+  - Catálogo completo acessível sem autenticação; apenas a ação de compra exige login
+
+---
+
+## 2. Área Administrativa — Novas Funcionalidades
+
+---
+
+### 2.1 Gerenciamento de Usuários Admin
+
+**Contexto:** Atualmente não existe nenhuma interface para criar, editar ou excluir usuários
+administrativos. Os únicos usuários existem porque o `DataSeeder` os cria na inicialização.
+O `UserDTO` existe no código mas não é usado por nenhum controller.
+
+**O que criar:**
+
+- **`UserService`** (`com.dionialves.snapdogdelivery.user`)
+  - `findAll(int page, int size)` — lista paginada
+  - `findById(Long)` — ou lança `NotFoundException`
+  - `create(UserCreateDTO)` — valida e-mail único, encoda senha com `BCryptPasswordEncoder`
+  - `update(Long, UserUpdateDTO)` — permite alterar nome, role e senha
+  - `delete(Long)` — não permite excluir o próprio usuário logado
+
+- **`UserController`** (`@RestController`, `@RequestMapping("/admin/api/users")`) — endpoints JSON
+
+- **`UserViewController`** (`@Controller`, `@RequestMapping("/admin/users")`) — CRUD via Thymeleaf:
+  - `GET /admin/users` → lista paginada de usuários
+  - `GET /admin/users/new` → formulário de criação
+  - `POST /admin/users/new` → cria usuário
+  - `GET /admin/users/{id}` → formulário de edição
+  - `POST /admin/users/{id}` → atualiza usuário
+  - `POST /admin/users/{id}/delete` → remove usuário
+
+- **DTOs:**
+  - `UserCreateDTO` — name, email, password, role (com validações)
+  - `UserUpdateDTO` — name, role, password (opcional — só atualiza se preenchida)
+  - `UserResponseDTO` — id, name, email, role, createdAt (sem senha)
+
+- **Templates:**
+  - `templates/admin/users/list.html`
+  - `templates/admin/users/form.html`
+
+- **Sidebar** (`layout.html`) — adicionar link "Users" visível apenas para `SUPER_ADMIN`
+
+---
+
+### 2.2 Controle de Acesso por Role
+
+**Contexto:** A enum `Role` tem três níveis (`USER`, `ADMIN`, `SUPER_ADMIN`) mas o
+`SecurityConfig` atual só exige `authenticated()` — qualquer usuário logado acessa tudo.
+Com a adição de `CUSTOMER`, é essencial separar claramente o acesso.
+
+**O que implementar:**
+
+- **`SecurityConfig`** — adicionar `hasRole()` nas rotas admin:
+  - `/admin/users/**` → apenas `SUPER_ADMIN`
+  - `/admin/**` (restante) → `ADMIN` ou `SUPER_ADMIN`
+
+- **Templates** — ocultar links de menu com `sec:authorize` (Thymeleaf Security extras):
+  - Link "Users" no sidebar → só aparece para `SUPER_ADMIN`
+  - Botões de exclusão de pedidos/clientes → considerar restringir a `SUPER_ADMIN`
+
+- **Dependência a adicionar no `pom.xml`:**
+  ```xml
+  <dependency>
+      <groupId>org.thymeleaf.extras</groupId>
+      <artifactId>thymeleaf-extras-springsecurity6</artifactId>
+  </dependency>
+  ```
+
+---
+
+### 2.3 Campo de Imagem no Formulário Admin de Produto
+
+**Contexto:** Após adicionar `imageUrl` e suporte a upload na entidade `Product` (item 1.2),
+o formulário admin precisa ser atualizado.
+
+**O que alterar:**
+
+- `templates/admin/products/form.html`:
+  - Campo de texto para `imageUrl` com preview da imagem em tempo real
+  - Campo de upload de arquivo (`<input type="file">`) como alternativa
+  - JavaScript para alternar entre os dois modos e exibir preview
+
+---
+
+### 2.4 Campo `origin` Visível na Área Admin
+
+**Contexto:** Com pedidos podendo vir de duas origens (`ONLINE` e `MANUAL`), o admin
+precisa distingui-los.
+
+**O que alterar:**
+
+- `templates/admin/orders/list.html` — adicionar coluna ou badge "Origin" (Online / Manual)
+- `templates/admin/orders/form.html` — exibir origin no modo de visualização do pedido
+- Filtro opcional por origin na listagem de pedidos
+
+---
+
+### 2.5 Campo `active` no Gerenciamento de Produtos
+
+**Contexto:** Após adicionar o campo `active` em `Product` (item 1.3), o admin precisa
+poder ativar/desativar produtos do catálogo público.
+
+**O que alterar:**
+
+- `templates/admin/products/list.html` — coluna de status (Active/Inactive) com toggle
+- `templates/admin/products/form.html` — checkbox "Show in public catalog"
+- `ProductService.update()` — processar o campo `active`
+
+---
+
+## 3. Correções de Bugs e Dívidas Técnicas
+
+---
+
+### 3.1 `System.out.println` em Código de Produção
+
+> **CONCLUÍDO** (fevereiro/2026)
+
+**Solução aplicada:** Removidos todos os debug prints:
+
+| Arquivo | O que foi removido |
+|---|---|
+| `ClientViewController.java` | `System.out.println(model.asMap())` |
+| `OrderService.java` | `System.out.println(saved)` |
+| `GlobalExceptionHandler.java` | Dois prints no handler genérico de `Exception` |
+
+---
+
+### 3.2 Flash Messages Nunca Exibem (Pedidos, Produtos e Clientes)
+
+> **CONCLUÍDO** (fevereiro/2026)
+
+**Contexto expandido:** O problema era mais amplo do que o descrito originalmente — além de
+produtos, os templates de pedidos e clientes também tinham chaves inconsistentes com os
+seus respectivos controllers.
+
+**Solução aplicada:** Padronização completa para `successMessage` / `errorMessage` em todos
+os módulos:
+
+| Arquivo | Correção |
+|---|---|
+| `orders/list.html` | `${message}` + `messageType` → `${successMessage}` / `${errorMessage}` |
+| `orders/form.html` | Adicionado bloco `successMessage` (só existia `errorMessage`) |
+| `clients/list.html` | `${messagem}` + `messageType` → `${successMessage}` / `${errorMessage}` |
+| `products/list.html` | `${messagem}` + `messageType` → `${successMessage}` / `${errorMessage}` |
+| `ClientViewController.java` | Flash attributes migrados de `messagem`/`messageType` para `successMessage`/`errorMessage` |
+
+`ProductViewController` e `OrderViewController` já enviavam as chaves corretas — não precisaram de alteração.
+
+---
+
+### 3.3 Typo na URL do Botão "Voltar" em Produtos
+
+> **CONCLUÍDO** (fevereiro/2026)
+
+**Solução aplicada:** Corrigido `/admin/produts` → `/admin/products` em `products/form.html`.
+Aproveitado para corrigir também a chave de flash message do formulário: `${erro}` → `${errorMessage}` /
+`${successMessage}`, alinhando com o padrão do restante do projeto.
+
+---
+
+### 3.4 `@Transactional` Faltando em Métodos de Serviço
+
+> **CONCLUÍDO** (fevereiro/2026)
+
+**Solução aplicada:** `@Transactional` adicionado nos quatro métodos:
+
+| Arquivo | Método |
+|---|---|
+| `ClientService.java` | `create(ClientDTO)` |
+| `ClientService.java` | `delete(Long)` |
+| `ProductService.java` | `create(ProductDTO)` |
+| `ProductService.java` | `delete(Long)` |
+
+---
+
+### 3.5 Conversão de Enum Vazia em `OrderViewController`
+
+> **CONCLUÍDO** (fevereiro/2026)
+
+**Solução aplicada:** `@RequestParam(defaultValue = "") OrderStatus status` corrigido para
+`@RequestParam(required = false) OrderStatus status` em `OrderViewController.findAll()`.
+`OrderSpecifications.hasStatus` já tratava `null` como "sem filtro" — nenhuma alteração
+necessária no serviço.
+
+---
+
+### 3.6 `BusinessException` Renderiza Template `error/500`
+
+> **CONCLUÍDO** (fevereiro/2026)
+
+**Solução aplicada:**
+- Criado `templates/error/400.html` com visual adequado para erros de regra de negócio
+  (título "Operação não permitida", mensagem dinâmica via `${message}`, botões "Voltar" e "Dashboard")
+- `GlobalExceptionHandler.handleBusiness()` atualizado para apontar para `error/400` com `status=400`
+- Removidos `System.out.println` remanescentes de `handleGeneric()` (bug 3.1 que não havia sido
+  corrigido no rollback)
+
+---
+
+### 3.7 Formulário de Pedido Existente Posta para Rota Errada
+
+> **CONCLUÍDO** (fevereiro/2026)
+
+**Solução aplicada:** `th:action` tornado dinâmico em `orders/form.html`:
+```html
+th:action="${order != null and order.id != null}
+    ? @{/admin/orders/{id}(id=${order.id})}
+    : @{/admin/orders/new}"
+```
+
+---
+
+### 3.8 Métodos Duplicados (Código Morto) nos Serviços
+
+> **CONCLUÍDO** (fevereiro/2026)
+
+**Solução aplicada:** Métodos duplicados removidos:
+
+| Arquivo | Método removido |
+|---|---|
+| `ClientService.java` | `searchByNameOrPhone(String)` — duplicava `search(String)` |
+| `ProductService.java` | `searchByName(String)` — duplicava `search(String)` |
+
+---
+
+### 3.9 CSRF Desabilitado
+
+> **CONCLUÍDO** (fevereiro/2026)
+
+**Solução aplicada:** Removida a linha `http.csrf(csrf -> csrf.disable())` de `SecurityConfig.java`.
+Todos os formulários de mutação já usavam `th:action` (Thymeleaf injeta o token automaticamente).
+Os `fetch()` existentes são exclusivamente `GET` para APIs de busca — nenhum envia dados de escrita,
+portanto não requerem o header `X-CSRF-TOKEN`.
+
+---
+
+### 3.10 Logo Placeholder no Layout Admin
+
+**Arquivo:** `templates/admin/fragments/layout.html`, linha ~54
+
+**Problema:** Comentário `<!-- Logo placeholder - depois substituímos pelo SVG real -->`
+com emoji no lugar do logo.
+
+**Solução:** Criar/adicionar o SVG ou imagem real do logo Snap Dog.
+
+> ⏳ **Pendente** — requer asset de logo (SVG/imagem) que ainda não existe no projeto.
+
+---
+
+## 4. Infraestrutura e Banco de Dados
+
+---
+
+### 4.1 `ddl-auto=create-drop` em Produção
+
+**Arquivo:** `src/main/resources/application.properties`, linha 5
+
+**Problema crítico:** `spring.jpa.hibernate.ddl-auto=create-drop` destrói e recria
+todas as tabelas a cada restart da aplicação. **Todos os dados são perdidos.**
+
+**Solução:**
+1. Alterar para `validate` em produção (Hibernate valida o schema sem modificar)
+2. Adicionar **Flyway** para gerenciar migrations:
+
+```xml
+<!-- pom.xml -->
+<dependency>
+    <groupId>org.flywaydb</groupId>
+    <artifactId>flyway-core</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.flywaydb</groupId>
+    <artifactId>flyway-database-postgresql</artifactId>
+</dependency>
+```
+
+3. Criar scripts de migration em `src/main/resources/db/migration/`:
+   - `V1__create_initial_schema.sql` — DDL completo das tabelas atuais
+   - `V2__add_product_image_url.sql` — campo `image_url` em `tb_products`
+   - `V3__add_product_active.sql` — campo `active` em `tb_products`
+   - `V4__add_order_origin.sql` — campo `origin` em `tb_orders`
+   - `V5__add_order_delivery_address.sql` — campo `delivery_address` em `tb_orders`
+   - `V6__add_user_client_fk.sql` — campo `client_id` (FK nullable) em `tb_users`
+   - (migrations seguintes conforme novas features)
+
+---
+
+### 4.2 Nome da Classe Principal
+
+> **CONCLUÍDO** (fevereiro/2026)
+
+**Arquivo:** ~~`GreendogdeliveryApplication.java`~~ → `SnapdogDeliveryApplication.java`
+
+**Problema:** O nome da classe ainda refletia o nome antigo do projeto ("Greendog").
+
+**Solução aplicada:** Renomeados `GreendogdeliveryApplication.java` → `SnapdogDeliveryApplication.java`
+e `GreendogdeliveryApplicationTests.java` → `SnapdogDeliveryApplicationTests.java`.
+Nenhuma referência encontrada em `application.properties`.
+
+---
+
+### 4.3 Senha Padrão no `application.properties`
+
+> **CONCLUÍDO** (fevereiro/2026)
+
+**Problema:** Credenciais de banco (`postgresadmin`) hardcoded no arquivo versionado.
+
+**Solução aplicada:** Separação em três profiles:
+
+| Profile | Arquivo | Uso | Versionado |
+|---|---|---|---|
+| `dev` (padrão) | `application-dev.properties` | Desenvolvimento local | Sim |
+| `prod` | `application-prod.properties` | Servidor / produção | **Não** (`.gitignore`) |
+| `test` | `application-test.yml` | Testes automatizados (H2) | Sim |
+
+- `application.properties` mantém apenas configurações comuns e define `spring.profiles.active=dev`
+- `application-prod.properties` usa variáveis de ambiente: `${DB_URL}`, `${DB_USERNAME}`, `${DB_PASSWORD}`
+- `application-prod.properties.example` versionado como referência para o time
+- Ativar produção com `--spring.profiles.active=prod` ou `SPRING_PROFILES_ACTIVE=prod`
+
+---
+
+## 5. Cobertura de Testes
+
+> **CONCLUÍDO** (fevereiro/2026) — Suite de **76 testes** implementada e enviada para `develop`.
+> Resultado: **76 testes, 0 falhas, BUILD SUCCESS**.
+>
+> Infraestrutura corrigida junto com a entrega:
+> - `annotationProcessorPaths` do Lombok movido para `maven-compiler-plugin` no `pom.xml`
+> - `spring-security-test` adicionado ao `pom.xml`
+> - `@Profile("!test")` adicionado ao `DataSeeder` para evitar dados de seed no H2
+> - `NotFoundException` passa a estender `BusinessException`
+>
+> Testes pendentes dependem de funcionalidades ainda não implementadas (seções 1.3, 1.4, 1.5).
+> Consulte `report-test.md` para estratégia detalhada, justificativa por teste e mapa de cobertura.
+
+---
+
+### 5.1 Testes de Serviço (Unitários)
+
+| Classe de Teste | Status | Testes |
+|---|---|---|
+| `ClientServiceTest` | ✅ Concluído | 10 — `create`, `update`, `delete` (com e sem pedidos), `search` paginado |
+| `ProductServiceTest` | ✅ Concluído | 9 — `create`, `update`, `delete`, `search` |
+| `OrderServiceTest` | ✅ Concluído | 16 — `create` (fluxo completo), `updateStatus` (todas as transições válidas e inválidas), `delete` |
+| `DashboardServiceTest` | ✅ Concluído | 7 — `getDashboardSummary` (mocks de repositório), cálculo de crescimento |
+| `CheckoutServiceTest` | ⏳ Pendente | Depende da feature 1.5 (Checkout) |
+
+---
+
+### 5.2 Testes de Controller (Integração)
+
+| Classe de Teste | Status | Testes |
+|---|---|---|
+| `ClientControllerTest` | ✅ Concluído | 3 — `GET /admin/api/clients/search`: com resultado, termo vazio, sem resultado |
+| `ProductControllerTest` | ✅ Concluído | 3 — `GET /admin/api/products/search`: com resultado, termo vazio, sem resultado |
+| `OrderViewControllerTest` | ✅ Concluído | 13 — listagem, criação, atualização de status, exclusão (sucessos e erros) |
+| `StoreControllerTest` | ⏳ Pendente | Depende da feature 1.3 (Catálogo Público) |
+| `CartControllerTest` | ⏳ Pendente | Depende da feature 1.4 (Carrinho) |
+| `CheckoutControllerTest` | ⏳ Pendente | Depende da feature 1.5 (Checkout) |
+
+---
+
+### 5.3 Testes de Repositório
+
+| Classe de Teste | Status | Testes |
+|---|---|---|
+| `OrderRepositoryTest` | ✅ Concluído | 6 — `sumRevenueByCreatedAtBetween`, `findTopSellingProducts`, `existsByClientId` |
+| `ClientRepositoryTest` | ✅ Concluído | 8 — `findByNameContainingIgnoreCaseOrPhoneContaining`, `countByCreatedAt` |
+
+---
+
+## 6. Funcionalidades Futuras (pós v1.0)
+
+Itens identificados como desejáveis mas fora do escopo imediato do lançamento.
+
+| Funcionalidade | Descrição |
+|---|---|
+| **Login com Google (OAuth2)** | `spring-boot-starter-oauth2-client` + configuração no Google Cloud Console. Cria/vincula `Client` automaticamente ao `User`. |
+| **Campo `notes` em `Order`** | Campo `String` (max 500, nullable) para observações do cliente no pedido (ex.: "sem cebola"). Exibido no checkout e visível na área admin. |
+| **E-mail de confirmação de pedido** | Spring Mail + template de e-mail (HTML) enviado após checkout bem-sucedido. |
+| **Notificação de mudança de status** | E-mail ou push notification quando o status do pedido avança (ex.: "Seu pedido saiu para entrega!"). |
+| **Taxa de entrega dinâmica** | Campo `deliveryFee` em `Order`, calculada por CEP/distância ou valor fixo por bairro. Hoje exibe "Grátis" fixo no formulário. |
+| **Cupom de desconto** | Entidade `Coupon` com código, tipo (percentual/fixo), validade e limite de usos. Aplicável no checkout. |
+| **Painel de status do pedido em tempo real** | WebSocket ou polling para o cliente acompanhar `PENDING → PREPARING → OUT_FOR_DELIVERY → DELIVERED` sem recarregar a página. |
+| **Relatórios admin** | Exportação de pedidos em CSV/PDF, gráficos de faturamento por período. |
+| **Múltiplos endereços por cliente** | `Address` como entidade separada vinculada a `Client`. Cliente escolhe o endereço no checkout. |
+| **Avaliação de produtos** | `Review` com nota (1–5) e comentário, visível no catálogo público. |
+| **Estoque** | Campo `stock` em `Product`, decremento no checkout, alerta quando zerado. |
+| **PWA / app mobile** | Progressive Web App com manifest e service worker para experiência mobile-first. |
+| **Gestão de área de entrega** | Definir bairros/CEPs atendidos; validar no checkout se o endereço do cliente está na área coberta. |
+
+---
+
+*Documento gerado em fevereiro/2026. Atualizar conforme decisões de implementação.*
