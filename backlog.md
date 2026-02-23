@@ -362,34 +362,38 @@ poder ativar/desativar produtos do catálogo público.
 
 ### 3.1 `System.out.println` em Código de Produção
 
-Três ocorrências de debug prints que precisam ser removidos:
+> **CONCLUÍDO** (fevereiro/2026)
 
-| Arquivo | Linha | Conteúdo |
-|---|---|---|
-| `ClientViewController.java` | 45 | `System.out.println(model.asMap())` |
-| `OrderService.java` | 82 | `System.out.println(saved)` |
-| `GlobalExceptionHandler.java` | 65–66 | Dois prints no handler genérico de `Exception` |
+**Solução aplicada:** Removidos todos os debug prints:
 
-**Solução:** Remover todos. Se logging for necessário, configurar `org.slf4j.Logger`
-(via `LoggerFactory.getLogger(...)`) — **não usar `@Slf4j`** (proibido pelo AGENTS.md).
+| Arquivo | O que foi removido |
+|---|---|
+| `ClientViewController.java` | `System.out.println(model.asMap())` |
+| `OrderService.java` | `System.out.println(saved)` |
+| `GlobalExceptionHandler.java` | Dois prints no handler genérico de `Exception` |
 
 ---
 
-### 3.2 Flash Messages de Produto Nunca Exibem
+### 3.2 Flash Messages Nunca Exibem (Pedidos, Produtos e Clientes)
 
-**Contexto:** `ProductViewController` envia `"successMessage"` / `"errorMessage"` nos
-`RedirectAttributes`, mas `admin/products/list.html` lê `"messagem"` / `"messageType"`
-(padrão do template de clientes). As mensagens de sucesso/erro em produtos nunca aparecem
-na tela.
+> **CONCLUÍDO** (fevereiro/2026)
 
-**Solução:** Padronizar todos os controllers e templates. Recomendado adotar o padrão
-`"successMessage"` / `"errorMessage"` e atualizar `clients/list.html` para usar as
-mesmas chaves.
+**Contexto expandido:** O problema era mais amplo do que o descrito originalmente — além de
+produtos, os templates de pedidos e clientes também tinham chaves inconsistentes com os
+seus respectivos controllers.
 
-**Arquivos afetados:**
-- `ClientViewController.java` — alterar chaves de flash messages
-- `templates/admin/clients/list.html` — atualizar `th:if` para novas chaves
-- `templates/admin/products/list.html` — já usa o padrão correto (apenas verificar)
+**Solução aplicada:** Padronização completa para `successMessage` / `errorMessage` em todos
+os módulos:
+
+| Arquivo | Correção |
+|---|---|
+| `orders/list.html` | `${message}` + `messageType` → `${successMessage}` / `${errorMessage}` |
+| `orders/form.html` | Adicionado bloco `successMessage` (só existia `errorMessage`) |
+| `clients/list.html` | `${messagem}` + `messageType` → `${successMessage}` / `${errorMessage}` |
+| `products/list.html` | `${messagem}` + `messageType` → `${successMessage}` / `${errorMessage}` |
+| `ClientViewController.java` | Flash attributes migrados de `messagem`/`messageType` para `successMessage`/`errorMessage` |
+
+`ProductViewController` e `OrderViewController` já enviavam as chaves corretas — não precisaram de alteração.
 
 ---
 
@@ -405,7 +409,9 @@ mesmas chaves.
 
 ### 3.4 `@Transactional` Faltando em Métodos de Serviço
 
-Quatro métodos de escrita sem anotação transacional:
+> **CONCLUÍDO** (fevereiro/2026)
+
+**Solução aplicada:** `@Transactional` adicionado nos quatro métodos:
 
 | Arquivo | Método |
 |---|---|
@@ -414,28 +420,16 @@ Quatro métodos de escrita sem anotação transacional:
 | `ProductService.java` | `create(ProductDTO)` |
 | `ProductService.java` | `delete(Long)` |
 
-**Solução:** Adicionar `@Transactional` em cada um.
-
 ---
 
 ### 3.5 Conversão de Enum Vazia em `OrderViewController`
 
-**Arquivo:** `OrderViewController.java`, linha 37
+> **CONCLUÍDO** (fevereiro/2026)
 
-**Problema:** `@RequestParam(defaultValue = "") OrderStatus status` — quando `status` é
-string vazia (`""`), Spring tenta converter para `OrderStatus` e lança
-`ConversionFailedException` (HTTP 500). Deveria retornar todos os pedidos quando sem filtro.
-
-**Solução:**
-```java
-// De:
-@RequestParam(defaultValue = "") OrderStatus status
-// Para:
-@RequestParam(required = false) OrderStatus status
-```
-E ajustar a lógica de serviço/specification para aceitar `null` como "sem filtro"
-(o `OrderSpecifications.hasStatus` já trata `null` corretamente — só falta a correção
-no controller).
+**Solução aplicada:** `@RequestParam(defaultValue = "") OrderStatus status` corrigido para
+`@RequestParam(required = false) OrderStatus status` em `OrderViewController.findAll()`.
+`OrderSpecifications.hasStatus` já tratava `null` como "sem filtro" — nenhuma alteração
+necessária no serviço.
 
 ---
 
@@ -469,12 +463,14 @@ th:action="${order.id != null} ? @{/admin/orders/{id}(id=${order.id})} : @{/admi
 
 ### 3.8 Métodos Duplicados (Código Morto) nos Serviços
 
-| Arquivo | Método duplicado |
-|---|---|
-| `ClientService.java` | `searchByNameOrPhone(String)` (linha ~55) — duplica `search(String)` |
-| `ProductService.java` | `searchByName(String)` (linha ~52) — duplica `search(String)` |
+> **CONCLUÍDO** (fevereiro/2026)
 
-**Solução:** Remover os métodos duplicados não utilizados.
+**Solução aplicada:** Métodos duplicados removidos:
+
+| Arquivo | Método removido |
+|---|---|
+| `ClientService.java` | `searchByNameOrPhone(String)` — duplicava `search(String)` |
+| `ProductService.java` | `searchByName(String)` — duplicava `search(String)` |
 
 ---
 
