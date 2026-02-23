@@ -42,7 +42,7 @@ public class ClientViewController {
         model.addAttribute("totalPages", clientPage.getTotalPages());
         model.addAttribute("totalElements", clientPage.getTotalElements());
         model.addAttribute("search", search);
-
+        System.out.println(model.asMap());
         return "admin/clients/list";
     }
 
@@ -87,9 +87,11 @@ public class ClientViewController {
 
         try {
             clientService.create(client);
-            redirectAttributes.addFlashAttribute("successMessage", "Cliente criado com sucesso!");
+            redirectAttributes.addFlashAttribute("messagem", "Cliente criado com sucesso!");
+            redirectAttributes.addFlashAttribute("messageType", "sucesso");
         } catch (BusinessException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Erro ao criar cliente: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("messagem", "Erro ao criar cliente: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("messageType", "erro");
         }
 
         return "redirect:/admin/clients";
@@ -114,22 +116,26 @@ public class ClientViewController {
 
         try {
             clientService.update(id, client);
-            redirectAttributes.addFlashAttribute("successMessage", "Cliente atualizado com sucesso!");
+            redirectAttributes.addFlashAttribute("messagem", "Cliente atualizado com sucesso!");
+            redirectAttributes.addFlashAttribute("messageType", "sucesso");
         } catch (BusinessException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Erro ao atualizar cliente: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("messagem", "Erro ao atualizar cliente: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("messageType", "erro");
         }
 
         return "redirect:/admin/clients";
     }
 
     @PostMapping("/{id}/delete")
-    public String delete(@PathVariable Long id, Model model) {
+    public String delete(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
 
         try {
             clientService.delete(id);
-            model.addAttribute("successMessage", "Cliente deletado com sucesso!");
+            redirectAttributes.addFlashAttribute("messagem", "Cliente deletado com sucesso!");
+            redirectAttributes.addFlashAttribute("messageType", "sucesso");
         } catch (BusinessException e) {
-            model.addAttribute("errorMessage", "Erro ao deletar cliente: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("messagem", "Erro ao deletar cliente: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("messageType", "erro");
         }
 
         return "redirect:/admin/clients";
