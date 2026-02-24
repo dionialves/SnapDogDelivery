@@ -18,14 +18,14 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ProductOrderDTO {
 
-    @NotNull(message = "Product ID is mandatory")
+    @NotNull(message = "ID do produto é obrigatório")
     private Long productId;
 
     private String productName;
 
-    @NotNull(message = "Quantity is mandatory")
-    @Min(value = 1, message = "Quantity must be at least 1")
-    @Max(value = 20, message = "Quantity must not exceed 20")
+    @NotNull(message = "Quantidade é obrigatória")
+    @Min(value = 1, message = "Quantidade deve ser no mínimo 1")
+    @Max(value = 20, message = "Quantidade não pode exceder 20")
     private Integer quantity;
 
     private BigDecimal priceAtTime;

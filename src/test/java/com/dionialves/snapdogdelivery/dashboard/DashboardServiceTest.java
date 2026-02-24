@@ -131,10 +131,10 @@ class DashboardServiceTest {
     @Test
     @DisplayName("getRecentOrders retorna até 5 pedidos recentes como DTOs")
     void getRecentOrders_retornaListaDTOs() {
-        var client = criarClient();
+        var client = createClient();
 
-        var order1 = criarOrder(1L, client, OrderStatus.PENDING, new BigDecimal("30.00"));
-        var order2 = criarOrder(2L, client, OrderStatus.DELIVERED, new BigDecimal("60.00"));
+        var order1 = createOrder(1L, client, OrderStatus.PENDING, new BigDecimal("30.00"));
+        var order2 = createOrder(2L, client, OrderStatus.DELIVERED, new BigDecimal("60.00"));
 
         when(orderRepository.findAllByOrderByCreatedAtDesc(any(PageRequest.class)))
                 .thenReturn(List.of(order1, order2));
@@ -178,7 +178,7 @@ class DashboardServiceTest {
 
     // --- helpers privados ---
 
-    private Client criarClient() {
+    private Client createClient() {
         var client = new Client();
         client.setId(1L);
         client.setName("João Silva");
@@ -193,7 +193,7 @@ class DashboardServiceTest {
         return client;
     }
 
-    private Order criarOrder(Long id, Client client, OrderStatus status, BigDecimal totalIgnored) {
+    private Order createOrder(Long id, Client client, OrderStatus status, BigDecimal totalIgnored) {
         var order = new Order();
         order.setId(id);
         order.setClient(client);

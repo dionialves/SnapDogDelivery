@@ -22,13 +22,13 @@ class ClientRepositoryTest {
     @Autowired
     private ClientRepository clientRepository;
 
-    private Client joao;
-    private Client maria;
+    private Client clientJohn;
+    private Client clientMary;
 
     @BeforeEach
     void setUp() {
-        joao = clientRepository.save(criarClient("João Silva", "(11) 91234-5678", "joao@email.com"));
-        maria = clientRepository.save(criarClient("Maria Santos", "(21) 99876-5432", "maria@email.com"));
+        clientJohn = clientRepository.save(createClient("João Silva", "(11) 91234-5678", "joao@email.com"));
+        clientMary = clientRepository.save(createClient("Maria Santos", "(21) 99876-5432", "maria@email.com"));
     }
 
     // --- findByNameContainingIgnoreCaseOrPhoneContaining (lista) ---
@@ -116,10 +116,10 @@ class ClientRepositoryTest {
 
     // --- helper privado ---
 
-    private Client criarClient(String nome, String telefone, String email) {
+    private Client createClient(String name, String phone, String email) {
         var c = new Client();
-        c.setName(nome);
-        c.setPhone(telefone);
+        c.setName(name);
+        c.setPhone(phone);
         c.setEmail(email);
         c.setCity("São Paulo");
         c.setState(State.SP);

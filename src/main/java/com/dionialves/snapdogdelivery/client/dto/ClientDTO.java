@@ -23,45 +23,45 @@ public class ClientDTO {
 
     private Long id;
 
-    @NotEmpty(message = "Name is mandatory")
-    @Size(max = 100, message = "Name must be at most {max} characters")
+    @NotEmpty(message = "Nome é obrigatório")
+    @Size(max = 100, message = "Nome deve ter no máximo {max} caracteres")
     private String name;
 
-    @NotEmpty(message = "Phone is mandatory")
-    @Size(max = 15, message = "Phone must be at most {max} characters")
-    @Pattern(regexp = "\\(\\d{2}\\) \\d{5}-\\d{4}", message = "Phone format: (00) 12345-6789")
+    @NotEmpty(message = "Telefone é obrigatório")
+    @Size(max = 15, message = "Telefone deve ter no máximo {max} caracteres")
+    @Pattern(regexp = "\\(\\d{2}\\) \\d{5}-\\d{4}", message = "Formato do telefone: (00) 12345-6789")
     private String phone;
 
-    @NotEmpty(message = "Email is mandatory")
-    @Size(max = 100, message = "Email must be at most {max} characters")
-    @Email(message = "Invalid email format")
+    @NotEmpty(message = "E-mail é obrigatório")
+    @Size(max = 100, message = "E-mail deve ter no máximo {max} caracteres")
+    @Email(message = "Formato de e-mail inválido")
     private String email;
 
-    @NotEmpty(message = "City is mandatory")
-    @Size(max = 100, message = "City must be at most {max} characters")
+    @NotEmpty(message = "Cidade é obrigatória")
+    @Size(max = 100, message = "Cidade deve ter no máximo {max} caracteres")
     private String city;
 
-    @NotNull(message = "State is mandatory")
+    @NotNull(message = "Estado é obrigatório")
     private State state;
 
-    @NotEmpty(message = "Neighborhood is mandatory")
-    @Size(max = 100, message = "Neighborhood must be at most {max} characters")
+    @NotEmpty(message = "Bairro é obrigatório")
+    @Size(max = 100, message = "Bairro deve ter no máximo {max} caracteres")
     private String neighborhood;
 
-    @NotEmpty(message = "Street is mandatory")
-    @Size(max = 100, message = "Street must be at most {max} characters")
+    @NotEmpty(message = "Rua é obrigatória")
+    @Size(max = 100, message = "Rua deve ter no máximo {max} caracteres")
     private String street;
 
-    @NotEmpty(message = "Zip code is mandatory")
-    @Size(max = 9, message = "Zip Code must be at most 9 characters")
-    @Pattern(regexp = "\\d{5}-?\\d{3}", message = "Zip code format: 12345-678")
+    @NotEmpty(message = "CEP é obrigatório")
+    @Size(max = 9, message = "CEP deve ter no máximo 9 caracteres")
+    @Pattern(regexp = "\\d{5}-?\\d{3}", message = "Formato do CEP: 12345-678")
     private String zipCode;
 
-    @NotEmpty(message = "Number is mandatory")
-    @Size(max = 10, message = "Number must be at most {max} characters")
+    @NotEmpty(message = "Número é obrigatório")
+    @Size(max = 10, message = "Número deve ter no máximo {max} caracteres")
     private String number;
 
-    @Size(max = 100, message = "Complement must be at most {max} characters")
+    @Size(max = 100, message = "Complemento deve ter no máximo {max} caracteres")
     private String complement;
     private LocalDate createdAt;
 

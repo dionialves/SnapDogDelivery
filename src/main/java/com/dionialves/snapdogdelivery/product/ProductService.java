@@ -43,7 +43,7 @@ public class ProductService {
 
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(
-                        "Product not found with ID: " + id));
+                        "Produto não encontrado com ID: " + id));
 
         return ProductResponseDTO.fromEntity(product);
 
@@ -78,7 +78,7 @@ public class ProductService {
     public ProductResponseDTO update(Long id, ProductDTO product) {
 
         Product updating = productRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Product not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Produto não encontrado com ID: " + id));
 
         updating.setName(product.getName());
         updating.setPrice(product.getPrice());
@@ -93,7 +93,7 @@ public class ProductService {
     @Transactional
     public void delete(Long id) {
         if (!productRepository.existsById(id))
-            throw new NotFoundException("Product not found with ID: " + id);
+            throw new NotFoundException("Produto não encontrado com ID: " + id);
 
         productRepository.deleteById(id);
     }

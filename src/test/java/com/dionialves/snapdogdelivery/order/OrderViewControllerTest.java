@@ -68,7 +68,7 @@ class OrderViewControllerTest {
     @Test
     @DisplayName("GET /admin/orders retorna lista de pedidos no modelo")
     void findAll_retornaListaPedidos() throws Exception {
-        var dto = pedidoResponseDTO(1L, "PENDING");
+        var dto = orderResponseDTO(1L, "PENDING");
         var page = new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1);
 
         when(orderService.search(any(), any(), eq(0), eq(10))).thenReturn(page);
@@ -82,7 +82,7 @@ class OrderViewControllerTest {
     @Test
     @DisplayName("GET /admin/orders com filtro de status retorna pedidos filtrados")
     void findAll_comFiltroStatus_retornaPedidosFiltrados() throws Exception {
-        var dto = pedidoResponseDTO(2L, "PREPARING");
+        var dto = orderResponseDTO(2L, "PREPARING");
         var page = new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1);
 
         when(orderService.search(eq(OrderStatus.PREPARING), any(), eq(0), eq(10))).thenReturn(page);
@@ -110,7 +110,7 @@ class OrderViewControllerTest {
     @Test
     @DisplayName("GET /admin/orders/{id} retorna formulário com pedido existente")
     void findById_pedidoExistente_retornaFormulario() throws Exception {
-        var dto = pedidoResponseDTO(5L, "PENDING");
+        var dto = orderResponseDTO(5L, "PENDING");
         when(orderService.findById(5L)).thenReturn(dto);
 
         mockMvc.perform(get("/admin/orders/5"))
@@ -124,7 +124,7 @@ class OrderViewControllerTest {
     @Test
     @DisplayName("POST /admin/orders/new com dados válidos cria pedido e redireciona")
     void create_dadosValidos_redirecionaComSucesso() throws Exception {
-        when(orderService.create(any(OrderCreateDTO.class))).thenReturn(pedidoResponseDTO(10L, "PENDING"));
+        when(orderService.create(any(OrderCreateDTO.class))).thenReturn(orderResponseDTO(10L, "PENDING"));
 
         mockMvc.perform(post("/admin/orders/new")
                         .param("clientId", "1")
@@ -235,7 +235,7 @@ class OrderViewControllerTest {
 
     // ---------- Auxiliares ----------
 
-    private OrderResponseDTO pedidoResponseDTO(Long id, String status) {
+    private OrderResponseDTO orderResponseDTO(Long id, String status) {
         var client = new ClientDTO();
         client.setId(1L);
         client.setName("Cliente Teste");

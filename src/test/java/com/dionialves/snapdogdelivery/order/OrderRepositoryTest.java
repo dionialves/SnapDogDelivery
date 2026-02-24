@@ -66,8 +66,8 @@ class OrderRepositoryTest {
     @DisplayName("countByCreatedAtBetween conta apenas pedidos no intervalo")
     void countByCreatedAtBetween_contaApenasNoPeriodo() {
         var today = LocalDate.now();
-        orderRepository.save(criarPedido(today.atTime(10, 0)));
-        orderRepository.save(criarPedido(today.minusDays(1).atTime(10, 0)));
+        orderRepository.save(createOrder(today.atTime(10, 0)));
+        orderRepository.save(createOrder(today.minusDays(1).atTime(10, 0)));
 
         long count = orderRepository.countByCreatedAtBetween(
                 today.atStartOfDay(),
@@ -82,8 +82,8 @@ class OrderRepositoryTest {
     @DisplayName("sumRevenueByCreatedAtBetween soma apenas receita do período")
     void sumRevenueByCreatedAtBetween_somaApenasDoPeriodo() {
         var today = LocalDate.now();
-        orderRepository.save(criarPedidoComProduto(today.atTime(10, 0), 2));         // 2 × 15.90 = 31.80
-        orderRepository.save(criarPedidoComProduto(today.minusDays(1).atTime(10, 0), 1)); // 15.90
+        orderRepository.save(createOrderWithProduct(today.atTime(10, 0), 2));         // 2 × 15.90 = 31.80
+        orderRepository.save(createOrderWithProduct(today.minusDays(1).atTime(10, 0), 1)); // 15.90
 
         BigDecimal revenue = orderRepository.sumRevenueByCreatedAtBetween(
                 today.atStartOfDay(),
@@ -109,7 +109,7 @@ class OrderRepositoryTest {
     @Test
     @DisplayName("existsByClientId retorna true quando cliente tem pedido")
     void existsByClientId_comPedido_retornaTrue() {
-        orderRepository.save(criarPedido(LocalDateTime.now()));
+        orderRepository.save(createOrder(LocalDateTime.now()));
 
         assertThat(orderRepository.existsByClientId(client.getId())).isTrue();
     }
@@ -125,8 +125,8 @@ class OrderRepositoryTest {
     @Test
     @DisplayName("findTopSellingProducts retorna produtos ordenados por quantidade vendida")
     void findTopSellingProducts_retornaOrdenadoPorQuantidade() {
-        orderRepository.save(criarPedidoComProduto(LocalDateTime.now(), 3));
-        orderRepository.save(criarPedidoComProduto(LocalDateTime.now().minusHours(1), 5));
+        orderRepository.save(createOrderWithProduct(LocalDateTime.now(), 3));
+        orderRepository.save(createOrderWithProduct(LocalDateTime.now().minusHours(1), 5));
 
         var result = orderRepository.findTopSellingProducts(PageRequest.of(0, 5));
 
@@ -137,7 +137,7 @@ class OrderRepositoryTest {
 
     // --- helpers privados ---
 
-    private Order criarPedido(LocalDateTime createdAt) {
+    private Order createOrder(LocalDateTime createdAt) {
         var order = new Order();
         order.setClient(client);
         order.setCreatedAt(createdAt);
@@ -145,9 +145,9 @@ class OrderRepositoryTest {
         return order;
     }
 
-    private Order criarPedidoComProduto(LocalDateTime createdAt, int quantidade) {
-        var order = criarPedido(createdAt);
-        var po = new ProductOrder(product, order, quantidade, product.getPrice());
+    private Order createOrderWithProduct(LocalDateTime createdAt, int quantity) {
+        var order = createOrder(createdAt);
+        var po = new ProductOrder(product, order, quantity, product.getPrice());
         order.getProductOrders().add(po);
         return order;
     }

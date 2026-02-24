@@ -19,11 +19,11 @@ public class ProductDTO {
 
     private Long id;
 
-    @NotEmpty(message = "Name is mandatory")
+    @NotEmpty(message = "Nome é obrigatório")
     private String name;
 
-    @NotNull(message = "Price is mandatory")
-    @DecimalMin(value = "0.01", message = "Price must be positive")
+    @NotNull(message = "Preço é obrigatório")
+    @DecimalMin(value = "0.01", message = "Preço deve ser maior que zero")
     private BigDecimal price;
 
     private String description;

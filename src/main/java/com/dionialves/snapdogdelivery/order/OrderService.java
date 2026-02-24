@@ -34,7 +34,7 @@ public class OrderService {
 
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(
-                        "Order not found with ID: " + id));
+                        "Pedido não encontrado com ID: " + id));
 
         return OrderResponseDTO.fromEntity(order);
     }
@@ -70,7 +70,7 @@ public class OrderService {
 
         Client client = clientRepository.findById(dto.getClientId())
                 .orElseThrow(() -> new NotFoundException(
-                        "Client not found with ID: " + dto.getClientId()));
+                        "Cliente não encontrado com ID: " + dto.getClientId()));
 
         Order order = new Order();
         order.setClient(client);
@@ -87,21 +87,21 @@ public class OrderService {
     @Transactional
     public void updateStatus(Long id, OrderStatus newStatus) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Order not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Pedido não encontrado com ID: " + id));
 
         OrderStatus currentStatus = order.getStatus();
 
         if (currentStatus.isFinal()) {
-            throw new BusinessException("Orders with status '"
-                    + currentStatus.name() + "' cannot be changed");
+            throw new BusinessException("Pedidos com status '"
+                    + currentStatus.name() + "' não podem ser alterados");
         }
 
         if (newStatus == OrderStatus.CANCELED) {
             if (!currentStatus.canCancel()) {
-                throw new BusinessException("Order can only be canceled in PENDING status");
+                throw new BusinessException("Pedido só pode ser cancelado no status PENDENTE");
             }
         } else if (!currentStatus.canAdvanceTo(newStatus)) {
-            throw new BusinessException("Invalid status transition: "
+            throw new BusinessException("Transição de status inválida: "
                     + currentStatus.name() + " → " + newStatus.name());
         }
 
@@ -110,15 +110,15 @@ public class OrderService {
 
     public void update(Long id, OrderCreateDTO orderDTO) {
         if (!orderRepository.existsById(id))
-            throw new NotFoundException("Order not found with ID: " + id);
+            throw new NotFoundException("Pedido não encontrado com ID: " + id);
 
-        throw new BusinessException("Orders cannot be modified after creation");
+        throw new BusinessException("Pedidos não podem ser modificados após a criação");
     }
 
     public void delete(Long id) {
         if (!orderRepository.existsById(id)) {
             throw new NotFoundException(
-                    "Order not found with ID: " + id);
+                    "Pedido não encontrado com ID: " + id);
         }
         orderRepository.deleteById(id);
     }
@@ -129,7 +129,7 @@ public class OrderService {
 
             Product product = productRepository.findById(productOrderDTO.getProductId())
                     .orElseThrow(() -> new NotFoundException(
-                            "Product not found with ID: " + productOrderDTO.getProductId()));
+                            "Produto não encontrado com ID: " + productOrderDTO.getProductId()));
 
             order.addProduct(product, productOrderDTO.getQuantity(), product.getPrice());
         }

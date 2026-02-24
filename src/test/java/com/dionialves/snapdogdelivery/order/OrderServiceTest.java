@@ -198,7 +198,7 @@ class OrderServiceTest {
 
         assertThatThrownBy(() -> orderService.updateStatus(1L, OrderStatus.CANCELED))
                 .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("PENDING");
+                .hasMessageContaining("PENDENTE");
     }
 
     @Test

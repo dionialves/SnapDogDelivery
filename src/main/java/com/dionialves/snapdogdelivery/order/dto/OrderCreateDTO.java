@@ -23,11 +23,11 @@ import com.dionialves.snapdogdelivery.productorder.dto.ProductOrderDTO;
 @AllArgsConstructor
 public class OrderCreateDTO {
 
-    @NotNull(message = "CLient ID is madatory")
+    @NotNull(message = "ID do cliente é obrigatório")
     private Long clientId;
 
-    @NotEmpty(message = "Order must have at least one product")
-    @Size(min = 1, max = 50, message = "Order must have between {min} and {max} products")
+    @NotEmpty(message = "O pedido deve ter pelo menos um produto")
+    @Size(min = 1, max = 50, message = "O pedido deve ter entre {min} e {max} produtos")
     @Valid
     private List<ProductOrderDTO> products;
 

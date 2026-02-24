@@ -286,7 +286,7 @@ O `UserDTO` existe no código mas não é usado por nenhum controller.
   - `templates/admin/users/list.html`
   - `templates/admin/users/form.html`
 
-- **Sidebar** (`layout.html`) — adicionar link "Users" visível apenas para `SUPER_ADMIN`
+ **Sidebar** (`layout.html`) — adicionar link "Users" visível apenas para `SUPER_ADMIN`
 
 ---
 

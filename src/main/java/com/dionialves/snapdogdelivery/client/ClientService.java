@@ -45,7 +45,7 @@ public class ClientService {
 
         Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(
-                        "Client not found with ID: " + id));
+                        "Cliente não encontrado com ID: " + id));
 
         return ClientDTO.fromEntity(client);
 
@@ -62,20 +62,20 @@ public class ClientService {
 
     public ClientDTO create(ClientDTO client) {
 
-        Client salved = new Client();
-        salved.setName(client.getName());
-        salved.setPhone(client.getPhone());
-        salved.setEmail(client.getEmail());
-        salved.setCity(client.getCity());
-        salved.setState(client.getState());
-        salved.setNeighborhood(client.getNeighborhood());
-        salved.setStreet(client.getStreet());
-        salved.setZipCode(client.getZipCode());
-        salved.setNumber(client.getNumber());
-        salved.setComplement(client.getComplement());
+        Client saved = new Client();
+        saved.setName(client.getName());
+        saved.setPhone(client.getPhone());
+        saved.setEmail(client.getEmail());
+        saved.setCity(client.getCity());
+        saved.setState(client.getState());
+        saved.setNeighborhood(client.getNeighborhood());
+        saved.setStreet(client.getStreet());
+        saved.setZipCode(client.getZipCode());
+        saved.setNumber(client.getNumber());
+        saved.setComplement(client.getComplement());
 
-        clientRepository.save(salved);
-        return ClientDTO.fromEntity(salved);
+        clientRepository.save(saved);
+        return ClientDTO.fromEntity(saved);
 
     }
 
@@ -84,7 +84,7 @@ public class ClientService {
 
         Client updating = clientRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(
-                        "Client not found with ID: " + id));
+                        "Cliente não encontrado com ID: " + id));
 
         updating.setName(client.getName());
         updating.setPhone(client.getPhone());
@@ -105,11 +105,11 @@ public class ClientService {
     public void delete(Long id) {
 
         if (!clientRepository.existsById(id)) {
-            throw new NotFoundException("Client not found with ID: " + id);
+            throw new NotFoundException("Cliente não encontrado com ID: " + id);
         }
 
         if (orderRepository.existsByClientId(id)) {
-            throw new BusinessException("Customer cannot be deleted because it is associated with orders");
+            throw new BusinessException("Cliente não pode ser excluído pois possui pedidos associados");
         }
         clientRepository.deleteById(id);
 

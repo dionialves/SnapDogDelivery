@@ -98,9 +98,9 @@ public class UserService {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
-            String emailAtual = auth.getName();
+            String currentEmail = auth.getName();
             userRepository.findById(id).ifPresent(user -> {
-                if (user.getEmail().equals(emailAtual)) {
+                if (user.getEmail().equals(currentEmail)) {
                     throw new BusinessException("Não é possível excluir o próprio usuário autenticado");
                 }
             });
