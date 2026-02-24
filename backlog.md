@@ -2,6 +2,7 @@
 
 Documento de levantamento completo de funcionalidades pendentes para a versão 1.0.
 Baseado na análise do código-fonte atual (fevereiro/2026).
+Última atualização: fevereiro/2026.
 
 ---
 
@@ -71,23 +72,23 @@ O cadastro público adiciona `role = CUSTOMER` à enum `Role` e cria um relacion
 
 ### 1.2 Imagem de Produto
 
-**Contexto:** O catálogo público precisa exibir foto dos produtos. A entidade `Product`
-atual não possui campo de imagem.
+> **CONCLUÍDO** (fevereiro/2026) — Campos `imageUrl` e `active` adicionados à entidade `Product`, DTOs e formulário admin.
 
-**O que alterar:**
+**Solução aplicada:**
 
-- **Entidade `Product`** — adicionar campos:
-  - `imageUrl` (`String`, nullable, max 500) — URL externa da imagem (ex.: Imgur, CDN próprio)
-  - Futuramente: `imagePath` para upload local (ver item 1.2.1)
+- **Entidade `Product`** — adicionados campos:
+  - `imageUrl` (`String`, nullable, max 500) — URL externa da imagem
+  - `active` (`boolean`, default `true`) — controla visibilidade no catálogo público
 
-- **`ProductDTO`** — adicionar campo `imageUrl` com `@Size(max = 500)`
+- **`ProductDTO`** — campo `imageUrl` com `@Size(max = 500)` e campo `active`
 
-- **`ProductResponseDTO`** — incluir `imageUrl` na resposta
+- **`ProductResponseDTO`** — inclui `imageUrl` e `active` na resposta
 
-- **Formulário admin (`admin/products/form.html`)** — adicionar campo de URL de imagem
-  com preview em tempo real via JavaScript
+- **Formulário admin (`admin/products/form.html`)** — campo de URL de imagem com preview e checkbox de ativo/inativo
 
 **1.2.1 — Upload de arquivo (fase seguinte ao imageUrl):**
+
+> ⏳ **Pendente** — a URL externa foi implementada; o upload de arquivo local/S3 ainda não.
 
 - Dependência `spring-boot-starter-web` já inclui suporte a `MultipartFile`
 - Criar `StorageService` — salva arquivo em diretório configurável (`/uploads/products/`)
@@ -100,10 +101,11 @@ atual não possui campo de imagem.
 
 ### 1.3 Catálogo Público de Produtos
 
+> ⏳ **Pendente** — campo `active` já existe na entidade (ver 1.2 concluído); falta o `StoreController` e os templates públicos.
+
 **Contexto:** Página principal da loja — lista todos os produtos disponíveis com foto,
 nome, descrição e preço. O catálogo é **público** (não requer login). O login só é exigido
-quando o cliente tenta adicionar um produto ao carrinho — nesse momento é redirecionado
-para `/login` e, após autenticação, retorna ao catálogo.
+quando o cliente tenta adicionar um produto ao carrinho.
 
 **O que criar:**
 
@@ -115,9 +117,6 @@ para `/login` e, após autenticação, retorna ao catálogo.
   - `GET /catalog` → lista todos os produtos ativos, paginados (público)
   - `GET /catalog/{id}` → detalhe de um produto — foto ampliada, descrição completa, preço,
     botão "Add to cart" (público para visualizar; exige login ao clicar)
-
-- **Campo `active` no `Product`** (booleano, default `true`) — permite o admin ocultar
-  produtos do catálogo sem excluí-los. Filtrar no `StoreController` por `active = true`.
 
 - **Templates:**
   - `templates/public/store/catalog.html` — grid de cards de produtos com foto, nome,
@@ -166,18 +165,19 @@ Implementação via sessão HTTP (sem persistência em banco — se fechar o bro
 
 ### 1.5 Checkout e Finalização do Pedido
 
+> ⏳ **Parcialmente concluído** — `OrderOrigin` e campo `origin` já implementados (fevereiro/2026); falta o `CheckoutController` e templates públicos.
+
 **Contexto:** Cliente revisa o carrinho, confirma endereço de entrega e finaliza o pedido.
 O pedido é criado na entidade `Order` já existente com origem `ONLINE`.
 
 **Alterações na entidade `Order`:**
 
-- Adicionar campo `origin` (enum `OrderOrigin`: `ONLINE`, `MANUAL`, default `MANUAL`)
-- Adicionar campo `deliveryAddress` (`String`, nullable) — snapshot do endereço de entrega
-  no momento do pedido (mesmo padrão de `priceAtTime` no `ProductOrder`)
+- ✅ Campo `origin` (enum `OrderOrigin`: `ONLINE`, `MANUAL`, default `MANUAL`) — **concluído**
+- ⏳ Campo `deliveryAddress` (`String`, nullable) — snapshot do endereço de entrega — **pendente**
 
 **O que criar:**
 
-- **Enum `OrderOrigin`** em `com.dionialves.snapdogdelivery.order`
+- ✅ **Enum `OrderOrigin`** em `com.dionialves.snapdogdelivery.order` — **concluído**
 
 - **Pacote `com.dionialves.snapdogdelivery.checkout`**
   - `CheckoutController` (`@Controller`, `@RequestMapping("/checkout")`)
@@ -254,105 +254,84 @@ de delivery.
 
 ### 2.1 Gerenciamento de Usuários Admin
 
-**Contexto:** Atualmente não existe nenhuma interface para criar, editar ou excluir usuários
-administrativos. Os únicos usuários existem porque o `DataSeeder` os cria na inicialização.
-O `UserDTO` existe no código mas não é usado por nenhum controller.
+> **CONCLUÍDO** (fevereiro/2026)
 
-**O que criar:**
+**Solução aplicada:**
 
-- **`UserService`** (`com.dionialves.snapdogdelivery.user`)
-  - `findAll(int page, int size)` — lista paginada
-  - `findById(Long)` — ou lança `NotFoundException`
-  - `create(UserCreateDTO)` — valida e-mail único, encoda senha com `BCryptPasswordEncoder`
-  - `update(Long, UserUpdateDTO)` — permite alterar nome, role e senha
-  - `delete(Long)` — não permite excluir o próprio usuário logado
-
-- **`UserController`** (`@RestController`, `@RequestMapping("/admin/api/users")`) — endpoints JSON
-
-- **`UserViewController`** (`@Controller`, `@RequestMapping("/admin/users")`) — CRUD via Thymeleaf:
-  - `GET /admin/users` → lista paginada de usuários
+- **`UserService`** — `findAll`, `findById`, `create`, `update`, `delete` (guard contra auto-exclusão)
+- **`UserController`** (`@RestController`, `/admin/api/users`) — endpoints JSON
+- **`UserViewController`** (`@Controller`, `/admin/users`) — CRUD completo via Thymeleaf:
+  - `GET /admin/users` → lista paginada
   - `GET /admin/users/new` → formulário de criação
   - `POST /admin/users/new` → cria usuário
   - `GET /admin/users/{id}` → formulário de edição
   - `POST /admin/users/{id}` → atualiza usuário
   - `POST /admin/users/{id}/delete` → remove usuário
-
-- **DTOs:**
-  - `UserCreateDTO` — name, email, password, role (com validações)
-  - `UserUpdateDTO` — name, role, password (opcional — só atualiza se preenchida)
-  - `UserResponseDTO` — id, name, email, role, createdAt (sem senha)
-
-- **Templates:**
-  - `templates/admin/users/list.html`
-  - `templates/admin/users/form.html`
-
- **Sidebar** (`layout.html`) — adicionar link "Users" visível apenas para `SUPER_ADMIN`
+- **DTOs:** `UserCreateDTO`, `UserUpdateDTO`, `UserResponseDTO` (sem senha)
+- **Templates:** `admin/users/list.html` e `admin/users/form.html`
+- **Sidebar** — link "Users" adicionado ao `layout.html`, visível apenas para `SUPER_ADMIN`
+- **`UserDTO.java` legado excluído** — não era usado por nenhum controller
 
 ---
 
 ### 2.2 Controle de Acesso por Role
 
-**Contexto:** A enum `Role` tem três níveis (`USER`, `ADMIN`, `SUPER_ADMIN`) mas o
-`SecurityConfig` atual só exige `authenticated()` — qualquer usuário logado acessa tudo.
-Com a adição de `CUSTOMER`, é essencial separar claramente o acesso.
+> **CONCLUÍDO** (fevereiro/2026)
 
-**O que implementar:**
+**Solução aplicada:**
 
-- **`SecurityConfig`** — adicionar `hasRole()` nas rotas admin:
+- **`SecurityConfig`** — `hasRole()` aplicado nas rotas admin:
   - `/admin/users/**` → apenas `SUPER_ADMIN`
   - `/admin/**` (restante) → `ADMIN` ou `SUPER_ADMIN`
-
-- **Templates** — ocultar links de menu com `sec:authorize` (Thymeleaf Security extras):
-  - Link "Users" no sidebar → só aparece para `SUPER_ADMIN`
-  - Botões de exclusão de pedidos/clientes → considerar restringir a `SUPER_ADMIN`
-
-- **Dependência a adicionar no `pom.xml`:**
-  ```xml
-  <dependency>
-      <groupId>org.thymeleaf.extras</groupId>
-      <artifactId>thymeleaf-extras-springsecurity6</artifactId>
-  </dependency>
-  ```
+- **Role `CUSTOMER`** adicionada à enum `Role`
+- **Templates** — `sec:authorize` aplicado via `thymeleaf-extras-springsecurity6`:
+  - Link "Users" no sidebar visível apenas para `SUPER_ADMIN`
+- **`thymeleaf-extras-springsecurity6`** adicionado ao `pom.xml`
 
 ---
 
 ### 2.3 Campo de Imagem no Formulário Admin de Produto
 
-**Contexto:** Após adicionar `imageUrl` e suporte a upload na entidade `Product` (item 1.2),
-o formulário admin precisa ser atualizado.
+> **PARCIALMENTE CONCLUÍDO** (fevereiro/2026) — campo `imageUrl` com preview implementado; upload de arquivo ainda pendente (ver 1.2.1).
 
-**O que alterar:**
+**Solução aplicada:**
 
-- `templates/admin/products/form.html`:
-  - Campo de texto para `imageUrl` com preview da imagem em tempo real
-  - Campo de upload de arquivo (`<input type="file">`) como alternativa
-  - JavaScript para alternar entre os dois modos e exibir preview
+- `templates/admin/products/form.html` — campo de texto para `imageUrl` com preview em tempo real e checkbox para `active`
+
+**Ainda pendente:**
+
+- Campo de upload de arquivo (`<input type="file">`) como alternativa à URL
+- JavaScript para alternar entre os dois modos
 
 ---
 
 ### 2.4 Campo `origin` Visível na Área Admin
 
-**Contexto:** Com pedidos podendo vir de duas origens (`ONLINE` e `MANUAL`), o admin
-precisa distingui-los.
+> **PARCIALMENTE CONCLUÍDO** (fevereiro/2026) — `OrderOrigin` implementado no backend; templates ainda pendentes.
 
-**O que alterar:**
+**Solução aplicada:**
 
-- `templates/admin/orders/list.html` — adicionar coluna ou badge "Origin" (Online / Manual)
-- `templates/admin/orders/form.html` — exibir origin no modo de visualização do pedido
-- Filtro opcional por origin na listagem de pedidos
+- Enum `OrderOrigin` (`ONLINE`, `MANUAL`) criada
+- Campo `origin` adicionado à entidade `Order`, `OrderCreateDTO` e `OrderResponseDTO`
+- `OrderService.create()` aplica `MANUAL` como default quando `origin` não é informado
+
+**Ainda pendente:**
+
+- `templates/admin/orders/list.html` — coluna ou badge "Origem" (Online / Manual)
+- `templates/admin/orders/form.html` — exibir origin na visualização do pedido
+- Filtro opcional por origin na listagem
 
 ---
 
 ### 2.5 Campo `active` no Gerenciamento de Produtos
 
-**Contexto:** Após adicionar o campo `active` em `Product` (item 1.3), o admin precisa
-poder ativar/desativar produtos do catálogo público.
+> **CONCLUÍDO** (fevereiro/2026)
 
-**O que alterar:**
+**Solução aplicada:**
 
-- `templates/admin/products/list.html` — coluna de status (Active/Inactive) com toggle
-- `templates/admin/products/form.html` — checkbox "Show in public catalog"
-- `ProductService.update()` — processar o campo `active`
+- `templates/admin/products/list.html` — coluna de status (Ativo/Inativo) com badge visual
+- `templates/admin/products/form.html` — checkbox "Exibir no catálogo público"
+- `ProductService.update()` — processa o campo `active`
 
 ---
 
@@ -496,6 +475,37 @@ com emoji no lugar do logo.
 
 ---
 
+### 3.11 Variáveis em Português e Mensagens de API em Inglês
+
+> **CONCLUÍDO** (fevereiro/2026) — commit `0e1258d` em `develop`.
+
+**Problema:** Identificadores Java em português (`salved`, `emailAtual`, `criarPedido`, `joao`, `maria`,
+`criarClient` etc.) misturados com mensagens de API totalmente em inglês (`"Client not found with ID"`,
+`"Order must have at least one product"`, `"CLient ID is madatory"` — com typos).
+
+**Solução aplicada:**
+
+| Arquivo | Alteração |
+|---|---|
+| `ClientService.java` | `salved` → `saved`; 3 mensagens de `NotFoundException` e 1 de `BusinessException` traduzidas |
+| `ClientDTO.java` | 21 mensagens de validação Jakarta traduzidas para PT-BR |
+| `OrderService.java` | 5 mensagens de `NotFoundException` e 3 de `BusinessException` traduzidas |
+| `OrderCreateDTO.java` | Typos `"CLient ID is madatory"` corrigidos; 3 mensagens traduzidas |
+| `ProductService.java` | 3 mensagens de `NotFoundException` traduzidas |
+| `ProductDTO.java` | 3 mensagens de validação traduzidas |
+| `ProductOrderDTO.java` | 4 mensagens de validação traduzidas |
+| `GlobalExceptionHandler.java` | 6 strings de resposta traduzidas |
+| `CustomUserDetailsService.java` | Mensagem `"User not found with email"` traduzida |
+| `UserService.java` | `emailAtual` → `currentEmail` |
+| `UserDTO.java` | **Excluído** (legado sem uso em nenhum controller) |
+| `ClientRepositoryTest.java` | `joao`/`maria` → `clientJohn`/`clientMary`; `criarClient` → `createClient`; parâmetros `nome`/`telefone` → `name`/`phone` |
+| `OrderRepositoryTest.java` | `criarPedido` → `createOrder`; `criarPedidoComProduto` → `createOrderWithProduct`; `quantidade` → `quantity` |
+| `OrderViewControllerTest.java` | `pedidoResponseDTO` → `orderResponseDTO` |
+| `DashboardServiceTest.java` | `criarClient` → `createClient`; `criarOrder` → `createOrder` |
+| `OrderServiceTest.java` | Asserção `"PENDING"` → `"PENDENTE"` (consequência da tradução da mensagem) |
+
+---
+
 ## 4. Infraestrutura e Banco de Dados
 
 ---
@@ -571,17 +581,20 @@ Nenhuma referência encontrada em `application.properties`.
 
 ## 5. Cobertura de Testes
 
-> **CONCLUÍDO** (fevereiro/2026) — Suite de **76 testes** implementada e enviada para `develop`.
-> Resultado: **76 testes, 0 falhas, BUILD SUCCESS**.
+> **CONCLUÍDO** (fevereiro/2026) — Suite de **101 testes** implementada, 0 falhas, BUILD SUCCESS.
 >
-> Infraestrutura corrigida junto com a entrega:
+> **Evolução da suite:**
+> - Entrega inicial: 76 testes (serviços, controllers, repositórios)
+> - Adicionados 25 testes para o módulo `user` (`UserServiceTest`, `UserControllerTest`, `UserViewControllerTest`)
+> - Renomeação de variáveis/métodos auxiliares em PT-BR para inglês (fevereiro/2026)
+>
+> **Infraestrutura corrigida junto com a entrega inicial:**
 > - `annotationProcessorPaths` do Lombok movido para `maven-compiler-plugin` no `pom.xml`
 > - `spring-security-test` adicionado ao `pom.xml`
 > - `@Profile("!test")` adicionado ao `DataSeeder` para evitar dados de seed no H2
 > - `NotFoundException` passa a estender `BusinessException`
 >
 > Testes pendentes dependem de funcionalidades ainda não implementadas (seções 1.3, 1.4, 1.5).
-> Consulte `report-test.md` para estratégia detalhada, justificativa por teste e mapa de cobertura.
 
 ---
 
@@ -593,6 +606,7 @@ Nenhuma referência encontrada em `application.properties`.
 | `ProductServiceTest` | ✅ Concluído | 9 — `create`, `update`, `delete`, `search` |
 | `OrderServiceTest` | ✅ Concluído | 16 — `create` (fluxo completo), `updateStatus` (todas as transições válidas e inválidas), `delete` |
 | `DashboardServiceTest` | ✅ Concluído | 7 — `getDashboardSummary` (mocks de repositório), cálculo de crescimento |
+| `UserServiceTest` | ✅ Concluído | 12 — `create`, `update`, `delete` (guard de auto-exclusão), `findById`, `findAll` |
 | `CheckoutServiceTest` | ⏳ Pendente | Depende da feature 1.5 (Checkout) |
 
 ---
@@ -604,6 +618,8 @@ Nenhuma referência encontrada em `application.properties`.
 | `ClientControllerTest` | ✅ Concluído | 3 — `GET /admin/api/clients/search`: com resultado, termo vazio, sem resultado |
 | `ProductControllerTest` | ✅ Concluído | 3 — `GET /admin/api/products/search`: com resultado, termo vazio, sem resultado |
 | `OrderViewControllerTest` | ✅ Concluído | 13 — listagem, criação, atualização de status, exclusão (sucessos e erros) |
+| `UserControllerTest` | ✅ Concluído | 3 — `GET /admin/api/users`: listagem paginada, sem usuários, página inválida |
+| `UserViewControllerTest` | ✅ Concluído | 10 — listagem, criação, edição, exclusão (sucessos e erros) |
 | `StoreControllerTest` | ⏳ Pendente | Depende da feature 1.3 (Catálogo Público) |
 | `CartControllerTest` | ⏳ Pendente | Depende da feature 1.4 (Carrinho) |
 | `CheckoutControllerTest` | ⏳ Pendente | Depende da feature 1.5 (Checkout) |
@@ -641,4 +657,4 @@ Itens identificados como desejáveis mas fora do escopo imediato do lançamento.
 
 ---
 
-*Documento gerado em fevereiro/2026. Atualizar conforme decisões de implementação.*
+*Documento gerado em fevereiro/2026. Última atualização: fevereiro/2026 — suite em 101 testes, 0 falhas.*
