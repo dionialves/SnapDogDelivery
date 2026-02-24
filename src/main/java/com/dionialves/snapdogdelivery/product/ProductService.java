@@ -66,6 +66,8 @@ public class ProductService {
         created.setName(product.getName());
         created.setPrice(product.getPrice());
         created.setDescription(product.getDescription());
+        created.setImageUrl(product.getImageUrl());
+        created.setActive(product.isActive());
 
         productRepository.save(created);
 
@@ -81,6 +83,8 @@ public class ProductService {
         updating.setName(product.getName());
         updating.setPrice(product.getPrice());
         updating.setDescription(product.getDescription());
+        updating.setImageUrl(product.getImageUrl());
+        updating.setActive(product.isActive());
 
         return ProductResponseDTO.fromEntity(updating);
 

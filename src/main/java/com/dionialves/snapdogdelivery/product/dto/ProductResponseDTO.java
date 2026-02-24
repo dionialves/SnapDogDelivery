@@ -19,6 +19,8 @@ public class ProductResponseDTO {
     private String name;
     private BigDecimal price;
     private String description;
+    private String imageUrl;
+    private boolean active;
 
     public static ProductResponseDTO fromEntity(Product product) {
 
@@ -26,7 +28,9 @@ public class ProductResponseDTO {
                 product.getId(),
                 product.getName(),
                 product.getPrice(),
-                product.getDescription());
+                product.getDescription(),
+                product.getImageUrl(),
+                product.isActive());
 
     }
 }
