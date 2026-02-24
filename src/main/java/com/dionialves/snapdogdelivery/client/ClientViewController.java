@@ -14,6 +14,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.dionialves.snapdogdelivery.client.dto.ClientDTO;
 import com.dionialves.snapdogdelivery.exception.BusinessException;
+import com.dionialves.snapdogdelivery.exception.NotFoundException;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -127,7 +128,7 @@ public class ClientViewController {
         try {
             clientService.delete(id);
             redirectAttributes.addFlashAttribute("successMessage", "Cliente deletado com sucesso!");
-        } catch (BusinessException e) {
+        } catch (NotFoundException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 

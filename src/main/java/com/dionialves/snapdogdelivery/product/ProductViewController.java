@@ -91,7 +91,7 @@ public class ProductViewController {
             productService.create(product);
             redirectAttributes.addFlashAttribute("successMessage", "Produto salvo com sucesso!");
         } catch (BusinessException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Erro ao criar o produto" + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Erro ao criar o produto: " + e.getMessage());
         }
 
         return "redirect:/admin/products";

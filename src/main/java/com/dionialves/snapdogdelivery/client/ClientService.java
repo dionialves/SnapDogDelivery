@@ -101,6 +101,7 @@ public class ClientService {
 
     }
 
+    @Transactional
     public void delete(Long id) {
 
         if (!clientRepository.existsById(id)) {

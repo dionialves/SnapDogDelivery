@@ -59,6 +59,7 @@ public class ProductService {
 
     }
 
+    @Transactional
     public ProductResponseDTO create(ProductDTO product) {
 
         Product created = new Product();
@@ -85,6 +86,7 @@ public class ProductService {
 
     }
 
+    @Transactional
     public void delete(Long id) {
         if (!productRepository.existsById(id))
             throw new NotFoundException("Product not found with ID: " + id);
