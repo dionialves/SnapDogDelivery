@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/fragments/layout :: layout(
+          pageTitle=${pageTitle},
+          activeMenu=${activeMenu},
+          pageSubtitle=${pageSubtitle},
+          headerActions=~{::headerActions},
+          content=~{::content}
+      )}">
+
+<head>
+  <title>Formulário de Usuário</title>
+</head>
+
+<body>
+
+  <th:block th:fragment="headerActions">
+    <a th:href="@{/admin/users}"
+      class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 px-4 py-2 rounded-lg font-medium transition-colors">
+      <i data-lucide="arrow-left" class="w-5 h-5"></i>
+      Voltar
+    </a>
+  </th:block>
+
+  <th:block th:fragment="content">
+
+    <!-- Mensagens de Feedback -->
+    <div th:if="${successMessage}" class="mb-6 p-4 rounded-lg bg-green-100 text-green-800 flex items-center gap-3">
+      <i data-lucide="check-circle" class="w-5 h-5"></i>
+      <span th:text="${successMessage}"></span>
+    </div>
+    <div th:if="${errorMessage}" class="mb-6 p-4 rounded-lg bg-red-100 text-red-800 flex items-center gap-3">
+      <i data-lucide="alert-circle" class="w-5 h-5"></i>
+      <span th:text="${errorMessage}"></span>
+    </div>
+
+    <!-- Formulário: usa action dinâmica — criação ou edição -->
+    <form th:action="${userId != null} ? @{/admin/users/{id}(id=${userId})} : @{/admin/users/new}"
+      th:object="${user}" method="post" class="space-y-6">
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="p-6 border-b border-gray-200">
+          <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+            <i data-lucide="user" class="w-5 h-5 text-snapdog-600"></i>
+            Dados do Usuário
+          </h2>
+        </div>
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          <!-- Nome -->
+          <div>
+            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+              Nome <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="name" th:field="*{name}"
+              th:classappend="${#fields.hasErrors('name')} ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500"
+              placeholder="Nome completo">
+            <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="mt-1 text-sm text-red-500"></p>
+          </div>
+
+          <!-- Perfil -->
+          <div>
+            <label for="role" class="block text-sm font-medium text-gray-700 mb-2">
+              Perfil <span class="text-red-500">*</span>
+            </label>
+            <select id="role" th:field="*{role}"
+              th:classappend="${#fields.hasErrors('role')} ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500 bg-white">
+              <option value="">Selecione um perfil</option>
+              <option th:each="r : ${roles}" th:value="${r.name()}" th:text="${r.name}" th:selected="${r == user.role}">
+              </option>
+            </select>
+            <p th:if="${#fields.hasErrors('role')}" th:errors="*{role}" class="mt-1 text-sm text-red-500"></p>
+          </div>
+
+          <!-- E-mail: exibido como texto somente-leitura na edição, ou campo editável na criação -->
+          <div th:if="${userId == null}">
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+              E-mail <span class="text-red-500">*</span>
+            </label>
+            <input type="email" id="email" th:field="*{email}"
+              th:classappend="${#fields.hasErrors('email')} ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500"
+              placeholder="usuario@exemplo.com">
+            <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="mt-1 text-sm text-red-500"></p>
+          </div>
+          <div th:if="${userId != null}">
+            <label class="block text-sm font-medium text-gray-700 mb-2">E-mail</label>
+            <p th:text="${userEmail}"
+              class="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-600 text-sm">email</p>
+          </div>
+
+          <!-- Senha -->
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+              Senha
+              <span th:if="${userId == null}" class="text-red-500">*</span>
+              <span th:if="${userId != null}" class="text-gray-400 text-xs font-normal">(deixe em branco para manter)</span>
+            </label>
+            <input type="password" id="password" th:field="*{password}"
+              th:classappend="${#fields.hasErrors('password')} ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500"
+              placeholder="Mínimo 6 caracteres"
+              autocomplete="new-password">
+            <p th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="mt-1 text-sm text-red-500"></p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Botões de Ação -->
+      <div class="flex items-center justify-end gap-4">
+        <a th:href="@{/admin/users}"
+          class="px-6 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition-colors">
+          Cancelar
+        </a>
+        <button type="submit"
+          class="px-6 py-2 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg font-medium transition-colors inline-flex items-center gap-2">
+          <i data-lucide="check" class="w-5 h-5"></i>
+          <span th:text="${userId != null} ? 'Salvar Alterações' : 'Criar Usuário'">Criar Usuário</span>
+        </button>
+      </div>
+
+    </form>
+
+  </th:block>
+
+</body>
+
+</html>
