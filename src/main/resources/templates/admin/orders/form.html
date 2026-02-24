@@ -35,7 +35,16 @@
       <span th:text="${errorMessage}"></span>
     </div>
 
+    <!-- Badge de Origem -->
+    <div class="flex items-center gap-2 mb-2">
+      <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+        <i data-lucide="pencil" class="w-3 h-3"></i>
+        Origem: Manual
+      </span>
+    </div>
+
     <form th:action="@{/admin/orders/new}" method="post" id="orderForm" class="space-y-6">
+      <input type="hidden" name="origin" value="MANUAL">
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 

@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import com.dionialves.snapdogdelivery.order.OrderOrigin;
 import com.dionialves.snapdogdelivery.productorder.dto.ProductOrderDTO;
 
 @Getter
@@ -32,4 +33,6 @@ public class OrderCreateDTO {
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    private OrderOrigin origin = OrderOrigin.MANUAL;
 }

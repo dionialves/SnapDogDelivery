@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import com.dionialves.snapdogdelivery.productorder.dto.ProductOrderDTO;
 import com.dionialves.snapdogdelivery.client.dto.ClientDTO;
 import com.dionialves.snapdogdelivery.order.Order;
+import com.dionialves.snapdogdelivery.order.OrderOrigin;
 
 @Getter
 @Setter
@@ -26,6 +27,7 @@ public class OrderResponseDTO {
     private ClientDTO client;
     private List<ProductOrderDTO> products;
     private String status;
+    private OrderOrigin origin;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime createdAt;
@@ -48,6 +50,7 @@ public class OrderResponseDTO {
         dto.setProducts(products);
 
         dto.setStatus(order.getStatus().name());
+        dto.setOrigin(order.getOrigin());
 
         return dto;
     }

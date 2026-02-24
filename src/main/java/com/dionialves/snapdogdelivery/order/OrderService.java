@@ -75,11 +75,11 @@ public class OrderService {
         Order order = new Order();
         order.setClient(client);
         order.setCreatedAt(dto.getCreatedAt());
+        order.setOrigin(dto.getOrigin() != null ? dto.getOrigin() : OrderOrigin.MANUAL);
 
         processProducts(order, dto.getProducts());
         Order saved = orderRepository.save(order);
 
-        System.out.println(saved);
         return OrderResponseDTO.fromEntity(saved);
 
     }
