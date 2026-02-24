@@ -104,7 +104,7 @@ class OrderServiceTest {
     @DisplayName("create com dados válidos persiste e retorna DTO")
     void create_dadosValidos_persisteERetornaDTO() {
         var productOrderDTO = new ProductOrderDTO(1L, null, 2, null);
-        var dto = new OrderCreateDTO(1L, List.of(productOrderDTO), LocalDateTime.now());
+        var dto = new OrderCreateDTO(1L, List.of(productOrderDTO), LocalDateTime.now(), null);
 
         when(clientRepository.findById(1L)).thenReturn(Optional.of(client));
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
@@ -124,7 +124,7 @@ class OrderServiceTest {
     @Test
     @DisplayName("create com cliente inexistente lança NotFoundException")
     void create_clienteInexistente_lancaNotFoundException() {
-        var dto = new OrderCreateDTO(99L, List.of(new ProductOrderDTO(1L, null, 1, null)), LocalDateTime.now());
+        var dto = new OrderCreateDTO(99L, List.of(new ProductOrderDTO(1L, null, 1, null)), LocalDateTime.now(), null);
         when(clientRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> orderService.create(dto))
@@ -137,7 +137,7 @@ class OrderServiceTest {
     @Test
     @DisplayName("create com produto inexistente lança NotFoundException")
     void create_produtoInexistente_lancaNotFoundException() {
-        var dto = new OrderCreateDTO(1L, List.of(new ProductOrderDTO(99L, null, 1, null)), LocalDateTime.now());
+        var dto = new OrderCreateDTO(1L, List.of(new ProductOrderDTO(99L, null, 1, null)), LocalDateTime.now(), null);
         when(clientRepository.findById(1L)).thenReturn(Optional.of(client));
         when(productRepository.findById(99L)).thenReturn(Optional.empty());
 
