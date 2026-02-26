@@ -162,6 +162,8 @@ public class DataSeeder implements CommandLineRunner {
         customer.setZipCode(zipCode);
         customer.setNumber(number);
         customer.setComplement(complement);
+        customer.setPassword(passwordEncoder.encode("cliente123"));
+        customer.setActive(true);
         return customer;
     }
 

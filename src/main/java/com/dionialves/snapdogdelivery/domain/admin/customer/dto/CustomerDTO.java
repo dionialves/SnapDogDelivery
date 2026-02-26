@@ -64,6 +64,7 @@ public class CustomerDTO {
     @Size(max = 100, message = "Complemento deve ter no máximo {max} caracteres")
     private String complement;
     private LocalDate createdAt;
+    private boolean active;
 
     public static CustomerDTO fromEntity(Customer customer) {
         var dto = new CustomerDTO();
@@ -80,6 +81,7 @@ public class CustomerDTO {
         dto.setNumber(customer.getNumber());
         dto.setComplement(customer.getComplement());
         dto.setCreatedAt(customer.getCreatedAt());
+        dto.setActive(customer.isActive());
 
         return dto;
     }

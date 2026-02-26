@@ -58,6 +58,12 @@ public class Customer {
     @Column(length = 100)
     private String complement;
 
+    @Column(nullable = false, length = 255)
+    private String password;
+
+    @Column(nullable = false)
+    private boolean active = true;
+
     @Column(nullable = false)
     private LocalDate createdAt = LocalDate.now();
 }
