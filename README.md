@@ -54,11 +54,11 @@ Sistema de gerenciamento de pedidos para delivery de hot dogs, construido com as
 
 ## Arquitetura
 
-Estrutura orientada a dominios, onde cada dominio (`client`, `product`, `order`, `dashboard`) contem suas camadas:
+Estrutura orientada a dominios, onde cada dominio (`customer`, `product`, `order`, `dashboard`) contem suas camadas:
 
 ```
 src/main/java/com/dionialves/snapdogdelivery/
-├── client/          # Entity, DTO, Repository, Service, Controllers
+├── customer/        # Entity, DTO, Repository, Service, Controllers
 ├── product/         # Entity, DTO, Repository, Service, Controllers
 ├── order/           # Entity, DTO, Repository, Service, ViewController
 ├── productorder/    # Entity de junção (Order ↔ Product)
@@ -76,8 +76,8 @@ Cada dominio segue o padrao de **Dual Controller**:
 | Rota | Descricao |
 |------|-----------|
 | `/admin/dashboard` | Dashboard com metricas |
-| `/admin/clients` | Listagem de clientes |
-| `/admin/clients/new` | Formulario de novo cliente |
+| `/admin/customers` | Listagem de clientes |
+| `/admin/customers/new` | Formulario de novo cliente |
 | `/admin/products` | Listagem de produtos |
 | `/admin/products/new` | Formulario de novo produto |
 | `/admin/orders` | Listagem de pedidos com filtros |

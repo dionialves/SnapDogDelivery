@@ -27,46 +27,21 @@ do zero para o lançamento da v1.0.
 
 ### 1.1 Autenticação de Clientes (Cadastro e Login)
 
-**Contexto:** Clientes finais precisam se cadastrar e fazer login para realizar compras.
-O sistema de autenticação atual (`/admin/login`) é exclusivo para usuários admin —
-os clientes precisam de um fluxo separado com rotas e templates próprios.
+> **CONCLUÍDO** (fevereiro/2026)
 
-**Decisão de arquitetura:** Reutilizar a entidade `User` já existente (`tb_users`).
-O cadastro público adiciona `role = CUSTOMER` à enum `Role` e cria um relacionamento
-`@OneToOne` entre `User` e `Client`. Usuários admin não possuem `Client` vinculado (campo nullable).
+**Solução aplicada:**
 
-**Alterações na entidade `User`:**
-
-- Adicionar `role = CUSTOMER` na enum `Role` (`com.dionialves.snapdogdelivery.user.Role`)
-- Adicionar campo `client` (`@OneToOne`, FK `client_id`, nullable) em `User`
-  — usuários admin: `client = null`; clientes públicos: `client` aponta para o `Client` criado no cadastro
-
-**O que criar:**
-
-- **`CustomerAuthController`** no pacote `com.dionialves.snapdogdelivery.auth`
-  (`@Controller`, rotas públicas sob `/`)
-  - `CustomerRegisterDTO` — nome, e-mail, senha, telefone, endereço completo (todos os
-    campos de `Client`)
-  - `CustomerLoginDTO` — e-mail e senha
-
-- **Endpoints públicos de autenticação:**
-  - `GET /register` → formulário de cadastro do cliente
-  - `POST /register` → cria `Client` + `User` (role `CUSTOMER`) vinculados, redireciona para `/catalog`
-  - `GET /login` → formulário de login público (rota separada do admin `/admin/login`)
-  - `POST /login` → autenticação Spring Security, redireciona para `/catalog`
-  - `POST /logout` → logout do cliente
-
-- **Configuração de segurança (`SecurityConfig`):**
-  - Criar segunda cadeia de filtros (`SecurityFilterChain`) para a área pública
-  - Rotas **totalmente públicas** (sem autenticação): `/`, `/catalog`, `/catalog/**`,
-    `/register`, `/login`, `/error`, recursos estáticos
-  - Rotas autenticadas (cliente com role `CUSTOMER`): `/cart/**`, `/checkout/**`, `/account/**`
-  - Rotas admin mantidas em cadeia separada: `/admin/**` (roles `ADMIN` / `SUPER_ADMIN`)
-
-- **Templates Thymeleaf públicos:**
-  - `templates/public/auth/register.html` — formulário de cadastro com validação em tempo real
-  - `templates/public/auth/login.html` — formulário de login público (separado do admin)
-  - Layout público: `templates/public/fragments/layout.html` (ver item 1.7)
+- **Enum `Role`** — `CUSTOMER` adicionado
+- **Entidade `User`** — campo `customer` (`@OneToOne`, nullable); admin users têm `customer = null`
+- **`CustomerAuthController`** no pacote `domain/storefront/auth` (`@Controller`, rotas públicas):
+  - `GET /register` → formulário de cadastro
+  - `POST /register` → cria `Customer` + `User` (role `CUSTOMER`) vinculados, redireciona para `/login`
+  - `GET /login` → formulário de login público (separado do admin `/admin/login`)
+- **DTOs:** `CustomerRegisterDTO` (nome, e-mail, senha, telefone + endereço completo), `CustomerLoginDTO`
+- **`SecurityConfig`** — duas cadeias de filtros (`@Order`):
+  - Cadeia 1 (admin): `/admin/**` → `ADMIN` ou `SUPER_ADMIN`; `/admin/users/**` → `SUPER_ADMIN`
+  - Cadeia 2 (público): `/`, `/catalog/**`, `/register`, `/login` → públicos; `/cart/**`, `/checkout/**`, `/account/**` → `CUSTOMER`
+- **Templates:** `public/auth/register.html`, `public/auth/login.html`
 
 ---
 
@@ -88,163 +63,114 @@ O cadastro público adiciona `role = CUSTOMER` à enum `Role` e cria um relacion
 
 **1.2.1 — Upload de arquivo (fase seguinte ao imageUrl):**
 
-> ⏳ **Pendente** — a URL externa foi implementada; o upload de arquivo local/S3 ainda não.
+> **PARCIALMENTE CONCLUÍDO** (fevereiro/2026) — backend de upload implementado; campo no formulário HTML ainda pendente.
 
-- Dependência `spring-boot-starter-web` já inclui suporte a `MultipartFile`
-- Criar `StorageService` — salva arquivo em diretório configurável (`/uploads/products/`)
-  ou futuramente em S3/bucket
-- `ProductViewController` — aceitar `@RequestParam MultipartFile image`
-- Servir arquivos estáticos uploadados via `ResourceHandler` no `WebMvcConfig`
-- Adicionar campo de upload no formulário admin (com fallback para URL externa)
+**Solução aplicada no backend:**
+
+- **`StorageService`** (`infra/storage`) — salva `MultipartFile` em diretório configurável (`app.upload.dir`, padrão `uploads/products/`); valida extensão (jpg, jpeg, png, webp, gif); retorna URL relativa `/uploads/products/uuid.ext`
+- **`ProductViewController`** — aceita `@RequestParam MultipartFile image`
+- **`WebMvcConfig`** — registra `ResourceHandler` servindo `/uploads/**` do diretório local
+
+**Ainda pendente:**
+
+- Campo `<input type="file">` no formulário admin `admin/products/form.html` como alternativa à URL externa
+- JavaScript para alternar entre os dois modos (upload de arquivo vs. URL externa)
 
 ---
 
 ### 1.3 Catálogo Público de Produtos
 
-> ⏳ **Pendente** — campo `active` já existe na entidade (ver 1.2 concluído); falta o `StoreController` e os templates públicos.
+> **CONCLUÍDO** (fevereiro/2026)
 
-**Contexto:** Página principal da loja — lista todos os produtos disponíveis com foto,
-nome, descrição e preço. O catálogo é **público** (não requer login). O login só é exigido
-quando o cliente tenta adicionar um produto ao carrinho.
+**Solução aplicada:**
 
-**O que criar:**
-
-- **Pacote `com.dionialves.snapdogdelivery.store`**
-  - `StoreController` (`@Controller`, `@RequestMapping("/catalog")`)
-  - Reutiliza `ProductService` já existente (sem duplicação de lógica)
-
+- **Pacote `domain/storefront/store`**
+  - `StoreController` (`@Controller`) — delega para `ProductService` e `CartService`
+- **`ProductService`** — adicionados `findAllActive(Pageable)` e `findFeatured()` (top 6 por nome)
 - **Endpoints:**
-  - `GET /catalog` → lista todos os produtos ativos, paginados (público)
-  - `GET /catalog/{id}` → detalhe de um produto — foto ampliada, descrição completa, preço,
-    botão "Add to cart" (público para visualizar; exige login ao clicar)
-
-- **Templates:**
-  - `templates/public/store/catalog.html` — grid de cards de produtos com foto, nome,
-    preço e botão de carrinho
-  - `templates/public/store/product-detail.html` — página de detalhe do produto
+  - `GET /` → landing page com produtos em destaque (`findFeatured()`)
+  - `GET /catalog` → grid paginado de produtos ativos
+  - `GET /catalog/{id}` → detalhe do produto com botão "Adicionar ao carrinho"
+- **Templates:** `public/index.html`, `public/store/catalog.html`, `public/store/product-detail.html`
 
 ---
 
 ### 1.4 Carrinho de Compras
 
-**Contexto:** Cliente autenticado adiciona produtos ao carrinho antes de finalizar o pedido.
-Implementação via sessão HTTP (sem persistência em banco — se fechar o browser, o carrinho
-é perdido). Tentativa de adicionar ao carrinho sem estar logado redireciona para `/login`.
+> **CONCLUÍDO** (fevereiro/2026)
 
-**O que criar:**
+**Solução aplicada:**
 
-- **Classe `Cart`** (não é entidade JPA — POJO `Serializable` armazenado na sessão HTTP)
-  - `Map<Long, CartItem> items` (chave: `productId`)
-  - Métodos: `addItem(Long productId, String name, BigDecimal price, int qty)`,
-    `removeItem(Long productId)`, `updateQuantity(Long productId, int qty)`,
-    `getTotal()`, `clear()`
-
-- **Classe `CartItem`** (POJO Serializable)
-  - Campos: `productId`, `productName`, `imageUrl`, `unitPrice`, `quantity`
-  - Método: `getSubtotal()`
-
-- **Pacote `com.dionialves.snapdogdelivery.cart`**
-  - `CartService` — gerencia `Cart` na `HttpSession` (chave `"cart"`)
-  - `CartController` (`@Controller`, `@RequestMapping("/cart")`)
-
-- **Endpoints** (todos exigem autenticação com role `CUSTOMER`):
-  - `POST /cart/add` → adiciona item (recebe `productId` e `quantity`)
-  - `POST /cart/remove/{productId}` → remove item
-  - `POST /cart/update/{productId}` → atualiza quantidade
-  - `GET /cart` → visualização do carrinho
-  - `POST /cart/clear` → esvazia o carrinho
-
-- **Template:**
-  - `templates/public/cart/cart.html` — tabela de itens, subtotais, total, botão "Checkout"
-
-- **UX no catálogo:** botão "Add to cart" em cada card faz `POST /cart/add`. Se não
-  autenticado, Spring Security redireciona para `/login` e retorna após login. Se autenticado,
-  responde com atualização do contador de itens no header (toast ou redirect).
+- **`Cart`** — POJO `Serializable` armazenado na `HttpSession`; `Map<Long, CartItem>` com métodos `addItem`, `removeItem`, `updateQuantity`, `getTotal`, `clear`
+- **`CartItem`** — POJO `Serializable`; campos `productId`, `productName`, `imageUrl`, `unitPrice`, `quantity`; método `getSubtotal()`
+- **Pacote `domain/storefront/cart`**
+  - `CartService` — gerencia `Cart` na `HttpSession` (chave `"cart"`); inclui `getItemCount()` seguro para páginas públicas
+  - `CartController` (`@Controller`, `/cart/**`) — protegido por role `CUSTOMER`
+- **Endpoints implementados:** `GET /cart`, `POST /cart/add`, `POST /cart/remove/{productId}`, `POST /cart/update/{productId}`, `POST /cart/clear`
+- **Template:** `public/cart/cart.html`
+- **Header público** exibe contador de itens do carrinho (lido da sessão via `CartService.getItemCount()`)
 
 ---
 
 ### 1.5 Checkout e Finalização do Pedido
 
-> ⏳ **Parcialmente concluído** — `OrderOrigin` e campo `origin` já implementados (fevereiro/2026); falta o `CheckoutController` e templates públicos.
+> **CONCLUÍDO** (fevereiro/2026)
 
-**Contexto:** Cliente revisa o carrinho, confirma endereço de entrega e finaliza o pedido.
-O pedido é criado na entidade `Order` já existente com origem `ONLINE`.
+**Solução aplicada:**
 
-**Alterações na entidade `Order`:**
+- **Entidade `Order`:**
+  - ✅ Campo `origin` (enum `OrderOrigin`: `ONLINE`, `MANUAL`, default `MANUAL`)
+  - ✅ Campo `deliveryAddress` (`String`, nullable) — snapshot do endereço no momento do pedido
 
-- ✅ Campo `origin` (enum `OrderOrigin`: `ONLINE`, `MANUAL`, default `MANUAL`) — **concluído**
-- ⏳ Campo `deliveryAddress` (`String`, nullable) — snapshot do endereço de entrega — **pendente**
+- **Pacote `domain/storefront/checkout`**
+  - `CheckoutService` — valida carrinho não vazio, busca `Customer` vinculado ao `User` autenticado, monta `OrderCreateDTO`, registra `deliveryAddress` como snapshot, delega para `OrderService.create()`, limpa carrinho após sucesso
+  - `CheckoutController` (`@Controller`, `/checkout/**`) — protegido por role `CUSTOMER`
 
-**O que criar:**
-
-- ✅ **Enum `OrderOrigin`** em `com.dionialves.snapdogdelivery.order` — **concluído**
-
-- **Pacote `com.dionialves.snapdogdelivery.checkout`**
-  - `CheckoutController` (`@Controller`, `@RequestMapping("/checkout")`)
-  - `CheckoutService` — converte `Cart` (sessão) em `Order` persistida:
-    - Valida que o carrinho não está vazio
-    - Busca o `Client` vinculado ao `User` autenticado via `user.getClient()`
-    - Cria `OrderCreateDTO` internamente e delega para `OrderService.create()`
-    - Registra `deliveryAddress` como snapshot do endereço atual do `Client`
-    - Limpa o carrinho após criação bem-sucedida
-
-- **Endpoints** (exigem autenticação com role `CUSTOMER`):
-  - `GET /checkout` → tela de revisão — resumo do carrinho + endereço do cliente
+- **Endpoints implementados:**
+  - `GET /checkout` → tela de revisão (resumo do carrinho + endereço de entrega)
   - `POST /checkout/confirm` → cria o pedido, redireciona para confirmação
-  - `GET /checkout/confirmation/{orderId}` → tela de sucesso com número e resumo do pedido
+  - `GET /checkout/confirmation/{orderId}` → tela de sucesso com número e status do pedido
 
-- **Templates:**
-  - `templates/public/checkout/review.html` — resumo do pedido, endereço, total
-  - `templates/public/checkout/confirmation.html` — tela de sucesso com número do pedido
-    e status atual
+- **Templates:** `public/checkout/review.html`, `public/checkout/confirmation.html`
 
 ---
 
 ### 1.6 Área do Cliente — My Account
 
-**Contexto:** Cliente logado consulta histórico de pedidos e gerencia seus dados cadastrais.
+> **CONCLUÍDO** (fevereiro/2026)
 
-**O que criar:**
+**Solução aplicada:**
 
-- **Pacote `com.dionialves.snapdogdelivery.account`**
-  - `AccountController` (`@Controller`, `@RequestMapping("/account")`)
+- **Pacote `domain/storefront/account`**
+  - `AccountController` (`@Controller`, `/account/**`) — protegido por role `CUSTOMER`
 
-- **Endpoints** (exigem autenticação com role `CUSTOMER`):
-  - `GET /account` → painel do cliente com resumo dos pedidos recentes
-  - `GET /account/orders` → histórico completo de pedidos, paginado
-  - `GET /account/orders/{id}` → detalhe de um pedido (produtos, status, valor total)
-  - `GET /account/profile` → formulário de edição de dados cadastrais (nome, telefone,
-    endereço)
-  - `POST /account/profile` → salva alterações cadastrais
+- **Endpoints implementados:**
+  - `GET /account` → painel com pedidos recentes (`OrderService.findRecentByCustomerId()`)
+  - `GET /account/orders` → histórico completo paginado
+  - `GET /account/orders/{id}` → detalhe do pedido (produtos, status, valor total)
+  - `GET /account/profile` → formulário de edição de dados cadastrais
+  - `POST /account/profile` → salva alterações via `CustomerService.update()`
 
-- **Templates:**
-  - `templates/public/account/dashboard.html`
-  - `templates/public/account/orders.html`
-  - `templates/public/account/order-detail.html`
-  - `templates/public/account/profile.html`
+- **Templates:** `public/account/dashboard.html`, `public/account/orders.html`, `public/account/order-detail.html`, `public/account/profile.html`
+- **`OrderService`** — adicionados `findByCustomerId(Long, Pageable)` e `findRecentByCustomerId(Long)`
 
 ---
 
 ### 1.7 Layout Público (Brand Snap Dog)
 
-**Contexto:** A área pública precisa de identidade visual própria, separada do painel admin.
-Deve usar a paleta "snapdog" (vermelho `#dc2626`) já definida no Tailwind, com foco em UX
-de delivery.
+> **CONCLUÍDO** (fevereiro/2026)
 
-**O que criar:**
+**Solução aplicada:**
 
-- `templates/public/fragments/layout.html` — layout base público:
-  - Header com: logo Snap Dog, link "Menu" (`/catalog`), ícone de carrinho com contador
-    de itens (lê da sessão — exibido apenas para clientes autenticados), menu do usuário
-    (nome + "Sign out") ou botões "Sign in" / "Register"
-  - Footer com informações da loja (horário, telefone, redes sociais)
-  - Mesmo stack de CSS: Tailwind CDN + Lucide Icons
+- `templates/public/fragments/layout.html` — layout base com:
+  - Header: logo Snap Dog, link "Menu" (`/catalog`), ícone de carrinho com contador de itens (via `CartService.getItemCount()`), menu do usuário autenticado (nome + "Sign out") ou botões "Sign in" / "Register"
+  - Footer com informações da loja
+  - Stack: Tailwind CDN + Lucide Icons (mesmos assets do painel admin)
 
-- `templates/public/index.html` — landing page pública (home `GET /`):
-  - Hero com nome da marca e chamada para ação ("View menu")
-  - Seção de produtos em destaque (3–6 itens) — **visível sem login**
-  - Informações sobre a entrega (horários, área de cobertura)
-  - Catálogo completo acessível sem autenticação; apenas a ação de compra exige login
+- `templates/public/index.html` — landing page (`GET /`):
+  - Hero com chamada para ação ("Ver cardápio")
+  - Seção de produtos em destaque (top 6 via `ProductService.findFeatured()`) — visível sem login
+  - Acesso ao catálogo completo sem autenticação; ação de compra exige login
 
 ---
 
@@ -292,15 +218,17 @@ de delivery.
 
 ### 2.3 Campo de Imagem no Formulário Admin de Produto
 
-> **PARCIALMENTE CONCLUÍDO** (fevereiro/2026) — campo `imageUrl` com preview implementado; upload de arquivo ainda pendente (ver 1.2.1).
+> **PARCIALMENTE CONCLUÍDO** (fevereiro/2026) — campo `imageUrl` com preview + backend de upload implementados; campo `<input type="file">` no HTML ainda pendente (ver 1.2.1).
 
 **Solução aplicada:**
 
 - `templates/admin/products/form.html` — campo de texto para `imageUrl` com preview em tempo real e checkbox para `active`
+- `StorageService` + `ProductViewController` — suporte a upload de `MultipartFile` já no backend
+- `WebMvcConfig` — arquivos enviados servidos via `/uploads/**`
 
 **Ainda pendente:**
 
-- Campo de upload de arquivo (`<input type="file">`) como alternativa à URL
+- Campo `<input type="file">` no formulário admin como alternativa à URL externa
 - JavaScript para alternar entre os dois modos
 
 ---
@@ -446,7 +374,7 @@ th:action="${order != null and order.id != null}
 
 | Arquivo | Método removido |
 |---|---|
-| `ClientService.java` | `searchByNameOrPhone(String)` — duplicava `search(String)` |
+| `CustomerService.java` | `searchByNameOrPhone(String)` — duplicava `search(String)` |
 | `ProductService.java` | `searchByName(String)` — duplicava `search(String)` |
 
 ---
@@ -475,7 +403,37 @@ com emoji no lugar do logo.
 
 ---
 
-### 3.11 Variáveis em Português e Mensagens de API em Inglês
+### 3.11 Renomeação do Domínio `Client` → `Customer`
+
+> **CONCLUÍDO** (fevereiro/2026)
+
+**Contexto:** O domínio de clientes foi originalmente nomeado `Client` (entidade, serviço,
+controller, repositório, DTO e testes). Para consistência com a nomenclatura do projeto
+(rotas `/admin/customers`, tabela `tb_customers`) e com a área pública (role `CUSTOMER`,
+`CustomerAuthController`), todo o domínio foi renomeado.
+
+**Solução aplicada:**
+
+| Arquivo antigo | Arquivo novo |
+|---|---|
+| `Client.java` | `Customer.java` |
+| `ClientService.java` | `CustomerService.java` |
+| `ClientController.java` | `CustomerController.java` |
+| `CustomerViewController.java` | `CustomerViewController.java` (já correto) |
+| `ClientRepository.java` | `CustomerRepository.java` |
+| `ClientDTO.java` | `CustomerDTO.java` |
+| `ClientServiceTest.java` | `CustomerServiceTest.java` |
+| `ClientControllerTest.java` | `CustomerControllerTest.java` |
+| `ClientRepositoryTest.java` | `CustomerRepositoryTest.java` |
+
+- Pacote renomeado: `client/` → `customer/`
+- Todos os imports, referências cruzadas, rotas e templates atualizados
+- `AGENTS.md`, `backlog.md` e `README.md` corrigidos para refletir os novos nomes
+- IDs HTML e variáveis JavaScript em `orders/form.html` renomeados (`clientSearch` → `customerSearch` etc.)
+
+---
+
+### 3.12 Variáveis em Português e Mensagens de API em Inglês
 
 > **CONCLUÍDO** (fevereiro/2026) — commit `0e1258d` em `develop`.
 
@@ -487,8 +445,8 @@ com emoji no lugar do logo.
 
 | Arquivo | Alteração |
 |---|---|
-| `ClientService.java` | `salved` → `saved`; 3 mensagens de `NotFoundException` e 1 de `BusinessException` traduzidas |
-| `ClientDTO.java` | 21 mensagens de validação Jakarta traduzidas para PT-BR |
+| `CustomerService.java` | `salved` → `saved`; 3 mensagens de `NotFoundException` e 1 de `BusinessException` traduzidas |
+| `CustomerDTO.java` | 21 mensagens de validação Jakarta traduzidas para PT-BR |
 | `OrderService.java` | 5 mensagens de `NotFoundException` e 3 de `BusinessException` traduzidas |
 | `OrderCreateDTO.java` | Typos `"CLient ID is madatory"` corrigidos; 3 mensagens traduzidas |
 | `ProductService.java` | 3 mensagens de `NotFoundException` traduzidas |
@@ -498,7 +456,7 @@ com emoji no lugar do logo.
 | `CustomUserDetailsService.java` | Mensagem `"User not found with email"` traduzida |
 | `UserService.java` | `emailAtual` → `currentEmail` |
 | `UserDTO.java` | **Excluído** (legado sem uso em nenhum controller) |
-| `ClientRepositoryTest.java` | `joao`/`maria` → `clientJohn`/`clientMary`; `criarClient` → `createClient`; parâmetros `nome`/`telefone` → `name`/`phone` |
+| `CustomerRepositoryTest.java` | `joao`/`maria` → `customerJohn`/`customerMary`; `criarClient` → `createCustomer`; parâmetros `nome`/`telefone` → `name`/`phone` |
 | `OrderRepositoryTest.java` | `criarPedido` → `createOrder`; `criarPedidoComProduto` → `createOrderWithProduct`; `quantidade` → `quantity` |
 | `OrderViewControllerTest.java` | `pedidoResponseDTO` → `orderResponseDTO` |
 | `DashboardServiceTest.java` | `criarClient` → `createClient`; `criarOrder` → `createOrder` |
@@ -581,10 +539,11 @@ Nenhuma referência encontrada em `application.properties`.
 
 ## 5. Cobertura de Testes
 
-> **CONCLUÍDO** (fevereiro/2026) — Suite de **101 testes** implementada, 0 falhas, BUILD SUCCESS.
+> **Suite admin: CONCLUÍDA** (fevereiro/2026) — **101 testes**, 0 falhas, BUILD SUCCESS.
+> **Suite storefront: ⏳ Pendente** — as funcionalidades 1.3–1.6 foram implementadas mas ainda não possuem testes automatizados.
 >
 > **Evolução da suite:**
-> - Entrega inicial: 76 testes (serviços, controllers, repositórios)
+> - Entrega inicial: 76 testes (serviços, controllers, repositórios — domínio admin)
 > - Adicionados 25 testes para o módulo `user` (`UserServiceTest`, `UserControllerTest`, `UserViewControllerTest`)
 > - Renomeação de variáveis/métodos auxiliares em PT-BR para inglês (fevereiro/2026)
 >
@@ -593,8 +552,6 @@ Nenhuma referência encontrada em `application.properties`.
 > - `spring-security-test` adicionado ao `pom.xml`
 > - `@Profile("!test")` adicionado ao `DataSeeder` para evitar dados de seed no H2
 > - `NotFoundException` passa a estender `BusinessException`
->
-> Testes pendentes dependem de funcionalidades ainda não implementadas (seções 1.3, 1.4, 1.5).
 
 ---
 
@@ -602,12 +559,13 @@ Nenhuma referência encontrada em `application.properties`.
 
 | Classe de Teste | Status | Testes |
 |---|---|---|
-| `ClientServiceTest` | ✅ Concluído | 10 — `create`, `update`, `delete` (com e sem pedidos), `search` paginado |
+| `CustomerServiceTest` | ✅ Concluído | 8 — `create`, `update`, `delete` (com e sem pedidos), `search` paginado |
 | `ProductServiceTest` | ✅ Concluído | 9 — `create`, `update`, `delete`, `search` |
 | `OrderServiceTest` | ✅ Concluído | 16 — `create` (fluxo completo), `updateStatus` (todas as transições válidas e inválidas), `delete` |
 | `DashboardServiceTest` | ✅ Concluído | 7 — `getDashboardSummary` (mocks de repositório), cálculo de crescimento |
 | `UserServiceTest` | ✅ Concluído | 12 — `create`, `update`, `delete` (guard de auto-exclusão), `findById`, `findAll` |
-| `CheckoutServiceTest` | ⏳ Pendente | Depende da feature 1.5 (Checkout) |
+| `CartServiceTest` | ⏳ Pendente | `addItem`, `removeItem`, `updateQuantity`, `clear`, `getItemCount` |
+| `CheckoutServiceTest` | ⏳ Pendente | Fluxo completo: carrinho → pedido; validações de carrinho vazio e cliente sem vínculo |
 
 ---
 
@@ -615,14 +573,15 @@ Nenhuma referência encontrada em `application.properties`.
 
 | Classe de Teste | Status | Testes |
 |---|---|---|
-| `ClientControllerTest` | ✅ Concluído | 3 — `GET /admin/api/clients/search`: com resultado, termo vazio, sem resultado |
+| `CustomerControllerTest` | ✅ Concluído | 3 — `GET /admin/api/customers/search`: com resultado, termo vazio, sem resultado |
 | `ProductControllerTest` | ✅ Concluído | 3 — `GET /admin/api/products/search`: com resultado, termo vazio, sem resultado |
 | `OrderViewControllerTest` | ✅ Concluído | 13 — listagem, criação, atualização de status, exclusão (sucessos e erros) |
 | `UserControllerTest` | ✅ Concluído | 3 — `GET /admin/api/users`: listagem paginada, sem usuários, página inválida |
 | `UserViewControllerTest` | ✅ Concluído | 10 — listagem, criação, edição, exclusão (sucessos e erros) |
-| `StoreControllerTest` | ⏳ Pendente | Depende da feature 1.3 (Catálogo Público) |
-| `CartControllerTest` | ⏳ Pendente | Depende da feature 1.4 (Carrinho) |
-| `CheckoutControllerTest` | ⏳ Pendente | Depende da feature 1.5 (Checkout) |
+| `StoreControllerTest` | ⏳ Pendente | `GET /`, `GET /catalog`, `GET /catalog/{id}` — listagem pública, produto não encontrado |
+| `CartControllerTest` | ⏳ Pendente | Add, remove, update, clear — autenticado e sem autenticação (redirect para `/login`) |
+| `CheckoutControllerTest` | ⏳ Pendente | Revisão, confirmação, carrinho vazio, cliente sem endereço |
+| `AccountControllerTest` | ⏳ Pendente | Dashboard, histórico de pedidos, detalhe, edição de perfil |
 
 ---
 
@@ -630,8 +589,8 @@ Nenhuma referência encontrada em `application.properties`.
 
 | Classe de Teste | Status | Testes |
 |---|---|---|
-| `OrderRepositoryTest` | ✅ Concluído | 6 — `sumRevenueByCreatedAtBetween`, `findTopSellingProducts`, `existsByClientId` |
-| `ClientRepositoryTest` | ✅ Concluído | 8 — `findByNameContainingIgnoreCaseOrPhoneContaining`, `countByCreatedAt` |
+| `OrderRepositoryTest` | ✅ Concluído | 6 — `sumRevenueByCreatedAtBetween`, `findTopSellingProducts`, `existsByCustomerId` |
+| `CustomerRepositoryTest` | ✅ Concluído | 8 — `findByNameContainingIgnoreCaseOrPhoneContaining`, `countByCreatedAt` |
 
 ---
 
@@ -641,7 +600,7 @@ Itens identificados como desejáveis mas fora do escopo imediato do lançamento.
 
 | Funcionalidade | Descrição |
 |---|---|
-| **Login com Google (OAuth2)** | `spring-boot-starter-oauth2-client` + configuração no Google Cloud Console. Cria/vincula `Client` automaticamente ao `User`. |
+| **Login com Google (OAuth2)** | `spring-boot-starter-oauth2-client` + configuração no Google Cloud Console. Cria/vincula `Customer` automaticamente ao `User`. |
 | **Campo `notes` em `Order`** | Campo `String` (max 500, nullable) para observações do cliente no pedido (ex.: "sem cebola"). Exibido no checkout e visível na área admin. |
 | **E-mail de confirmação de pedido** | Spring Mail + template de e-mail (HTML) enviado após checkout bem-sucedido. |
 | **Notificação de mudança de status** | E-mail ou push notification quando o status do pedido avança (ex.: "Seu pedido saiu para entrega!"). |
@@ -649,7 +608,7 @@ Itens identificados como desejáveis mas fora do escopo imediato do lançamento.
 | **Cupom de desconto** | Entidade `Coupon` com código, tipo (percentual/fixo), validade e limite de usos. Aplicável no checkout. |
 | **Painel de status do pedido em tempo real** | WebSocket ou polling para o cliente acompanhar `PENDING → PREPARING → OUT_FOR_DELIVERY → DELIVERED` sem recarregar a página. |
 | **Relatórios admin** | Exportação de pedidos em CSV/PDF, gráficos de faturamento por período. |
-| **Múltiplos endereços por cliente** | `Address` como entidade separada vinculada a `Client`. Cliente escolhe o endereço no checkout. |
+| **Múltiplos endereços por cliente** | `Address` como entidade separada vinculada a `Customer`. Cliente escolhe o endereço no checkout. |
 | **Avaliação de produtos** | `Review` com nota (1–5) e comentário, visível no catálogo público. |
 | **Estoque** | Campo `stock` em `Product`, decremento no checkout, alerta quando zerado. |
 | **PWA / app mobile** | Progressive Web App com manifest e service worker para experiência mobile-first. |
@@ -657,4 +616,4 @@ Itens identificados como desejáveis mas fora do escopo imediato do lançamento.
 
 ---
 
-*Documento gerado em fevereiro/2026. Última atualização: fevereiro/2026 — suite em 101 testes, 0 falhas.*
+*Documento gerado em fevereiro/2026. Última atualização: fevereiro/2026 — renomeação Client→Customer concluída; storefront público completo (auth, catálogo, carrinho, checkout, conta do cliente); suite admin em 101 testes, 0 falhas; testes do storefront pendentes.*
