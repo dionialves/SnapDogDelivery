@@ -10,8 +10,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.dionialves.snapdogdelivery.user.User;
-import com.dionialves.snapdogdelivery.user.UserRepository;
+import com.dionialves.snapdogdelivery.domain.admin.user.User;
+import com.dionialves.snapdogdelivery.domain.admin.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,22 +19,21 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UserRepository userRepository;
+  private final UserRepository userRepository;
 
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+  @Override
+  public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
-        User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com e-mail: " + email));
+    User user = userRepository.findByEmail(email)
+        .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com e-mail: " + email));
 
-        return new org.springframework.security.core.userdetails.User(
-            user.getEmail(),
-            user.getPassword(),
-            getAuthorities(user)
-        );
-    }
+    return new org.springframework.security.core.userdetails.User(
+        user.getEmail(),
+        user.getPassword(),
+        getAuthorities(user));
+  }
 
-    private Collection<? extends GrantedAuthority> getAuthorities(User user) {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
-    }
+  private Collection<? extends GrantedAuthority> getAuthorities(User user) {
+    return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+  }
 }

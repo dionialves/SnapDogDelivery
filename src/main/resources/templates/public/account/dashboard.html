@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{public/fragments/layout :: layout('Minha conta', ~{::main})}"
+      lang="pt-BR">
+
+<head><title>Minha conta</title></head>
+
+<body>
+<main>
+    <div class="max-w-4xl mx-auto px-4 py-10">
+
+        <!-- Saudação -->
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-gray-900" th:text="'Olá, ' + ${customer.name.split(' ')[0]} + '!'">Olá!</h1>
+            <p class="text-gray-500 text-sm mt-1">Acompanhe seus pedidos e gerencie seus dados.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            <!-- Links de navegação -->
+            <div class="md:col-span-1 space-y-3">
+                <a href="/account"
+                   class="flex items-center gap-3 px-4 py-3 bg-snapdog-50 border border-snapdog-200 rounded-xl text-snapdog-700 font-semibold text-sm">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                    Painel
+                </a>
+                <a href="/account/orders"
+                   class="flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 font-medium text-sm transition-colors">
+                    <i data-lucide="package" class="w-4 h-4 text-gray-400"></i>
+                    Meus pedidos
+                </a>
+                <a href="/account/profile"
+                   class="flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 font-medium text-sm transition-colors">
+                    <i data-lucide="settings" class="w-4 h-4 text-gray-400"></i>
+                    Meu perfil
+                </a>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit"
+                            class="w-full flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl text-red-500 hover:bg-red-50 font-medium text-sm transition-colors">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                        Sair
+                    </button>
+                </form>
+            </div>
+
+            <!-- Conteúdo principal -->
+            <div class="md:col-span-2 space-y-4">
+
+                <!-- Pedidos recentes -->
+                <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                        <h2 class="font-semibold text-gray-900">Pedidos recentes</h2>
+                        <a href="/account/orders" class="text-xs text-snapdog-600 hover:underline">Ver todos</a>
+                    </div>
+
+                    <div th:if="${recentOrders != null and !#lists.isEmpty(recentOrders)}"
+                         class="divide-y divide-gray-50">
+                        <a th:each="order : ${recentOrders}"
+                           th:href="@{/account/orders/{id}(id=${order.id})}"
+                           class="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition-colors">
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900" th:text="'Pedido #' + ${order.id}"></p>
+                                <p class="text-xs text-gray-500"
+                                   th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}"></p>
+                            </div>
+                            <span class="text-sm font-semibold text-gray-900"
+                                  th:text="'R$ ' + ${#numbers.formatDecimal(order.totalValue, 1, 'POINT', 2, 'COMMA')}"></span>
+                            <span class="px-2 py-0.5 rounded-full text-xs font-semibold"
+                                  th:classappend="${order.status == 'PENDING'} ? 'bg-yellow-100 text-yellow-700' : (${order.status == 'DELIVERED'} ? 'bg-green-100 text-green-700' : (${order.status == 'CANCELED'} ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'))"
+                                  th:text="${order.status}"></span>
+                        </a>
+                    </div>
+
+                    <div th:if="${recentOrders == null or #lists.isEmpty(recentOrders)}"
+                         class="px-6 py-10 text-center text-gray-400">
+                        <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2"></i>
+                        <p class="text-sm">Você ainda não fez nenhum pedido.</p>
+                        <a href="/catalog" class="text-xs text-snapdog-600 hover:underline mt-1 inline-block">
+                            Ver cardápio
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Informações do perfil -->
+                <div class="bg-white rounded-2xl border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="font-semibold text-gray-900">Meus dados</h2>
+                        <a href="/account/profile" class="text-xs text-snapdog-600 hover:underline">Editar</a>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                            <p class="text-gray-500 text-xs">Nome</p>
+                            <p class="font-medium text-gray-900" th:text="${customer.name}"></p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 text-xs">Telefone</p>
+                            <p class="font-medium text-gray-900" th:text="${customer.phone}"></p>
+                        </div>
+                        <div class="col-span-2">
+                            <p class="text-gray-500 text-xs">Endereço</p>
+                            <p class="font-medium text-gray-900"
+                               th:text="${customer.street + ', ' + customer.number + ' — ' + customer.neighborhood + ', ' + customer.city}"></p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</main>
+</body>
+</html>
