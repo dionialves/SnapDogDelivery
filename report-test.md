@@ -123,15 +123,15 @@ Todos os testes que sobem contexto Spring usam `@ActiveProfiles("test")`.
 
 ## 4. Detalhamento dos Testes
 
-### 4.1 `ClientServiceTest` — 10 casos
+### 4.1 `CustomerServiceTest` — 10 casos
 
-Arquivo: `src/test/java/com/dionialves/snapdogdelivery/client/ClientServiceTest.java`
+Arquivo: `src/test/java/com/dionialves/snapdogdelivery/domain/admin/customer/CustomerServiceTest.java`
 
 | Método de Teste | O que valida |
 |---|---|
 | `search_semPaginacao_retornaListaDTOs` | O método `search(String)` delega ao repositório e converte entidades em DTOs. |
-| `search_paginado_retornaPage` | O método `search(String, int, int)` retorna `Page<ClientDTO>` com os dados corretos. |
-| `findById_existente_retornaDTO` | Quando o repositório retorna um `Client`, o serviço devolve o DTO mapeado corretamente. |
+| `search_paginado_retornaPage` | O método `search(String, int, int)` retorna `Page<CustomerDTO>` com os dados corretos. |
+| `findById_existente_retornaDTO` | Quando o repositório retorna um `Customer`, o serviço devolve o DTO mapeado corretamente. |
 | `findById_inexistente_lancaNotFoundException` | Quando o repositório retorna `Optional.empty()`, lança `NotFoundException` com o ID na mensagem. |
 | `create_dadosValidos_persisteERetornaDTO` | O método `create` chama `repository.save()` e retorna o DTO com os dados persistidos. |
 | `update_existente_atualizaERetornaDTO` | O método `update` carrega a entidade, aplica os novos dados e retorna o DTO atualizado. |
@@ -233,15 +233,15 @@ O `DashboardService` não tem entidade própria — é um agregador de leitura q
 
 ---
 
-### 4.5 `ClientControllerTest` — 3 casos
+### 4.5 `CustomerControllerTest` — 3 casos
 
-Arquivo: `src/test/java/com/dionialves/snapdogdelivery/client/ClientControllerTest.java`
+Arquivo: `src/test/java/com/dionialves/snapdogdelivery/domain/admin/customer/CustomerControllerTest.java`
 
-Usa `MockMvcBuilders.standaloneSetup(clientController)` — o menor custo possível para testar o contrato HTTP do controller.
+Usa `MockMvcBuilders.standaloneSetup(customerController)` — o menor custo possível para testar o contrato HTTP do controller.
 
 | Método de Teste | O que valida |
 |---|---|
-| `search_retornaListaClientes` | `GET /admin/api/clients/search?q=joão` retorna HTTP 200 e JSON com `name` e `email` do cliente mockado. |
+| `search_retornaListaCustomers` | `GET /admin/api/customers/search?q=joão` retorna HTTP 200 e JSON com `name` e `email` do cliente mockado. |
 | `search_termoVazio_retornaTodos` | `?q=` vazio retorna HTTP 200 e array com 2 elementos. |
 | `search_semResultados_retornaListaVazia` | `?q=xyz` retorna HTTP 200 e array vazio `[]` — não 404. |
 
@@ -263,9 +263,9 @@ Mesma abordagem do `ClientControllerTest`, espelhando os casos para o domínio `
 
 ---
 
-### 4.7 `ClientRepositoryTest` — 8 casos
+### 4.7 `CustomerRepositoryTest` — 8 casos
 
-Arquivo: `src/test/java/com/dionialves/snapdogdelivery/client/ClientRepositoryTest.java`
+Arquivo: `src/test/java/com/dionialves/snapdogdelivery/domain/admin/customer/CustomerRepositoryTest.java`
 
 Contexto Spring completo com H2. Cada teste roda em transação revertida. O `setUp` persiste dois clientes reais (`João Silva` e `Maria Santos`) para servir de base.
 
@@ -316,12 +316,12 @@ Teste de fumaça (smoke test): sobe o contexto Spring completo com perfil `test`
 
 ---
 
-### 5.1 Domínio: Cliente (`client/`)
+### 5.1 Domínio: Cliente (`customer/`)
 
 | Funcionalidade | Classe Testada | Status |
 |---|---|:---:|
-| Criar cliente | `ClientServiceTest` | Coberto |
-| Atualizar cliente | `ClientServiceTest` | Coberto |
+| Criar cliente | `CustomerServiceTest` | Coberto |
+| Atualizar cliente | `CustomerServiceTest` | Coberto |
 | Excluir cliente sem pedidos | `ClientServiceTest` | Coberto |
 | Bloquear exclusão com pedidos | `ClientServiceTest` | Coberto |
 | Buscar por nome/telefone (lista) | `ClientServiceTest`, `ClientRepositoryTest` | Coberto |

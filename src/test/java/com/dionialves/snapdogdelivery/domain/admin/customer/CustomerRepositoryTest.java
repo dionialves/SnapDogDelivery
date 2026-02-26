@@ -95,6 +95,37 @@ class CustomerRepositoryTest {
         assertThat(result.getTotalElements()).isGreaterThanOrEqualTo(2);
     }
 
+    // --- findByEmail ---
+
+    @Test
+    @DisplayName("findByEmail com e-mail existente retorna o cliente correto")
+    void findByEmail_existente_retornaCliente() {
+        var result = customerRepository.findByEmail("joao@email.com");
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getName()).isEqualTo("João Silva");
+    }
+
+    @Test
+    @DisplayName("findByEmail com e-mail inexistente retorna Optional vazio")
+    void findByEmail_inexistente_retornaVazio() {
+        var result = customerRepository.findByEmail("naoexiste@email.com");
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("existsByEmail retorna true para e-mail cadastrado")
+    void existsByEmail_cadastrado_retornaTrue() {
+        assertThat(customerRepository.existsByEmail("maria@email.com")).isTrue();
+    }
+
+    @Test
+    @DisplayName("existsByEmail retorna false para e-mail não cadastrado")
+    void existsByEmail_naoCadastrado_retornaFalse() {
+        assertThat(customerRepository.existsByEmail("outro@email.com")).isFalse();
+    }
+
     // --- countByCreatedAt ---
 
     @Test
@@ -127,6 +158,8 @@ class CustomerRepositoryTest {
         c.setStreet("Rua das Flores");
         c.setZipCode("01310-100");
         c.setNumber("10");
+        c.setPassword("$2a$10$hashed_password_for_test");
+        c.setActive(true);
         return c;
     }
 }

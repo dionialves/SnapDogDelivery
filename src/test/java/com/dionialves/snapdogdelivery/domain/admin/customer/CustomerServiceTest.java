@@ -56,6 +56,8 @@ class CustomerServiceTest {
         customer.setZipCode("01310-100");
         customer.setNumber("10");
         customer.setComplement("Apto 2");
+        customer.setPassword("$2a$10$encodedPassword");
+        customer.setActive(true);
 
         customerDTO = new CustomerDTO();
         customerDTO.setName("João Silva");
@@ -67,6 +69,19 @@ class CustomerServiceTest {
         customerDTO.setStreet("Rua das Flores");
         customerDTO.setZipCode("01310-100");
         customerDTO.setNumber("10");
+    }
+
+    // --- findById com campo active ---
+
+    @Test
+    @DisplayName("findById retorna DTO com campo active corretamente mapeado")
+    void findById_retornaDTOComCampoActive() {
+        customer.setActive(false);
+        when(customerRepository.findById(1L)).thenReturn(java.util.Optional.of(customer));
+
+        var result = customerService.findById(1L);
+
+        assertThat(result.isActive()).isFalse();
     }
 
     // --- search (lista) ---

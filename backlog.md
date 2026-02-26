@@ -13,7 +13,8 @@ Baseado na análise do código-fonte atual (fevereiro/2026).
 3. [Correções de Bugs e Dívidas Técnicas](#3-correções-de-bugs-e-dívidas-técnicas)
 4. [Infraestrutura e Banco de Dados](#4-infraestrutura-e-banco-de-dados)
 5. [Cobertura de Testes](#5-cobertura-de-testes)
-6. [Funcionalidades Futuras (pós v1.0)](#6-funcionalidades-futuras-pós-v10)
+6. [Refatoração — Desacoplamento de Autenticação Customer / User](#6-refatoração--desacoplamento-de-autenticação-customer--user)
+7. [Funcionalidades Futuras (pós v1.0)](#7-funcionalidades-futuras-pós-v10)
 
 ---
 
@@ -539,13 +540,14 @@ Nenhuma referência encontrada em `application.properties`.
 
 ## 5. Cobertura de Testes
 
-> **Suite admin: CONCLUÍDA** (fevereiro/2026) — **101 testes**, 0 falhas, BUILD SUCCESS.
+> **Suite admin + auth desacoplamento: CONCLUÍDA** (fevereiro/2026) — **114 testes**, 0 falhas, BUILD SUCCESS.
 > **Suite storefront: ⏳ Pendente** — as funcionalidades 1.3–1.6 foram implementadas mas ainda não possuem testes automatizados.
 >
 > **Evolução da suite:**
 > - Entrega inicial: 76 testes (serviços, controllers, repositórios — domínio admin)
 > - Adicionados 25 testes para o módulo `user` (`UserServiceTest`, `UserControllerTest`, `UserViewControllerTest`)
 > - Renomeação de variáveis/métodos auxiliares em PT-BR para inglês (fevereiro/2026)
+> - Adicionados 13 testes para o desacoplamento de autenticação (seção 6): `CustomerUserDetailsServiceTest`, `AdminAuthControllerTest`, `UserRoleTest`; expansão de `CustomerServiceTest` e `CustomerRepositoryTest`
 >
 > **Infraestrutura corrigida junto com a entrega inicial:**
 > - `annotationProcessorPaths` do Lombok movido para `maven-compiler-plugin` no `pom.xml`
@@ -594,7 +596,123 @@ Nenhuma referência encontrada em `application.properties`.
 
 ---
 
-## 6. Funcionalidades Futuras (pós v1.0)
+## 6. Refatoração — Desacoplamento de Autenticação Customer / User
+
+> **CONCLUÍDO** (fevereiro/2026)
+
+**Contexto:** Hoje o sistema possui um único mecanismo de autenticação que atende tanto o
+painel admin quanto a área pública do cliente. Um `Customer` só consegue se autenticar porque
+tem um registro vinculado na tabela de usuários admin (`tb_users`), com a role `CUSTOMER`.
+Isso cria um acoplamento indevido: a entidade de cliente carrega dependência de uma estrutura
+pensada para usuários administrativos.
+
+**Objetivo:** Separar completamente os dois fluxos de autenticação. O `Customer` passa a ter
+suas próprias credenciais e seu próprio mecanismo de login, acessível em `/login`. O `User`
+fica restrito ao painel administrativo, autenticando exclusivamente em `/admin/login`.
+Cada contexto terá seu próprio serviço de autenticação, sua própria cadeia de segurança e
+sua própria tela de login — sem nenhum compartilhamento entre os dois.
+
+---
+
+### 6.1 Credenciais direto na entidade Customer
+
+> **CONCLUÍDO** (fevereiro/2026)
+
+**Solução aplicada:**
+- `password` (`String`, NOT NULL, max 255) e `active` (`boolean`, default `true`) adicionados à entidade `Customer`
+- `CustomerDTO` atualizado para expor `active`; `password` nunca é exposto
+- `DataSeeder` atualizado: todos os 10 clientes seed recebem senha `"cliente123"` encodada em BCrypt e `active = true`
+
+---
+
+### 6.2 Serviço de autenticação exclusivo para Customer
+
+> **CONCLUÍDO** (fevereiro/2026)
+
+**Solução aplicada:**
+- `CustomerUserDetailsService` criado em `domain/storefront/auth`; consulta `CustomerRepository.findByEmail()`
+- Lança `UsernameNotFoundException` se e-mail não encontrado; `DisabledException` se `active = false`
+- Atribui authority `ROLE_CUSTOMER`
+- `CustomerRepository` — adicionados `findByEmail(String)` e `existsByEmail(String)`
+- `CustomUserDetailsService` mantido sem alterações
+
+---
+
+### 6.3 Separação das cadeias de segurança com providers dedicados
+
+> **CONCLUÍDO** (fevereiro/2026)
+
+**Solução aplicada:**
+- Cadeia 1 (admin): `securityMatcher("/admin/**")` + `DaoAuthenticationProvider(CustomUserDetailsService)` — login em `/admin/login`, logout redireciona para `/admin/login`
+- Cadeia 2 (público): `DaoAuthenticationProvider(CustomerUserDetailsService)` — login em `/login`, logout redireciona para `/`
+- Cada cadeia injeta seu próprio `AuthenticationProvider` explicitamente
+
+---
+
+### 6.4 Atualização do fluxo de cadastro de Customer
+
+> **CONCLUÍDO** (fevereiro/2026)
+
+**Solução aplicada:**
+- `CustomerAuthController` reescrito: cria apenas `Customer` com `password` (BCrypt) e `active = true`
+- Verificação de e-mail duplicado usa `CustomerRepository.existsByEmail()`
+- Dependência de `UserRepository` e do domínio `user` removida do controller
+- `CustomerLoginDTO` removido
+
+---
+
+### 6.5 Controller e template de login do admin
+
+> **CONCLUÍDO** (fevereiro/2026)
+
+**Solução aplicada:**
+- `AdminAuthController` criado em `domain/admin/auth`; serve `GET /admin/login`; adiciona `error`/`message` ao model
+- Template `templates/auth/login.html` (legado) copiado para `templates/admin/auth/login.html`
+- Formulário aponta para `POST /admin/login`
+
+---
+
+### 6.6 Limpeza da entidade User e da enum Role
+
+> **CONCLUÍDO** (fevereiro/2026)
+
+**Solução aplicada:**
+- Campo `customer` (`@OneToOne`) e coluna `customer_id` removidos da entidade `User`
+- `CUSTOMER` removido da enum `Role` — agora contém apenas `USER`, `ADMIN`, `SUPER_ADMIN`
+- `AccountController`, `CheckoutController` e `CheckoutService` refatorados para buscar `Customer` via `CustomerRepository.findByEmail()` em vez de `user.getCustomer()`
+- Formulário admin de usuários exclui `CUSTOMER` automaticamente (usa `Role.values()` dinamicamente)
+
+---
+
+### 6.7 Tela de login personalizada para Customer
+
+> **CONCLUÍDO** (fevereiro/2026)
+
+**Solução aplicada:**
+- `templates/public/auth/login.html` redesenhado com layout split (`min-h-screen flex`)
+- Painel esquerdo (gradiente vermelho da marca): logo, slogan "O melhor hot dog da cidade, na sua porta", 3 benefícios com ícones Lucide (entrega rápida, ingredientes frescos, acompanhe seu pedido), rodapé; oculto em mobile (`hidden md:flex`)
+- Painel direito (branco): logo mobile-only, campos e-mail/senha com ícone prefixado, link "Esqueceu a senha?" (desabilitado), divisor, link para cadastro
+- Página standalone sem layout compartilhado; `lucide.createIcons()` no fim do body
+
+---
+
+### 6.8 Cobertura de testes para o desacoplamento
+
+> **CONCLUÍDO** (fevereiro/2026) — suite total: **114 testes**, 0 falhas, BUILD SUCCESS.
+
+**Solução aplicada:**
+
+| Classe | Novos testes |
+|---|---|
+| `CustomerUserDetailsServiceTest` | 3 — cliente ativo, e-mail não encontrado, cliente inativo |
+| `AdminAuthControllerTest` | 3 — GET sem parâmetros, com `?error`, com `?logout` |
+| `CustomerServiceTest` | +1 — `findById` verifica campo `active` no DTO |
+| `UserRoleTest` | 2 — `Role` não contém `CUSTOMER`; contém exatamente USER/ADMIN/SUPER_ADMIN |
+| `CustomerRepositoryTest` | +4 — `findByEmail` (existente e inexistente), `existsByEmail` (true e false) |
+
+---
+
+## 7. Funcionalidades Futuras (pós v1.0)
 
 Itens identificados como desejáveis mas fora do escopo imediato do lançamento.
 
@@ -616,4 +734,4 @@ Itens identificados como desejáveis mas fora do escopo imediato do lançamento.
 
 ---
 
-*Documento gerado em fevereiro/2026. Última atualização: fevereiro/2026 — renomeação Client→Customer concluída; storefront público completo (auth, catálogo, carrinho, checkout, conta do cliente); suite admin em 101 testes, 0 falhas; testes do storefront pendentes.*
+*Documento gerado em fevereiro/2026. Última atualização: fevereiro/2026 — seção 6 (desacoplamento de autenticação Customer/User) concluída integralmente; suite de testes expandida de 101 para 114 testes.*

@@ -55,6 +55,8 @@ class OrderRepositoryTest {
         customer.setStreet("Rua das Flores");
         customer.setZipCode("01310-100");
         customer.setNumber("10");
+        customer.setPassword("$2a$10$hashed_password_for_test");
+        customer.setActive(true);
         customer = customerRepository.save(customer);
 
         product = new Product();
