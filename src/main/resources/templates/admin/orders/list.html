@@ -177,11 +177,11 @@
                                     <div class="flex items-center gap-3">
                                         <div
                                             class="w-8 h-8 bg-snapdog-100 rounded-full flex items-center justify-center">
-                                            <span th:text="${#strings.substring(order.client.name, 0, 1).toUpperCase()}"
+                                         <span th:text="${#strings.substring(order.customer.name, 0, 1).toUpperCase()}"
                                                 class="font-semibold text-snapdog-600 text-sm">D</span>
-                                        </div>
-                                        <span th:text="${order.client.name}" class="text-gray-800">Nome do
-                                            Cliente</span>
+                                         </div>
+                                         <span th:text="${order.customer.name}" class="text-gray-800">Nome do
+                                             Cliente</span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">
