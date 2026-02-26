@@ -175,6 +175,71 @@ do zero para o lançamento da v1.0.
 
 ---
 
+### 1.8 Modal de Quantidade ao Adicionar ao Carrinho
+
+**Arquivos:** `templates/public/store/catalog.html`, `templates/public/store/product-detail.html`
+
+**Problema:** O botão "Adicionar" no catálogo posta diretamente com `quantity=1` fixo — o
+cliente não tem como escolher a quantidade antes de enviar.
+
+**Solução:**
+
+- Substituir o `<form>` de POST direto no card do catálogo por um botão que abre um modal JS
+- O modal deve exibir: imagem do produto, nome, descrição e campo numérico de quantidade
+  (min 1, max 20, padrão 1)
+- Botão "Adicionar ao carrinho" dentro do modal submete o POST `/cart/add` com o `productId`
+  e a `quantity` selecionada
+- O modal deve ser acessível via teclado (fechar com `Esc`, foco retorna ao botão de origem)
+- Implementado inteiramente com JavaScript vanilla + Tailwind — sem dependências externas
+- A lógica de abertura do modal pode ser centralizada em um `<template>` reutilizável no
+  layout ou inline no template do catálogo
+
+> ⏳ **Pendente**
+
+---
+
+### 1.9 Máscaras de Telefone e CEP no Cadastro de Cliente
+
+**Arquivo:** `templates/public/auth/register.html`
+
+**Problema:** Os campos `phone` e `zipCode` não possuem máscara de entrada — o cliente pode
+digitar no formato errado e só descobre o erro ao submeter o formulário (validação Jakarta).
+
+**Solução:**
+
+- Aplicar máscara JavaScript no campo `#phone` → formato `(00) 00000-0000`
+- Aplicar máscara JavaScript no campo `#zipCode` → formato `00000-000`
+- Implementar com JavaScript vanilla (evento `input` + regex) — sem bibliotecas externas
+- A máscara deve ser aplicada também no formulário de edição de perfil
+  (`templates/public/account/profile.html`)
+
+> ⏳ **Pendente**
+
+---
+
+### 1.10 Auto-preenchimento de Endereço por CEP (ViaCEP)
+
+**Arquivos:** `templates/public/auth/register.html`, `templates/public/account/profile.html`
+
+**Problema:** O cliente precisa preencher manualmente rua, bairro, cidade e estado — dado
+que todos esses campos podem ser obtidos automaticamente a partir do CEP.
+
+**Solução:**
+
+- Quando o campo `#zipCode` perder o foco (`blur`) e tiver 8 dígitos numéricos, disparar
+  `fetch('https://viacep.com.br/ws/{cep}/json/')` (API pública, sem chave)
+- Em caso de sucesso, preencher automaticamente: `street` (`logradouro`), `neighborhood`
+  (`bairro`), `city` (`localidade`), `state` (converter `uf` para o enum `State`)
+- Exibir um spinner discreto no campo CEP enquanto a requisição está em andamento
+- Exibir mensagem de erro inline caso o CEP não seja encontrado (status `"erro": true` na
+  resposta da API)
+- Campos preenchidos automaticamente devem permanecer editáveis pelo cliente
+- Implementado com JavaScript vanilla — sem dependências externas
+
+> ⏳ **Pendente**
+
+---
+
 ## 2. Área Administrativa — Novas Funcionalidades
 
 ---
@@ -261,6 +326,24 @@ do zero para o lançamento da v1.0.
 - `templates/admin/products/list.html` — coluna de status (Ativo/Inativo) com badge visual
 - `templates/admin/products/form.html` — checkbox "Exibir no catálogo público"
 - `ProductService.update()` — processa o campo `active`
+
+---
+
+### 2.7 Crédito do Criador no Footer Público
+
+**Arquivo:** `templates/public/fragments/layout.html`, linha ~187
+
+**Problema:** O rodapé da área pública exibe apenas o copyright da marca, sem identificar
+o desenvolvedor responsável pelo sistema.
+
+**Solução:**
+
+- Adicionar abaixo (ou ao lado) do copyright a linha:
+  `Desenvolvido por <a href="https://www.dionialves.com">Dioni Alves</a>`
+- Link deve abrir em nova aba (`target="_blank" rel="noopener"`)
+- Estilo discreto, alinhado com o visual atual do footer (texto `xs`, cor `gray-400`)
+
+> ⏳ **Pendente**
 
 ---
 
@@ -462,6 +545,90 @@ controller, repositório, DTO e testes). Para consistência com a nomenclatura d
 | `OrderViewControllerTest.java` | `pedidoResponseDTO` → `orderResponseDTO` |
 | `DashboardServiceTest.java` | `criarClient` → `createClient`; `criarOrder` → `createOrder` |
 | `OrderServiceTest.java` | Asserção `"PENDING"` → `"PENDENTE"` (consequência da tradução da mensagem) |
+
+---
+
+### 3.13 Status do Pedido Exibido em Inglês na Tela de Confirmação
+
+**Arquivo:** `templates/public/checkout/confirmation.html`, linha 32
+
+**Problema:** `th:text="${order.status}"` imprime o nome literal do enum (`PENDING`,
+`PREPARING` etc.) em inglês para o cliente.
+
+**Solução:**
+
+- Adicionar campo `label` em português à enum `OrderStatus`:
+  `PENDING("Aguardando"), PREPARING("Em preparo"), OUT_FOR_DELIVERY("Saiu para entrega"),
+  DELIVERED("Entregue"), CANCELED("Cancelado")`
+- Atualizar `confirmation.html` para usar `${order.status.label}` (ou equivalente via DTO)
+- Verificar e atualizar todos os demais templates públicos que exibam `order.status`
+  diretamente (`account/orders.html`, `account/order-detail.html`)
+- O campo `status` nos DTOs de resposta da API admin pode manter o nome do enum — não
+  afeta o cliente
+
+> ⏳ **Pendente**
+
+---
+
+### 3.14 Dropdown do Cliente Exibe E-mail em Vez do Nome
+
+**Arquivo:** `templates/public/fragments/layout.html`, linha 83
+
+**Problema:** `sec:authentication="name"` retorna o `username` do `UserDetails` — que no
+`CustomerUserDetailsService` é o e-mail. O dropdown exibe `joao@email.com` em vez de
+`João Silva`.
+
+**Solução:**
+
+- Injetar o nome do cliente autenticado no modelo via `@ControllerAdvice` ou
+  `@ModelAttribute` nos controllers da área pública que usam o layout
+- Substituir `sec:authentication="name"` por `th:text="${customerName}"` (ou equivalente)
+- Alternativa mais limpa: implementar `CustomerPrincipal` que encapsula `Customer`
+  e expõe `getName()` com o nome real, mantendo `getUsername()` retornando o e-mail para o
+  Spring Security
+
+> ⏳ **Pendente**
+
+---
+
+### 3.15 Conflito de Sessão entre Área Admin e Área Pública
+
+**Contexto:** No mesmo navegador, ao logar no painel admin (`/admin/login`) e em seguida
+acessar a área pública, a sessão do cliente é corrompida — o Spring Security lê o
+`SecurityContext` da sessão compartilhada e encontra credenciais de admin, quebrando o fluxo
+do cliente.
+
+**Causa raiz:** As duas `SecurityFilterChain` compartilham o mesmo atributo de
+`SecurityContext` no `HttpSession` (`SPRING_SECURITY_CONTEXT`). A sessão admin sobrescreve
+o contexto esperado pela cadeia pública.
+
+**Solução:**
+
+- Configurar `HttpSessionSecurityContextRepository` com atributo de sessão distinto para
+  cada cadeia:
+  - Cadeia admin: `setSpringSecurityContextAttrName("ADMIN_SECURITY_CONTEXT")`
+  - Cadeia pública: mantém atributo padrão `SPRING_SECURITY_CONTEXT`
+- Isso garante que os dois contextos de autenticação coexistam no mesmo browser sem
+  interferência mútua
+
+> ⏳ **Pendente**
+
+---
+
+### 3.16 Copyright com Ano Desatualizado (2025)
+
+**Problema:** Todos os rodapés exibem `© 2025 SnapDog Delivery`.
+
+| Arquivo | Ocorrência |
+|---|---|
+| `templates/public/fragments/layout.html` | linha ~187 |
+| `templates/public/auth/register.html` | linha ~228 |
+| `templates/public/auth/login.html` | painel esquerdo — rodapé |
+| `templates/admin/auth/login.html` | rodapé |
+
+**Solução:** Atualizar para `© 2026 SnapDog Delivery` em todos os arquivos listados.
+
+> ⏳ **Pendente**
 
 ---
 
@@ -734,4 +901,4 @@ Itens identificados como desejáveis mas fora do escopo imediato do lançamento.
 
 ---
 
-*Documento gerado em fevereiro/2026. Última atualização: fevereiro/2026 — seção 6 (desacoplamento de autenticação Customer/User) concluída integralmente; suite de testes expandida de 101 para 114 testes.*
+*Documento gerado em fevereiro/2026. Última atualização: fevereiro/2026 — adicionados itens 1.8 (modal de quantidade), 1.9 (máscaras), 1.10 (ViaCEP), 2.7 (crédito no footer), 3.13 (status PT-BR), 3.14 (nome no dropdown), 3.15 (conflito de sessão), 3.16 (copyright 2026).*
