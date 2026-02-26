@@ -14,7 +14,6 @@ import com.dionialves.snapdogdelivery.domain.admin.order.OrderRepository;
 import com.dionialves.snapdogdelivery.domain.admin.order.dto.OrderResponseDTO;
 import com.dionialves.snapdogdelivery.domain.admin.product.ProductRepository;
 import com.dionialves.snapdogdelivery.domain.admin.productorder.ProductOrder;
-import com.dionialves.snapdogdelivery.domain.admin.user.User;
 import com.dionialves.snapdogdelivery.domain.storefront.cart.Cart;
 import com.dionialves.snapdogdelivery.domain.storefront.cart.CartItem;
 import com.dionialves.snapdogdelivery.domain.storefront.cart.CartService;
@@ -39,23 +38,17 @@ public class CheckoutService {
     /**
      * Cria um pedido a partir do carrinho da sessão.
      *
-     * @param session sessão HTTP com o carrinho
-     * @param user    usuário autenticado com role CUSTOMER
+     * @param session  sessão HTTP com o carrinho
+     * @param customer cliente autenticado
      * @return DTO do pedido criado
-     * @throws BusinessException se o carrinho estiver vazio ou o cliente não
-     *                           estiver vinculado
+     * @throws BusinessException se o carrinho estiver vazio
      */
     @Transactional
-    public OrderResponseDTO createOrderFromCart(HttpSession session, User user) {
+    public OrderResponseDTO createOrderFromCart(HttpSession session, Customer customer) {
         var cart = cartService.getCart(session);
 
         if (cart.isEmpty()) {
             throw new BusinessException("Carrinho vazio. Adicione produtos antes de finalizar o pedido.");
-        }
-
-        Customer customer = user.getCustomer();
-        if (customer == null) {
-            throw new BusinessException("Usuário não possui cadastro de cliente vinculado.");
         }
 
         // Monta snapshot do endereço de entrega no momento do pedido

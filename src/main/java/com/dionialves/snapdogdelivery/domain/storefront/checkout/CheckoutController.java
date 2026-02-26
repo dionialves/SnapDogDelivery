@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.dionialves.snapdogdelivery.domain.admin.customer.Customer;
+import com.dionialves.snapdogdelivery.domain.admin.customer.CustomerRepository;
 import com.dionialves.snapdogdelivery.domain.admin.order.OrderService;
-import com.dionialves.snapdogdelivery.domain.admin.user.User;
-import com.dionialves.snapdogdelivery.domain.admin.user.UserRepository;
 import com.dionialves.snapdogdelivery.domain.storefront.cart.CartService;
 import com.dionialves.snapdogdelivery.exception.BusinessException;
 
@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 /**
  * Controlador do fluxo de checkout.
  * Todas as rotas exigem autenticação com role CUSTOMER (configurado no SecurityConfig).
+ * O principal autenticado é um Customer (via CustomerUserDetailsService).
  */
 @Controller
 @RequestMapping("/checkout")
@@ -31,7 +32,7 @@ public class CheckoutController {
     private final CheckoutService checkoutService;
     private final CartService cartService;
     private final OrderService orderService;
-    private final UserRepository userRepository;
+    private final CustomerRepository customerRepository;
 
     /**
      * Tela de revisão — exibe o resumo do carrinho e o endereço de entrega.
@@ -48,9 +49,9 @@ public class CheckoutController {
             return "redirect:/catalog";
         }
 
-        var user = loadUser(userDetails);
+        var customer = loadCustomer(userDetails);
         model.addAttribute("cart", cart);
-        model.addAttribute("customer", user.getCustomer());
+        model.addAttribute("customer", customer);
         model.addAttribute("cartItemCount", cartService.getItemCount(session));
         return "public/checkout/review";
     }
@@ -65,8 +66,8 @@ public class CheckoutController {
             RedirectAttributes redirectAttributes) {
 
         try {
-            var user = loadUser(userDetails);
-            var order = checkoutService.createOrderFromCart(session, user);
+            var customer = loadCustomer(userDetails);
+            var order = checkoutService.createOrderFromCart(session, customer);
             return "redirect:/checkout/confirmation/" + order.getId();
 
         } catch (BusinessException e) {
@@ -88,8 +89,8 @@ public class CheckoutController {
         var order = orderService.findById(orderId);
 
         // Garante que o pedido pertence ao cliente autenticado
-        var user = loadUser(userDetails);
-        if (user.getCustomer() == null || !order.getCustomer().getId().equals(user.getCustomer().getId())) {
+        var customer = loadCustomer(userDetails);
+        if (!order.getCustomer().getId().equals(customer.getId())) {
             return "redirect:/account";
         }
 
@@ -98,8 +99,8 @@ public class CheckoutController {
         return "public/checkout/confirmation";
     }
 
-    private User loadUser(UserDetails userDetails) {
-        return userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new BusinessException("Usuário não encontrado."));
+    private Customer loadCustomer(UserDetails userDetails) {
+        return customerRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new BusinessException("Cliente não encontrado."));
     }
 }

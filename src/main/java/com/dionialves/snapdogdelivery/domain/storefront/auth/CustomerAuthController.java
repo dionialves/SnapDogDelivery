@@ -15,9 +15,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.dionialves.snapdogdelivery.domain.admin.customer.Customer;
 import com.dionialves.snapdogdelivery.domain.admin.customer.CustomerRepository;
 import com.dionialves.snapdogdelivery.domain.admin.customer.State;
-import com.dionialves.snapdogdelivery.domain.admin.user.Role;
-import com.dionialves.snapdogdelivery.domain.admin.user.User;
-import com.dionialves.snapdogdelivery.domain.admin.user.UserRepository;
 import com.dionialves.snapdogdelivery.domain.storefront.auth.dto.CustomerRegisterDTO;
 import com.dionialves.snapdogdelivery.exception.BusinessException;
 
@@ -30,7 +27,6 @@ public class CustomerAuthController {
 
     private static final Logger log = LoggerFactory.getLogger(CustomerAuthController.class);
 
-    private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -67,8 +63,8 @@ public class CustomerAuthController {
     /**
      * Processa o cadastro do cliente:
      * 1. Valida os dados do formulário
-     * 2. Verifica unicidade do e-mail
-     * 3. Cria o Client e o User (CUSTOMER) vinculados
+     * 2. Verifica unicidade do e-mail na tabela de clientes
+     * 3. Cria o Customer com credenciais próprias (password + active)
      * 4. Redireciona para /login com mensagem de sucesso
      */
     @PostMapping("/register")
@@ -84,11 +80,10 @@ public class CustomerAuthController {
         }
 
         try {
-            if (userRepository.existsByEmail(dto.getEmail())) {
+            if (customerRepository.existsByEmail(dto.getEmail())) {
                 throw new BusinessException("Já existe uma conta com o e-mail: " + dto.getEmail());
             }
 
-            // Cria o Customer com os dados de endereço
             var customer = new Customer();
             customer.setName(dto.getName());
             customer.setPhone(dto.getPhone());
@@ -100,20 +95,12 @@ public class CustomerAuthController {
             customer.setZipCode(dto.getZipCode());
             customer.setNumber(dto.getNumber());
             customer.setComplement(dto.getComplement());
+            customer.setPassword(passwordEncoder.encode(dto.getPassword()));
+            customer.setActive(true);
 
-            var savedCustomer = customerRepository.save(customer);
+            customerRepository.save(customer);
 
-            // Cria o User com role CUSTOMER vinculado ao Customer
-            var user = new User();
-            user.setName(dto.getName());
-            user.setEmail(dto.getEmail());
-            user.setPassword(passwordEncoder.encode(dto.getPassword()));
-            user.setRole(Role.CUSTOMER);
-            user.setCustomer(savedCustomer);
-
-            userRepository.save(user);
-
-            log.info("Novo cliente cadastrado: {} ({})", dto.getEmail(), savedCustomer.getId());
+            log.info("Novo cliente cadastrado: {}", dto.getEmail());
 
             redirectAttributes.addFlashAttribute("successMessage", "Cadastro realizado com sucesso! Faça login para continuar.");
             return "redirect:/login";

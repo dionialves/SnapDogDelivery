@@ -2,8 +2,6 @@ package com.dionialves.snapdogdelivery.domain.admin.user;
 
 import java.time.LocalDateTime;
 
-import com.dionialves.snapdogdelivery.domain.admin.customer.Customer;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,8 +9,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -45,15 +41,6 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Role role;
-
-    /**
-     * Vinculação com a entidade Customer — preenchido apenas para usuários com role
-     * CUSTOMER.
-     * Usuários admin possuem este campo como null.
-     */
-    @OneToOne
-    @JoinColumn(name = "customer_id", nullable = true)
-    private Customer customer;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

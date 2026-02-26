@@ -7,8 +7,7 @@ public enum Role {
 
     USER("USER", "Usuário"),
     ADMIN("ADMIN", "Administrador"),
-    SUPER_ADMIN("SUPER_ADMIN", "Super Administrador"),
-    CUSTOMER("CUSTOMER", "Cliente");
+    SUPER_ADMIN("SUPER_ADMIN", "Super Administrador");
 
     private final String code;
     private final String name;
