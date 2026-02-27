@@ -76,6 +76,14 @@ Registro de todas as alterações relevantes do projeto, organizadas por data e 
 
 ### Melhorias
 
+- **Cobertura de testes ampliada para storefront e infraestrutura** (`1d8d1a3` / `91dbd20` / `9c5cd5e` — 27/02/2026)
+  12 novas classes de teste adicionadas cobrindo toda a área pública e serviços de infraestrutura:
+  `CartServiceTest` (10), `CheckoutServiceTest` (3), `StorageServiceTest` (4),
+  `CustomUserDetailsServiceTest` (3), `StoreControllerTest` (5), `CartControllerTest` (6),
+  `CheckoutControllerTest` (6), `AccountControllerTest` (6), `CustomerAuthControllerTest` (5),
+  `CustomerViewControllerTest` (8), `ProductViewControllerTest` (8), `DashboardViewControllerTest` (2).
+  Total acumulado: **180 testes**, apenas 2 falhas pré-existentes em testes legados.
+
 - **Tela de login do cliente redesenhada** (`fcbddd5` — 26/02/2026 15:20)
   Layout split: painel esquerdo com gradiente da marca, slogan e benefícios (oculto em mobile);
   painel direito com formulário. Template standalone sem layout compartilhado.

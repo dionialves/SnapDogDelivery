@@ -106,28 +106,6 @@ Estilo discreto (`text-xs`, `text-gray-400`), alinhado com o visual atual do foo
 
 ---
 
-### Cobertura de Testes — v1.0
-
-#### Testes de serviço pendentes
-
-| Classe | Testes planejados |
-|---|---|
-| `CartServiceTest` | `addItem`, `removeItem`, `updateQuantity`, `clear`, `getItemCount` |
-| `CheckoutServiceTest` | Fluxo completo carrinho → pedido; validações de carrinho vazio e cliente sem endereço |
-
----
-
-#### Testes de controller pendentes
-
-| Classe | Testes planejados |
-|---|---|
-| `StoreControllerTest` | `GET /`, `GET /catalog`, `GET /catalog/{id}` — listagem pública, produto não encontrado |
-| `CartControllerTest` | Add, remove, update, clear — autenticado e sem autenticação (redirect para `/login`) |
-| `CheckoutControllerTest` | Revisão, confirmação, carrinho vazio, cliente sem endereço |
-| `AccountControllerTest` | Dashboard, histórico de pedidos, detalhe, edição de perfil |
-
----
-
 ### Infraestrutura — v1.0
 
 #### Migrations com Flyway
