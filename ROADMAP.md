@@ -7,9 +7,39 @@ Quando um item for concluído, mova-o para `CHANGELOG.md` com data e detalhes de
 
 ## Features Planejadas
 
-### Área Pública — v1.0
+### Area Admin
 
-#### 1.2.1 Upload de arquivo no formulário admin de produto
+#### Criar um editor de imagem para produtos
+
+Criar um editor de imagem se abre quando o upload de imagem e aberto, desse editor tem um preview da imagem, e tem as seguintes opções:
+
+- Retirada de background (fundo transparente)
+- Preview de como ficaria do card da area publica
+- Aproximar ou afastar a imagem para melhor enquadramento
+
+---
+
+#### Informações da empresa no painel admin
+
+Criar uma seção de "Configurações da Empresa" no painel admin para armazenar informações como:
+
+- Copyright
+- telefone de contato
+- email de contato
+- endereço físico
+- e outros
+
+---
+
+### Área Pública
+
+#### Categoria de tipos de produtos
+
+Criar categorias diferentes de produtos como HotDog e Bebidas, e mostras no cardapio separado por categoria.
+
+---
+
+#### Upload de arquivo no formulário admin de produto
 **Arquivos:** `templates/admin/products/form.html`
 
 Backend de upload já implementado (`StorageService`, `ProductViewController`, `WebMvcConfig`).
@@ -19,7 +49,7 @@ Ainda faltam:
 
 ---
 
-#### 1.8 Modal de quantidade ao adicionar ao carrinho
+#### Modal de quantidade ao adicionar ao carrinho
 **Arquivos:** `templates/public/store/catalog.html`, `templates/public/store/product-detail.html`
 
 O botão "Adicionar" posta diretamente com `quantity=1` fixo.
@@ -33,7 +63,7 @@ O botão "Adicionar" posta diretamente com `quantity=1` fixo.
 
 ---
 
-#### 1.9 Máscaras de telefone e CEP no cadastro de cliente
+#### Máscaras de telefone e CEP no cadastro de cliente
 **Arquivos:** `templates/public/auth/register.html`, `templates/public/account/profile.html`
 
 **Solução planejada:**
@@ -43,7 +73,7 @@ O botão "Adicionar" posta diretamente com `quantity=1` fixo.
 
 ---
 
-#### 1.10 Auto-preenchimento de endereço por CEP (ViaCEP)
+#### Auto-preenchimento de endereço por CEP (ViaCEP)
 **Arquivos:** `templates/public/auth/register.html`, `templates/public/account/profile.html`
 
 **Solução planejada:**
@@ -55,7 +85,7 @@ O botão "Adicionar" posta diretamente com `quantity=1` fixo.
 
 ---
 
-#### 2.4 Campo `origin` visível na área admin
+#### Campo `origin` visível na área admin
 **Arquivos:** `templates/admin/orders/list.html`, `templates/admin/orders/form.html`
 
 Backend já implementado (enum `OrderOrigin`, campo `origin` em `Order` e DTOs). Ainda faltam:
@@ -65,7 +95,7 @@ Backend já implementado (enum `OrderOrigin`, campo `origin` em `Order` e DTOs).
 
 ---
 
-#### 2.7 Crédito do criador no footer público
+#### Crédito do criador no footer público
 **Arquivo:** `templates/public/fragments/layout.html` (~linha 187)
 
 Adicionar abaixo do copyright:
@@ -78,7 +108,7 @@ Estilo discreto (`text-xs`, `text-gray-400`), alinhado com o visual atual do foo
 
 ### Cobertura de Testes — v1.0
 
-#### 5.1 Testes de serviço pendentes
+#### Testes de serviço pendentes
 
 | Classe | Testes planejados |
 |---|---|
@@ -87,7 +117,7 @@ Estilo discreto (`text-xs`, `text-gray-400`), alinhado com o visual atual do foo
 
 ---
 
-#### 5.2 Testes de controller pendentes
+#### Testes de controller pendentes
 
 | Classe | Testes planejados |
 |---|---|
@@ -100,7 +130,7 @@ Estilo discreto (`text-xs`, `text-gray-400`), alinhado com o visual atual do foo
 
 ### Infraestrutura — v1.0
 
-#### 4.1 Migrations com Flyway
+#### Migrations com Flyway
 **Arquivo:** `src/main/resources/application.properties`
 
 **Problema crítico:** `ddl-auto=create-drop` destrói e recria todas as tabelas a cada restart.
@@ -120,7 +150,7 @@ Estilo discreto (`text-xs`, `text-gray-400`), alinhado com o visual atual do foo
 
 ## Bugs Conhecidos
 
-### 3.10 Logo placeholder no layout admin
+### Logo placeholder no layout admin
 **Arquivo:** `templates/admin/fragments/layout.html` (~linha 54)
 
 Comentário `<!-- Logo placeholder - depois substituímos pelo SVG real -->` com emoji no lugar
@@ -128,7 +158,7 @@ do logo. Requer asset de logo (SVG/imagem) que ainda não existe no projeto.
 
 ---
 
-### 3.13 Status do pedido exibido em inglês na tela de confirmação
+### Status do pedido exibido em inglês na tela de confirmação
 **Arquivo:** `templates/public/checkout/confirmation.html` (linha 32)
 
 `th:text="${order.status}"` imprime o nome literal do enum (`PENDING`, `PREPARING` etc.) em inglês.
@@ -142,7 +172,7 @@ do logo. Requer asset de logo (SVG/imagem) que ainda não existe no projeto.
 
 ---
 
-### 3.14 Dropdown do cliente exibe e-mail em vez do nome
+### Dropdown do cliente exibe e-mail em vez do nome
 **Arquivo:** `templates/public/fragments/layout.html` (linha 83)
 
 `sec:authentication="name"` retorna o `username` do `UserDetails` — que no
@@ -155,7 +185,7 @@ do logo. Requer asset de logo (SVG/imagem) que ainda não existe no projeto.
 
 ---
 
-### 3.15 Conflito de sessão entre área admin e área pública
+### Conflito de sessão entre área admin e área pública
 As duas `SecurityFilterChain` compartilham o mesmo atributo `SPRING_SECURITY_CONTEXT` na
 `HttpSession`. Login admin no mesmo browser corrompe a sessão do cliente.
 
@@ -166,7 +196,7 @@ As duas `SecurityFilterChain` compartilham o mesmo atributo `SPRING_SECURITY_CON
 
 ---
 
-### 3.16 Copyright com ano desatualizado (2025)
+### Copyright com ano desatualizado (2025)
 
 | Arquivo | Ocorrência |
 |---|---|
@@ -176,6 +206,24 @@ As duas `SecurityFilterChain` compartilham o mesmo atributo `SPRING_SECURITY_CON
 | `templates/admin/auth/login.html` | rodapé |
 
 Atualizar `© 2025` → `© 2026` em todos os arquivos listados.
+
+---
+
+### Criar page 400 404 e 500 para a area publica
+
+Customizar paginas exclusivas para a area publica, seguindo o layout atual, para os erros HTTP 400, 404 e 500. Atualmente, o sistema esta utilizando as paginas em /error, que foram estilizadas para serem usadas no admin.
+
+Etapas
+
+- Crias as paginas `400.html`, `404.html` e `500.html` em `templates/public/error/`
+- Modificar as paginas em `/error` para `templates/admin/error/`, pois forame stilizadas para o admin
+- Ajustar sistema para buscar as paginas corretamente, dependendo da origem do erro (admin vs público).
+
+---
+
+### Nova logo
+
+Uma nova logo foi criada para o sistema e ja colocada no layout.html da area publica, ela se encontra no public/images/logo.png. Precisa reestilizar a paginas de /login /admin/login e layout do sistema de administração do sistema.
 
 ---
 
