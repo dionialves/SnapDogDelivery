@@ -128,6 +128,29 @@ Estilo discreto (`text-xs`, `text-gray-400`), alinhado com o visual atual do foo
 
 ## Bugs Conhecidos
 
+### Falha de compilação em CustomerServiceTest e UserServiceTest
+
+**Arquivos:**
+- `src/test/java/com/dionialves/snapdogdelivery/domain/admin/customer/CustomerServiceTest.java` (linha 108)
+- `src/test/java/com/dionialves/snapdogdelivery/domain/admin/user/UserServiceTest.java` (linha 84)
+
+**Sintoma:** `mvn test` termina com 2 erros de compilação:
+```
+CustomerServiceTest.search_paginado_retornaPage:108 » Unresolved compilation problem:
+  Type mismatch: cannot convert from Streamable<CustomerDTO> to Page<CustomerDTO>
+
+UserServiceTest.findAll_retornaPaginaUsuarios:84 » Unresolved compilation problem:
+  Type mismatch: cannot convert from Streamable<UserResponseDTO> to Page<UserResponseDTO>
+```
+
+**Causa:** O uso de `var` para capturar o retorno dos métodos `customerService.search(String, int, int)` e `userService.findAll(int)` faz o compilador inferir `Streamable<T>` em vez de `Page<T>`. Isso ocorre porque `Page<T>` estende `Streamable<T>` e o compilador escolhe o tipo mais genérico ao encadear `.map()` num `PageImpl`.
+
+**Solução planejada:**
+- `CustomerServiceTest.java:108`: substituir `var result` por `Page<CustomerDTO> result`
+- `UserServiceTest.java:84`: substituir `var result` por `Page<UserResponseDTO> result`
+
+---
+
 ### Logo placeholder no layout admin
 **Arquivo:** `templates/admin/fragments/layout.html` (~linha 54)
 
