@@ -46,3 +46,9 @@ CLAUDE.md
 
 # Configuração de produção (contém credenciais — nunca versionar)
 **/application-prod.properties
+
+# Sistema operacional
+.DS_Store
+
+# Uploads de usuário
+uploads/
