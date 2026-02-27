@@ -1,105 +1,102 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      th:replace="~{public/fragments/layout :: layout('Cardápio', ~{::main})}"
-      lang="pt-BR">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    th:replace="~{public/fragments/layout :: layout('Cardápio', ~{::main})}" lang="pt-BR">
 
-<head><title>Cardápio</title></head>
+<head>
+    <title>Cardápio</title>
+</head>
 
 <body>
-<main>
-    <div class="max-w-6xl mx-auto px-4 py-10">
+    <main>
+        <div class="max-w-6xl mx-auto px-4 py-10">
 
-        <!-- Cabeçalho -->
-        <div class="mb-8">
-            <h1 class="text-2xl font-bold text-gray-900">Cardápio</h1>
-            <p class="text-gray-500 text-sm mt-1">Todos os nossos produtos disponíveis</p>
-        </div>
+            <!-- Cabeçalho -->
+            <div class="mb-8">
+                <h1 class="text-2xl font-bold text-gray-900">Cardápio</h1>
+                <p class="text-gray-500 text-sm mt-1">Todos os nossos produtos disponíveis</p>
+            </div>
 
-        <!-- Grid de produtos -->
-        <div th:if="${products != null and products.hasContent()}"
-             class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            <!-- Grid de produtos -->
+            <div th:if="${products != null and products.hasContent()}"
+                class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
 
-            <div th:each="product : ${products}"
-                 class="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group flex flex-col">
+                <div th:each="product : ${products}"
+                    class="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group flex flex-col">
 
-                <!-- Imagem -->
-                <a th:href="@{/catalog/{id}(id=${product.id})}" class="block aspect-video bg-gray-100 overflow-hidden">
-                    <img th:if="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
-                         th:src="${product.imageUrl}" th:alt="${product.name}"
-                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                    <div th:unless="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
-                         class="w-full h-full flex items-center justify-center text-gray-200">
-                        <i data-lucide="image" class="w-10 h-10"></i>
-                    </div>
-                </a>
+                    <!-- Imagem -->
+                    <a th:href="@{/catalog/{id}(id=${product.id})}" class="block aspect-video bg-white overflow-hidden">
+                        <img th:if="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
+                            th:src="${product.imageUrl}" th:alt="${product.name}"
+                            class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300">
+                        <div th:unless="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
+                            class="w-full h-full flex items-center justify-center text-gray-200">
+                            <i data-lucide="image" class="w-10 h-10"></i>
+                        </div>
+                    </a>
 
-                <div class="p-4 flex flex-col flex-1">
-                    <a th:href="@{/catalog/{id}(id=${product.id})}"
-                       class="font-semibold text-gray-900 mb-1 hover:text-snapdog-600 transition-colors line-clamp-1"
-                       th:text="${product.name}">Nome</a>
+                    <div class="p-4 flex flex-col flex-1">
+                        <a th:href="@{/catalog/{id}(id=${product.id})}"
+                            class="font-semibold text-gray-900 mb-1 hover:text-snapdog-600 transition-colors line-clamp-1"
+                            th:text="${product.name}">Nome</a>
 
-                    <p th:if="${product.description != null and !#strings.isEmpty(product.description)}"
-                       class="text-xs text-gray-500 mb-3 line-clamp-2 flex-1" th:text="${product.description}"></p>
-                    <div th:unless="${product.description != null and !#strings.isEmpty(product.description)}" class="flex-1"></div>
+                        <p th:if="${product.description != null and !#strings.isEmpty(product.description)}"
+                            class="text-xs text-gray-500 mb-3 line-clamp-2 flex-1" th:text="${product.description}"></p>
+                        <div th:unless="${product.description != null and !#strings.isEmpty(product.description)}"
+                            class="flex-1"></div>
 
-                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                        <span class="text-snapdog-600 font-bold"
-                              th:text="'R$ ' + ${#numbers.formatDecimal(product.price, 1, 'POINT', 2, 'COMMA')}">
-                        </span>
+                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                            <span class="text-snapdog-600 font-bold"
+                                th:text="'R$ ' + ${#numbers.formatDecimal(product.price, 1, 'POINT', 2, 'COMMA')}">
+                            </span>
 
-                        <!-- Botão para cliente autenticado -->
-                        <form sec:authorize="hasRole('CUSTOMER')"
-                              th:action="@{/cart/add}" method="post">
-                            <input type="hidden" name="productId" th:value="${product.id}">
-                            <input type="hidden" name="quantity" value="1">
-                            <button type="submit"
+                            <!-- Botão para cliente autenticado -->
+                            <form sec:authorize="hasRole('CUSTOMER')" th:action="@{/cart/add}" method="post">
+                                <input type="hidden" name="productId" th:value="${product.id}">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit"
                                     class="flex items-center gap-1.5 px-3 py-1.5 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg text-xs font-semibold transition-colors">
+                                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                    Adicionar
+                                </button>
+                            </form>
+
+                            <!-- Link para login (não autenticado) -->
+                            <a sec:authorize="!hasRole('CUSTOMER')" href="/login"
+                                class="flex items-center gap-1.5 px-3 py-1.5 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg text-xs font-semibold transition-colors">
                                 <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                                 Adicionar
-                            </button>
-                        </form>
-
-                        <!-- Link para login (não autenticado) -->
-                        <a sec:authorize="!hasRole('CUSTOMER')"
-                           href="/login"
-                           class="flex items-center gap-1.5 px-3 py-1.5 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg text-xs font-semibold transition-colors">
-                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                            Adicionar
-                        </a>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Estado vazio -->
-        <div th:unless="${products != null and products.hasContent()}"
-             class="text-center py-20 text-gray-400">
-            <i data-lucide="package-open" class="w-12 h-12 mx-auto mb-4"></i>
-            <p class="text-lg font-medium">Nenhum produto disponível no momento.</p>
-            <p class="text-sm mt-1">Volte mais tarde!</p>
-        </div>
+            <!-- Estado vazio -->
+            <div th:unless="${products != null and products.hasContent()}" class="text-center py-20 text-gray-400">
+                <i data-lucide="package-open" class="w-12 h-12 mx-auto mb-4"></i>
+                <p class="text-lg font-medium">Nenhum produto disponível no momento.</p>
+                <p class="text-sm mt-1">Volte mais tarde!</p>
+            </div>
 
-        <!-- Paginação -->
-        <div th:if="${totalPages > 1}" class="flex justify-center gap-2 mt-10">
-            <a th:unless="${currentPage == 0}"
-               th:href="@{/catalog(page=${currentPage - 1})}"
-               class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-1">
-                <i data-lucide="chevron-left" class="w-4 h-4"></i>
-                Anterior
-            </a>
-            <span class="px-4 py-2 text-sm text-gray-500">
-                Página <strong th:text="${currentPage + 1}"></strong> de <strong th:text="${totalPages}"></strong>
-            </span>
-            <a th:unless="${currentPage + 1 >= totalPages}"
-               th:href="@{/catalog(page=${currentPage + 1})}"
-               class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-1">
-                Próxima
-                <i data-lucide="chevron-right" class="w-4 h-4"></i>
-            </a>
-        </div>
+            <!-- Paginação -->
+            <div th:if="${totalPages > 1}" class="flex justify-center gap-2 mt-10">
+                <a th:unless="${currentPage == 0}" th:href="@{/catalog(page=${currentPage - 1})}"
+                    class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-1">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                    Anterior
+                </a>
+                <span class="px-4 py-2 text-sm text-gray-500">
+                    Página <strong th:text="${currentPage + 1}"></strong> de <strong th:text="${totalPages}"></strong>
+                </span>
+                <a th:unless="${currentPage + 1 >= totalPages}" th:href="@{/catalog(page=${currentPage + 1})}"
+                    class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-1">
+                    Próxima
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </a>
+            </div>
 
-    </div>
-</main>
+        </div>
+    </main>
 </body>
+
 </html>

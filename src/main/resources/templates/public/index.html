@@ -1,137 +1,139 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      th:replace="~{public/fragments/layout :: layout('Início', ~{::main})}"
-      lang="pt-BR">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    th:replace="~{public/fragments/layout :: layout('Início', ~{::main})}" lang="pt-BR">
 
-<head><title>Início</title></head>
+<head>
+    <title>Início</title>
+</head>
 
 <body>
-<main>
+    <main>
 
-    <!-- Hero -->
-    <section class="bg-gradient-to-br from-snapdog-600 to-snapdog-800 text-white py-20 px-4">
-        <div class="max-w-4xl mx-auto text-center">
-            <h1 class="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
-                Sabor na sua porta,<br>no tempo certo.
-            </h1>
-            <p class="text-snapdog-100 text-lg mb-8 max-w-xl mx-auto">
-                Peça agora e receba em minutos. Produtos frescos, entrega rápida.
-            </p>
-            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+        <!-- Hero -->
+        <section class="bg-gradient-to-br from-snapdog-600 to-snapdog-800 text-white py-20 px-4">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
+                    Sabor na sua porta,<br>no tempo certo.
+                </h1>
+                <p class="text-snapdog-100 text-lg mb-8 max-w-xl mx-auto">
+                    Peça agora e receba em minutos. Produtos frescos, entrega rápida.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href="/catalog"
+                        class="px-8 py-3.5 bg-white text-snapdog-700 rounded-xl font-bold hover:bg-snapdog-50 transition-colors flex items-center justify-center gap-2 text-base">
+                        <i data-lucide="utensils" class="w-5 h-5"></i>
+                        Ver cardápio completo
+                    </a>
+                    <a sec:authorize="!isAuthenticated()" href="/register"
+                        class="px-8 py-3.5 bg-snapdog-500 hover:bg-snapdog-400 text-white rounded-xl font-bold border border-snapdog-400 transition-colors text-base">
+                        Criar conta grátis
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Benefícios -->
+        <section class="bg-white py-12 border-b border-gray-100">
+            <div class="max-w-5xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div class="flex flex-col items-center gap-3">
+                    <div class="w-12 h-12 bg-snapdog-50 rounded-full flex items-center justify-center">
+                        <i data-lucide="zap" class="w-6 h-6 text-snapdog-600"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Entrega rápida</h3>
+                    <p class="text-sm text-gray-500">Seu pedido chega em até 45 minutos.</p>
+                </div>
+                <div class="flex flex-col items-center gap-3">
+                    <div class="w-12 h-12 bg-snapdog-50 rounded-full flex items-center justify-center">
+                        <i data-lucide="shield-check" class="w-6 h-6 text-snapdog-600"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Produtos frescos</h3>
+                    <p class="text-sm text-gray-500">Ingredientes selecionados e preparados na hora.</p>
+                </div>
+                <div class="flex flex-col items-center gap-3">
+                    <div class="w-12 h-12 bg-snapdog-50 rounded-full flex items-center justify-center">
+                        <i data-lucide="map-pin" class="w-6 h-6 text-snapdog-600"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Rastreamento</h3>
+                    <p class="text-sm text-gray-500">Acompanhe seu pedido em tempo real.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Produtos em destaque -->
+        <section class="max-w-6xl mx-auto px-4 py-14">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Destaques do cardápio</h2>
+                    <p class="text-gray-500 text-sm mt-1">Escolhas favoritas dos nossos clientes</p>
+                </div>
                 <a href="/catalog"
-                   class="px-8 py-3.5 bg-white text-snapdog-700 rounded-xl font-bold hover:bg-snapdog-50 transition-colors flex items-center justify-center gap-2 text-base">
+                    class="text-sm font-semibold text-snapdog-600 hover:text-snapdog-700 flex items-center gap-1">
+                    Ver todos
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </a>
+            </div>
+
+            <div th:if="${featuredProducts != null and !#lists.isEmpty(featuredProducts)}"
+                class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                <div th:each="product : ${featuredProducts}"
+                    class="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group">
+
+                    <!-- Imagem -->
+                    <div class="aspect-video bg-white overflow-hidden">
+                        <img th:if="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
+                            th:src="${product.imageUrl}" th:alt="${product.name}"
+                            class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300">
+                        <div th:unless="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
+                            class="w-full h-full flex items-center justify-center text-gray-300">
+                            <i data-lucide="image" class="w-10 h-10"></i>
+                        </div>
+                    </div>
+
+                    <div class="p-5">
+                        <h3 class="font-semibold text-gray-900 mb-1 truncate" th:text="${product.name}">Nome</h3>
+                        <p th:if="${product.description != null and !#strings.isEmpty(product.description)}"
+                            class="text-sm text-gray-500 mb-3 line-clamp-2" th:text="${product.description}"></p>
+
+                        <div class="flex items-center justify-between mt-3">
+                            <span class="text-snapdog-600 font-bold text-lg"
+                                th:text="'R$ ' + ${#numbers.formatDecimal(product.price, 1, 'POINT', 2, 'COMMA')}">
+                                R$ 0,00
+                            </span>
+                            <a th:href="@{/catalog/{id}(id=${product.id})}"
+                                class="px-4 py-1.5 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg text-sm font-semibold transition-colors">
+                                Ver mais
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${featuredProducts == null or #lists.isEmpty(featuredProducts)}"
+                class="text-center py-12 text-gray-400">
+                <i data-lucide="package-open" class="w-10 h-10 mx-auto mb-3"></i>
+                <p>Nenhum produto disponível no momento.</p>
+            </div>
+        </section>
+
+        <!-- CTA final -->
+        <section class="bg-snapdog-50 border-t border-snapdog-100 py-14 px-4">
+            <div class="max-w-xl mx-auto text-center">
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">Pronto para pedir?</h2>
+                <p class="text-gray-500 mb-6">Crie sua conta em menos de 2 minutos e faça seu primeiro pedido.</p>
+                <a sec:authorize="!isAuthenticated()" href="/register"
+                    class="inline-flex items-center gap-2 px-8 py-3 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-xl font-bold transition-colors">
+                    <i data-lucide="user-plus" class="w-5 h-5"></i>
+                    Criar conta grátis
+                </a>
+                <a sec:authorize="isAuthenticated()" href="/catalog"
+                    class="inline-flex items-center gap-2 px-8 py-3 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-xl font-bold transition-colors">
                     <i data-lucide="utensils" class="w-5 h-5"></i>
                     Ver cardápio completo
                 </a>
-                <a sec:authorize="!isAuthenticated()" href="/register"
-                   class="px-8 py-3.5 bg-snapdog-500 hover:bg-snapdog-400 text-white rounded-xl font-bold border border-snapdog-400 transition-colors text-base">
-                    Criar conta grátis
-                </a>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Benefícios -->
-    <section class="bg-white py-12 border-b border-gray-100">
-        <div class="max-w-5xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div class="flex flex-col items-center gap-3">
-                <div class="w-12 h-12 bg-snapdog-50 rounded-full flex items-center justify-center">
-                    <i data-lucide="zap" class="w-6 h-6 text-snapdog-600"></i>
-                </div>
-                <h3 class="font-semibold text-gray-900">Entrega rápida</h3>
-                <p class="text-sm text-gray-500">Seu pedido chega em até 45 minutos.</p>
-            </div>
-            <div class="flex flex-col items-center gap-3">
-                <div class="w-12 h-12 bg-snapdog-50 rounded-full flex items-center justify-center">
-                    <i data-lucide="shield-check" class="w-6 h-6 text-snapdog-600"></i>
-                </div>
-                <h3 class="font-semibold text-gray-900">Produtos frescos</h3>
-                <p class="text-sm text-gray-500">Ingredientes selecionados e preparados na hora.</p>
-            </div>
-            <div class="flex flex-col items-center gap-3">
-                <div class="w-12 h-12 bg-snapdog-50 rounded-full flex items-center justify-center">
-                    <i data-lucide="map-pin" class="w-6 h-6 text-snapdog-600"></i>
-                </div>
-                <h3 class="font-semibold text-gray-900">Rastreamento</h3>
-                <p class="text-sm text-gray-500">Acompanhe seu pedido em tempo real.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Produtos em destaque -->
-    <section class="max-w-6xl mx-auto px-4 py-14">
-        <div class="flex items-center justify-between mb-8">
-            <div>
-                <h2 class="text-2xl font-bold text-gray-900">Destaques do cardápio</h2>
-                <p class="text-gray-500 text-sm mt-1">Escolhas favoritas dos nossos clientes</p>
-            </div>
-            <a href="/catalog" class="text-sm font-semibold text-snapdog-600 hover:text-snapdog-700 flex items-center gap-1">
-                Ver todos
-                <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </a>
-        </div>
-
-        <div th:if="${featuredProducts != null and !#lists.isEmpty(featuredProducts)}"
-             class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            <div th:each="product : ${featuredProducts}"
-                 class="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group">
-
-                <!-- Imagem -->
-                <div class="aspect-video bg-gray-100 overflow-hidden">
-                    <img th:if="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
-                         th:src="${product.imageUrl}" th:alt="${product.name}"
-                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                    <div th:unless="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
-                         class="w-full h-full flex items-center justify-center text-gray-300">
-                        <i data-lucide="image" class="w-10 h-10"></i>
-                    </div>
-                </div>
-
-                <div class="p-5">
-                    <h3 class="font-semibold text-gray-900 mb-1 truncate" th:text="${product.name}">Nome</h3>
-                    <p th:if="${product.description != null and !#strings.isEmpty(product.description)}"
-                       class="text-sm text-gray-500 mb-3 line-clamp-2" th:text="${product.description}"></p>
-
-                    <div class="flex items-center justify-between mt-3">
-                        <span class="text-snapdog-600 font-bold text-lg"
-                              th:text="'R$ ' + ${#numbers.formatDecimal(product.price, 1, 'POINT', 2, 'COMMA')}">
-                            R$ 0,00
-                        </span>
-                        <a th:href="@{/catalog/{id}(id=${product.id})}"
-                           class="px-4 py-1.5 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg text-sm font-semibold transition-colors">
-                            Ver mais
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div th:if="${featuredProducts == null or #lists.isEmpty(featuredProducts)}"
-             class="text-center py-12 text-gray-400">
-            <i data-lucide="package-open" class="w-10 h-10 mx-auto mb-3"></i>
-            <p>Nenhum produto disponível no momento.</p>
-        </div>
-    </section>
-
-    <!-- CTA final -->
-    <section class="bg-snapdog-50 border-t border-snapdog-100 py-14 px-4">
-        <div class="max-w-xl mx-auto text-center">
-            <h2 class="text-2xl font-bold text-gray-900 mb-2">Pronto para pedir?</h2>
-            <p class="text-gray-500 mb-6">Crie sua conta em menos de 2 minutos e faça seu primeiro pedido.</p>
-            <a sec:authorize="!isAuthenticated()" href="/register"
-               class="inline-flex items-center gap-2 px-8 py-3 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-xl font-bold transition-colors">
-                <i data-lucide="user-plus" class="w-5 h-5"></i>
-                Criar conta grátis
-            </a>
-            <a sec:authorize="isAuthenticated()" href="/catalog"
-               class="inline-flex items-center gap-2 px-8 py-3 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-xl font-bold transition-colors">
-                <i data-lucide="utensils" class="w-5 h-5"></i>
-                Ver cardápio completo
-            </a>
-        </div>
-    </section>
-
-</main>
+    </main>
 </body>
+
 </html>
