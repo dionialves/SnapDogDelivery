@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{public/fragments/layout :: layout('Carrinho', ~{::main})}"
+      lang="pt-BR">
+
+<head><title>Carrinho</title></head>
+
+<body>
+<main>
+    <div class="max-w-4xl mx-auto px-4 py-10">
+
+        <h1 class="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-2">
+            <i data-lucide="shopping-cart" class="w-6 h-6"></i>
+            Meu carrinho
+        </h1>
+
+        <!-- Carrinho vazio -->
+        <div th:if="${cart.empty}" class="text-center py-20 bg-white rounded-2xl border border-gray-200">
+            <i data-lucide="shopping-cart" class="w-12 h-12 text-gray-300 mx-auto mb-4"></i>
+            <h2 class="text-lg font-semibold text-gray-700 mb-2">Seu carrinho está vazio</h2>
+            <p class="text-gray-400 text-sm mb-6">Adicione produtos do cardápio para começar.</p>
+            <a href="/catalog"
+               class="inline-flex items-center gap-2 px-6 py-2.5 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg font-semibold text-sm transition-colors">
+                <i data-lucide="utensils" class="w-4 h-4"></i>
+                Ver cardápio
+            </a>
+        </div>
+
+        <!-- Itens do carrinho -->
+        <div th:unless="${cart.empty}" class="space-y-4">
+
+            <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+                <div class="divide-y divide-gray-100">
+                    <div th:each="item : ${cart.itemList}" class="flex items-center gap-4 p-4">
+
+                        <!-- Imagem -->
+                        <div class="w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                            <img th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
+                                 th:src="${item.imageUrl}" th:alt="${item.productName}"
+                                 class="w-full h-full object-cover">
+                            <div th:unless="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
+                                 class="w-full h-full flex items-center justify-center text-gray-200">
+                                <i data-lucide="image" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+
+                        <!-- Nome e preço -->
+                        <div class="flex-1 min-w-0">
+                            <p class="font-semibold text-gray-900 truncate" th:text="${item.productName}"></p>
+                            <p class="text-sm text-gray-500"
+                               th:text="'R$ ' + ${#numbers.formatDecimal(item.unitPrice, 1, 'POINT', 2, 'COMMA')} + ' cada'"></p>
+                        </div>
+
+                        <!-- Controle de quantidade -->
+                        <form th:action="@{/cart/update/{id}(id=${item.productId})}" method="post"
+                              class="flex items-center gap-1">
+                            <input type="number" name="quantity" th:value="${item.quantity}" min="1" max="20"
+                                   class="w-16 text-center py-1.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-snapdog-500"
+                                   onchange="this.form.submit()">
+                        </form>
+
+                        <!-- Subtotal -->
+                        <div class="text-right min-w-[80px]">
+                            <p class="font-bold text-gray-900"
+                               th:text="'R$ ' + ${#numbers.formatDecimal(item.subtotal, 1, 'POINT', 2, 'COMMA')}"></p>
+                        </div>
+
+                        <!-- Remover -->
+                        <form th:action="@{/cart/remove/{id}(id=${item.productId})}" method="post">
+                            <button type="submit" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50"
+                                    title="Remover item">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumo e ações -->
+            <div class="bg-white rounded-2xl border border-gray-200 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-gray-600">Subtotal</span>
+                    <span class="font-bold text-gray-900 text-lg"
+                          th:text="'R$ ' + ${#numbers.formatDecimal(cart.total, 1, 'POINT', 2, 'COMMA')}"></span>
+                </div>
+                <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
+                    <span class="text-gray-600">Entrega</span>
+                    <span class="text-green-600 font-semibold">Grátis</span>
+                </div>
+                <div class="flex items-center justify-between mb-6">
+                    <span class="font-bold text-gray-900">Total</span>
+                    <span class="font-bold text-snapdog-600 text-xl"
+                          th:text="'R$ ' + ${#numbers.formatDecimal(cart.total, 1, 'POINT', 2, 'COMMA')}"></span>
+                </div>
+
+                <a href="/checkout"
+                   class="w-full flex items-center justify-center gap-2 py-3 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-xl font-bold transition-colors">
+                    <i data-lucide="credit-card" class="w-5 h-5"></i>
+                    Finalizar pedido
+                </a>
+
+                <div class="flex items-center justify-between mt-4">
+                    <a href="/catalog" class="text-sm text-gray-500 hover:text-snapdog-600 flex items-center gap-1">
+                        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                        Continuar comprando
+                    </a>
+                    <form th:action="@{/cart/clear}" method="post">
+                        <button type="submit" class="text-sm text-red-500 hover:text-red-600">
+                            Esvaziar carrinho
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</main>
+</body>
+</html>

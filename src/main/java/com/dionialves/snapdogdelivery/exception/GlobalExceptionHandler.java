@@ -57,7 +57,7 @@ public class GlobalExceptionHandler {
         if (isApiRequest(request)) {
             ErrorResponse error = new ErrorResponse(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "An unexpected error occurred: " + ex.getMessage(),
+                    "Ocorreu um erro inesperado: " + ex.getMessage(),
                     LocalDateTime.now());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
@@ -78,7 +78,7 @@ public class GlobalExceptionHandler {
                 .stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .reduce((a, b) -> a + ", " + b)
-                .orElse("Validation error");
+                .orElse("Erro de validação");
 
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
@@ -92,20 +92,20 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
 
         String message = ex.getMessage();
-        String friendlyMessage = "Invalid request data";
+        String friendlyMessage = "Dados da requisição inválidos";
 
         // Detecta se é erro de enum
         if (message.contains("Cannot deserialize value of type")) {
 
             // Tenta extrair o nome do campo
             if (message.contains("State")) {
-                friendlyMessage = "Invalid state code. Use one of: AC, AL, AP, AM, BA, CE, DF, ES, GO, MA, MT, MS, MG, PA, PB, PR, PE, PI, RJ, RN, RS, RO, RR, SC, SP, SE, TO";
+                friendlyMessage = "Código de estado inválido. Use um dos valores: AC, AL, AP, AM, BA, CE, DF, ES, GO, MA, MT, MS, MG, PA, PB, PR, PE, PI, RJ, RN, RS, RO, RR, SC, SP, SE, TO";
             } else {
-                friendlyMessage = "Invalid value for one of the fields";
+                friendlyMessage = "Valor inválido em um dos campos";
             }
 
         } else if (message.contains("JSON parse error")) {
-            friendlyMessage = "Invalid JSON format";
+            friendlyMessage = "Formato JSON inválido";
         }
 
         ErrorResponse error = new ErrorResponse(

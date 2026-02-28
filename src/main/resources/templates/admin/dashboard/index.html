@@ -76,14 +76,14 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-gray-500 text-sm font-medium">Clientes Novos</p>
-                        <p class="text-3xl font-bold text-gray-800 mt-1" th:text="${dashboardSummary.newClientsToday}">7
+                        <p class="text-3xl font-bold text-gray-800 mt-1" th:text="${dashboardSummary.newCustomersToday}">7
                         </p>
                         <p
-                            th:class="${dashboardSummary.getNewClientsGrowthPercentage >= 0} ? 'text-green-600 text-sm mt-2 flex items-center gap-1' : 'text-red-500 text-sm mt-2 flex items-center gap-1'">
-                            <i th:data-lucide="${dashboardSummary.getNewClientsGrowthPercentage >= 0} ? 'trending-up' : 'trending-down'"
+                            th:class="${dashboardSummary.getNewCustomersGrowthPercentage >= 0} ? 'text-green-600 text-sm mt-2 flex items-center gap-1' : 'text-red-500 text-sm mt-2 flex items-center gap-1'">
+                            <i th:data-lucide="${dashboardSummary.getNewCustomersGrowthPercentage >= 0} ? 'trending-up' : 'trending-down'"
                                 class="w-4 h-4"></i>
                             <span
-                                th:text="${dashboardSummary.getNewClientsGrowthPercentage >= 0 ? '+' + dashboardSummary.getNewClientsGrowthPercentage + '%' : dashboardSummary.getNewClientsGrowthPercentage + '%'}">+12</span>
+                                th:text="${dashboardSummary.getNewCustomersGrowthPercentage >= 0 ? '+' + dashboardSummary.getNewCustomersGrowthPercentage + '%' : dashboardSummary.getNewCustomersGrowthPercentage + '%'}">+12</span>
                             vs ontem
                         </p>
                     </div>
@@ -155,7 +155,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="font-medium text-gray-800" th:text="'#' + ${order.id}">#1234</span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-gray-600" th:text="${order.clientName}">
+                                <td class="px-6 py-4 whitespace-nowrap text-gray-600" th:text="${order.customerName}">
                                     Cliente</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span th:if="${order.status == 'PENDING'}"

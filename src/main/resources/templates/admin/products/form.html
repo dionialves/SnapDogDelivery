@@ -36,7 +36,7 @@
 
     <!-- Formulário -->
     <form th:action="${product.id != null} ? @{/admin/products/{id}(id=${product.id})} : @{/admin/products/new}"
-      th:object="${product}" method="post" class="space-y-6">
+      th:object="${product}" method="post" enctype="multipart/form-data" class="space-y-6">
 
       <div class="bg-white rounded-xl shadow-sm border border-gray-200">
         <div class="p-6 border-b border-gray-200">
@@ -75,7 +75,7 @@
 
           <div class="md:col-span-2">
             <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
-              Description <span class="text-red-500">*</span>
+              Descrição
             </label>
             <textarea rows="4" id="description" th:field="*{description}"
               th:classappend="${#fields.hasErrors('description')} ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''"
@@ -85,6 +85,71 @@
             <p th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="mt-1 text-sm text-red-500">
             </p>
           </div>
+
+          <!-- Imagem do Produto -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Imagem do Produto</label>
+
+            <!-- Tabs de seleção de modo -->
+            <div class="flex gap-2 mb-3">
+              <button type="button" id="tabUrl"
+                onclick="setImageMode('url')"
+                class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-snapdog-600 text-white transition-colors">
+                URL externa
+              </button>
+              <button type="button" id="tabFile"
+                onclick="setImageMode('file')"
+                class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">
+                Upload de arquivo
+              </button>
+            </div>
+
+            <div class="flex gap-4 items-start">
+              <div class="flex-1 space-y-3">
+
+                <!-- Modo URL -->
+                <div id="modeUrl">
+                  <input type="text" id="imageUrl" th:field="*{imageUrl}"
+                    th:classappend="${#fields.hasErrors('imageUrl')} ? 'border-red-500' : ''"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500"
+                    placeholder="https://exemplo.com/imagem.jpg"
+                    oninput="atualizarPreview(this.value)">
+                  <p th:if="${#fields.hasErrors('imageUrl')}" th:errors="*{imageUrl}" class="mt-1 text-sm text-red-500"></p>
+                </div>
+
+                <!-- Modo Upload -->
+                <div id="modeFile" class="hidden">
+                  <input type="file" id="imageFile" name="imageFile" accept="image/jpeg,image/png,image/webp,image/gif"
+                    class="w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-snapdog-50 file:text-snapdog-700 file:font-semibold hover:file:bg-snapdog-100"
+                    onchange="previewUpload(this)">
+                  <p class="text-xs text-gray-400 mt-1">JPG, PNG, WEBP ou GIF. Máx 5MB.</p>
+                </div>
+
+              </div>
+
+              <!-- Preview -->
+              <div class="w-24 h-24 border border-gray-200 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center flex-shrink-0">
+                <img id="imagePreview"
+                  th:src="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)} ? ${product.imageUrl} : ''"
+                  th:class="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)} ? 'w-full h-full object-cover' : 'hidden'"
+                  alt="Preview">
+                <i id="imagePlaceholder"
+                  th:class="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)} ? 'hidden' : ''"
+                  data-lucide="image" class="w-8 h-8 text-gray-300"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visibilidade no Catálogo -->
+          <div class="md:col-span-2">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" id="active" th:field="*{active}"
+                class="w-4 h-4 text-snapdog-600 border-gray-300 rounded focus:ring-snapdog-500">
+              <span class="text-sm font-medium text-gray-700">Exibir no catálogo público</span>
+            </label>
+            <p class="mt-1 text-xs text-gray-500 ml-7">Quando desmarcado, o produto não aparece para clientes no catálogo.</p>
+          </div>
+
         </div>
       </div>
       <!-- Botões de Ação -->
@@ -103,6 +168,59 @@
     </form>
 
     <script>
+      // ===== MODO DE IMAGEM (URL vs Upload) =====
+      function setImageMode(mode) {
+        const modeUrl  = document.getElementById('modeUrl');
+        const modeFile = document.getElementById('modeFile');
+        const tabUrl   = document.getElementById('tabUrl');
+        const tabFile  = document.getElementById('tabFile');
+
+        if (mode === 'url') {
+          modeUrl.classList.remove('hidden');
+          modeFile.classList.add('hidden');
+          tabUrl.className  = 'px-3 py-1.5 text-xs font-semibold rounded-lg bg-snapdog-600 text-white transition-colors';
+          tabFile.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors';
+        } else {
+          modeUrl.classList.add('hidden');
+          modeFile.classList.remove('hidden');
+          tabFile.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg bg-snapdog-600 text-white transition-colors';
+          tabUrl.className  = 'px-3 py-1.5 text-xs font-semibold rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors';
+        }
+      }
+
+      // ===== PREVIEW DA IMAGEM (URL) =====
+      function atualizarPreview(url) {
+        const img = document.getElementById('imagePreview');
+        const placeholder = document.getElementById('imagePlaceholder');
+        if (url && url.trim() !== '') {
+          img.src = url.trim();
+          img.classList.remove('hidden');
+          img.classList.add('w-full', 'h-full', 'object-cover');
+          placeholder.classList.add('hidden');
+        } else {
+          img.src = '';
+          img.classList.add('hidden');
+          placeholder.classList.remove('hidden');
+        }
+      }
+
+      // ===== PREVIEW DO UPLOAD =====
+      function previewUpload(input) {
+        const img = document.getElementById('imagePreview');
+        const placeholder = document.getElementById('imagePlaceholder');
+        if (input.files && input.files[0]) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            img.src = e.target.result;
+            img.classList.remove('hidden');
+            img.classList.add('w-full', 'h-full', 'object-cover');
+            placeholder.classList.add('hidden');
+          };
+          reader.readAsDataURL(input.files[0]);
+        }
+      }
+
+      // ===== FORMATAÇÃO DE PREÇO =====
       const priceDisplay = document.getElementById("priceDisplay");
       const priceHidden  = document.getElementById("priceHidden");
 

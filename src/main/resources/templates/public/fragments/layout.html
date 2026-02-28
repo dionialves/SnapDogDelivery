@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    th:fragment="layout(pageTitle, content)" lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} + ' | SnapDog Delivery'">SnapDog Delivery</title>
+
+    <script src="/js/tailwind.js"></script>
+    <link rel="stylesheet" href="/style/style.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'snapdog': {
+                            50: '#fef2f2',
+                            100: '#fee2e2',
+                            200: '#fecaca',
+                            300: '#fca5a5',
+                            400: '#f87171',
+                            500: '#ef4444',
+                            600: '#dc2626',
+                            700: '#b91c1c',
+                            800: '#991b1b',
+                            900: '#7f1d1d',
+                            950: '#450a0a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script src="/js/lucide.min.js"></script>
+</head>
+
+<body class="bg-gray-50 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+
+            <!-- Logo -->
+            <a href="/" class="flex items-center gap-2.5 flex-shrink-0">
+                <div class="flex items-center justify-center">
+                    <img class="w-40" src="/image/logo.png" alt="">
+                </div>
+            </a>
+
+            <!-- Navegação central -->
+            <nav class="hidden md:flex items-center gap-6">
+                <a href="/catalog"
+                    class="text-sm font-medium text-gray-600 hover:text-snapdog-600 transition-colors flex items-center gap-1.5">
+                    <i data-lucide="utensils" class="w-4 h-4"></i>
+                    Cardápio
+                </a>
+            </nav>
+
+            <!-- Ações do usuário -->
+            <div class="flex items-center gap-3">
+
+                <!-- Carrinho (apenas para clientes autenticados) -->
+                <a sec:authorize="hasRole('CUSTOMER')" href="/cart"
+                    class="relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-gray-600 hover:text-snapdog-600 hover:bg-snapdog-50 transition-colors">
+                    <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                    <span class="text-sm font-medium hidden sm:inline">Carrinho</span>
+                    <span th:if="${cartItemCount != null and cartItemCount > 0}" th:text="${cartItemCount}"
+                        class="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-snapdog-600 text-white text-xs font-bold rounded-full flex items-center justify-center px-1">
+                    </span>
+                </a>
+
+                <!-- Menu do usuário autenticado (CUSTOMER) -->
+                <div sec:authorize="hasRole('CUSTOMER')" class="relative group">
+                    <button
+                        class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">
+                        <i data-lucide="user-circle" class="w-5 h-5 text-gray-500"></i>
+                        <span sec:authentication="name" class="hidden sm:inline max-w-[120px] truncate"></span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i>
+                    </button>
+                    <div
+                        class="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                        <a href="/account"
+                            class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <i data-lucide="package" class="w-4 h-4 text-gray-400"></i>
+                            Meus pedidos
+                        </a>
+                        <a href="/account/profile"
+                            class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <i data-lucide="settings" class="w-4 h-4 text-gray-400"></i>
+                            Meu perfil
+                        </a>
+                        <div class="border-t border-gray-100 my-1"></div>
+                        <form th:action="@{/logout}" method="post">
+                            <button type="submit"
+                                class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                <i data-lucide="log-out" class="w-4 h-4"></i>
+                                Sair
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Botões de login/cadastro (não autenticado) -->
+                <div sec:authorize="!isAuthenticated()" class="flex items-center gap-2">
+                    <a href="/login"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-snapdog-600 transition-colors">
+                        Entrar
+                    </a>
+                    <a href="/register"
+                        class="px-4 py-2 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg text-sm font-semibold transition-colors">
+                        Criar conta
+                    </a>
+                </div>
+
+                <!-- Botão hamburguer mobile -->
+                <button class="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                </button>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- Flash messages globais -->
+    <div class="max-w-6xl mx-auto px-4 w-full">
+        <div th:if="${successMessage}"
+            class="mt-4 p-4 rounded-lg bg-green-50 border border-green-200 text-green-700 flex items-center gap-3">
+            <i data-lucide="check-circle" class="w-5 h-5 flex-shrink-0"></i>
+            <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}"
+            class="mt-4 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 flex items-center gap-3">
+            <i data-lucide="alert-circle" class="w-5 h-5 flex-shrink-0"></i>
+            <span th:text="${errorMessage}"></span>
+        </div>
+    </div>
+
+    <!-- Conteúdo principal -->
+    <main class="flex-1">
+        <th:block th:replace="${content}"></th:block>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-6xl mx-auto px-4 py-10">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+                <!-- Marca -->
+                <div>
+                    <div class="flex items-center gap-2.5 mb-3">
+                        <div class="w-8 h-8 bg-snapdog-600 rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold">S</span>
+                        </div>
+                        <span class="font-bold text-gray-900">SnapDog Delivery</span>
+                    </div>
+                    <p class="text-sm text-gray-500">Entregamos sabor na sua porta com rapidez e carinho.</p>
+                </div>
+
+                <!-- Horários -->
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <i data-lucide="clock" class="w-4 h-4 text-snapdog-600"></i>
+                        Horário de funcionamento
+                    </h3>
+                    <p class="text-sm text-gray-500">Segunda a Sexta: 11h às 22h</p>
+                    <p class="text-sm text-gray-500">Sábado e Domingo: 11h às 23h</p>
+                </div>
+
+                <!-- Contato -->
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <i data-lucide="phone" class="w-4 h-4 text-snapdog-600"></i>
+                        Contato
+                    </h3>
+                    <p class="text-sm text-gray-500">(00) 12345-6789</p>
+                    <p class="text-sm text-gray-500">contato@snapdogdelivery.com</p>
+                </div>
+
+            </div>
+
+            <div class="border-t border-gray-100 mt-8 pt-6 text-center">
+                <p class="text-xs text-gray-400">© 2025 SnapDog Delivery. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>lucide.createIcons();</script>
+
+</body>
+
+</html>

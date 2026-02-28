@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
     th:fragment="layout(pageTitle, activeMenu, pageSubtitle, headerActions, content)" lang="pt-BR">
 
 <head>
@@ -82,8 +83,8 @@
                         </a>
                     </li>
                     <li>
-                        <a th:href="@{/admin/clients}"
-                            th:classappend="${activeMenu == 'clientes'} ? 'bg-snapdog-800 text-white' : 'text-snapdog-100 hover:bg-snapdog-600'"
+                        <a th:href="@{/admin/customers}"
+                            th:classappend="${activeMenu == 'customers'} ? 'bg-snapdog-800 text-white' : 'text-snapdog-100 hover:bg-snapdog-600'"
                             class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors">
                             <i data-lucide="users" class="w-5 h-5"></i>
                             <span>Clientes</span>
@@ -95,6 +96,14 @@
                             class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors">
                             <i data-lucide="package" class="w-5 h-5"></i>
                             <span>Produtos</span>
+                        </a>
+                    </li>
+                    <li sec:authorize="hasRole('SUPER_ADMIN')">
+                        <a th:href="@{/admin/users}"
+                            th:classappend="${activeMenu == 'usuarios'} ? 'bg-snapdog-800 text-white' : 'text-snapdog-100 hover:bg-snapdog-600'"
+                            class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors">
+                            <i data-lucide="shield" class="w-5 h-5"></i>
+                            <span>Usuários</span>
                         </a>
                     </li>
                 </ul>

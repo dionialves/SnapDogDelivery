@@ -35,7 +35,16 @@
       <span th:text="${errorMessage}"></span>
     </div>
 
+    <!-- Badge de Origem -->
+    <div class="flex items-center gap-2 mb-2">
+      <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+        <i data-lucide="pencil" class="w-3 h-3"></i>
+        Origem: Manual
+      </span>
+    </div>
+
     <form th:action="@{/admin/orders/new}" method="post" id="orderForm" class="space-y-6">
+      <input type="hidden" name="origin" value="MANUAL">
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -53,34 +62,34 @@
             <div class="p-6">
               <!-- Campo de busca autocomplete -->
               <div class="relative">
-                <label for="clientSearch" class="block text-sm font-medium text-gray-700 mb-2">
+                <label for="customerSearch" class="block text-sm font-medium text-gray-700 mb-2">
                   Buscar Cliente <span class="text-red-500">*</span>
                 </label>
-                <div id="clientSearchWrapper" class="relative">
+                <div id="customerSearchWrapper" class="relative">
                   <i data-lucide="search" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                  <input type="text" id="clientSearch" placeholder="Digite o nome ou telefone do cliente..."
+                  <input type="text" id="customerSearch" placeholder="Digite o nome ou telefone do cliente..."
                     autocomplete="off"
                     class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500">
                 </div>
                 <!-- Lista de sugestões -->
-                <div id="clientSuggestions"
+                <div id="customerSuggestions"
                   class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                 </div>
               </div>
 
               <!-- Cliente selecionado -->
-              <div id="selectedClient" class="hidden mt-4 p-4 bg-snapdog-50 rounded-lg border border-snapdog-200">
+              <div id="selectedCustomer" class="hidden mt-4 p-4 bg-snapdog-50 rounded-lg border border-snapdog-200">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-3">
                     <div class="w-12 h-12 bg-snapdog-200 rounded-full flex items-center justify-center">
-                      <span id="clientInitial" class="font-bold text-snapdog-700 text-lg">D</span>
+                      <span id="customerInitial" class="font-bold text-snapdog-700 text-lg">D</span>
                     </div>
                     <div>
-                      <p id="clientName" class="font-semibold text-gray-800">Nome do Cliente</p>
-                      <p id="clientInfo" class="text-sm text-gray-600">Telefone • Endereço</p>
+                      <p id="customerName" class="font-semibold text-gray-800">Nome do Cliente</p>
+                      <p id="customerInfo" class="text-sm text-gray-600">Telefone • Endereço</p>
                     </div>
                   </div>
-                  <button type="button" onclick="clearClient()"
+                  <button type="button" onclick="clearCustomer()"
                     class="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                     <i data-lucide="x" class="w-5 h-5"></i>
                   </button>
@@ -88,7 +97,7 @@
               </div>
 
               <!-- Campo hidden com ID do cliente -->
-              <input type="hidden" name="clientId" id="clientId" required>
+              <input type="hidden" name="customerId" id="customerId" required>
             </div>
           </div>
 
@@ -186,47 +195,47 @@
     <!-- Script de gerenciamento do pedido -->
     <script th:inline="javascript">
       // URLs das APIs
-      const clientsApiUrl = /*[[@{/admin/api/clients/search}]]*/ '/admin/api/clients/search';
+      const customersApiUrl = /*[[@{/admin/api/customers/search}]]*/ '/admin/api/customers/search';
       const productsApiUrl = /*[[@{/admin/api/products/search}]]*/ '/admin/api/products/search';
 
-      let selectedClientId = null;
+      let selectedCustomerId = null;
       let addedProducts = [];
 
       // ===== AUTOCOMPLETE CLIENTE =====
-      const clientSearch = document.getElementById('clientSearch');
-      const clientSuggestions = document.getElementById('clientSuggestions');
+      const customerSearch = document.getElementById('customerSearch');
+      const customerSuggestions = document.getElementById('customerSuggestions');
 
-      let clientTimeout;
-      clientSearch.addEventListener('input', function () {
-        clearTimeout(clientTimeout);
+      let customerTimeout;
+      customerSearch.addEventListener('input', function () {
+        clearTimeout(customerTimeout);
         const query = this.value.trim();
 
         if (query.length < 2) {
-          clientSuggestions.classList.add('hidden');
+          customerSuggestions.classList.add('hidden');
           return;
         }
 
-        clientTimeout = setTimeout(() => searchClients(query), 300);
+        customerTimeout = setTimeout(() => searchCustomers(query), 300);
       });
 
-      async function searchClients(query) {
+      async function searchCustomers(query) {
         try {
-          const response = await fetch(`${clientsApiUrl}?q=${encodeURIComponent(query)}`);
-          const clients = await response.json();
+          const response = await fetch(`${customersApiUrl}?q=${encodeURIComponent(query)}`);
+          const customers = await response.json();
 
-          if (clients.length === 0) {
-            clientSuggestions.innerHTML = `
+          if (customers.length === 0) {
+            customerSuggestions.innerHTML = `
                             <div class="p-4 text-center text-gray-500">
                                 Nenhum cliente encontrado
                             </div>
                         `;
           } else {
-            clientSuggestions.innerHTML = clients.map(c => {
+            customerSuggestions.innerHTML = customers.map(c => {
               const address = [c.street, c.number, c.neighborhood, c.city]
                 .filter(Boolean).join(', ');
               return `
                             <div class="p-3 hover:bg-gray-50 cursor-pointer flex items-center gap-3 border-b border-gray-100 last:border-0"
-                                 onclick="selectClient(${c.id}, '${c.name}', '${c.phone}', '${address}')">
+                                 onclick="selectCustomer(${c.id}, '${c.name}', '${c.phone}', '${address}')">
                                 <div class="w-10 h-10 bg-snapdog-100 rounded-full flex items-center justify-center">
                                     <span class="font-semibold text-snapdog-600">${c.name.charAt(0).toUpperCase()}</span>
                                 </div>
@@ -239,32 +248,32 @@
             }).join('');
           }
 
-          clientSuggestions.classList.remove('hidden');
+          customerSuggestions.classList.remove('hidden');
         } catch (error) {
           console.error('Erro ao buscar clientes:', error);
         }
       }
 
-      function selectClient(id, name, phone, address) {
-        selectedClientId = id;
-        document.getElementById('clientId').value = id;
-        document.getElementById('clientInitial').textContent = name.charAt(0).toUpperCase();
-        document.getElementById('clientName').textContent = name;
-        document.getElementById('clientInfo').textContent = `${phone} • ${address || 'Endereço não informado'}`;
+      function selectCustomer(id, name, phone, address) {
+        selectedCustomerId = id;
+        document.getElementById('customerId').value = id;
+        document.getElementById('customerInitial').textContent = name.charAt(0).toUpperCase();
+        document.getElementById('customerName').textContent = name;
+        document.getElementById('customerInfo').textContent = `${phone} • ${address || 'Endereço não informado'}`;
 
-        document.getElementById('selectedClient').classList.remove('hidden');
-        document.getElementById('clientSearchWrapper').classList.add('hidden');
-        clientSuggestions.classList.add('hidden');
+        document.getElementById('selectedCustomer').classList.remove('hidden');
+        document.getElementById('customerSearchWrapper').classList.add('hidden');
+        customerSuggestions.classList.add('hidden');
 
         validateForm();
       }
 
-      function clearClient() {
-        selectedClientId = null;
-        document.getElementById('clientId').value = '';
-        document.getElementById('selectedClient').classList.add('hidden');
-        document.getElementById('clientSearchWrapper').classList.remove('hidden');
-        document.getElementById('clientSearch').value = '';
+      function clearCustomer() {
+        selectedCustomerId = null;
+        document.getElementById('customerId').value = '';
+        document.getElementById('selectedCustomer').classList.add('hidden');
+        document.getElementById('customerSearchWrapper').classList.remove('hidden');
+        document.getElementById('customerSearch').value = '';
 
         validateForm();
       }
@@ -433,7 +442,7 @@
 
       function validateForm() {
         const btn = document.getElementById('submitBtn');
-        const valid = selectedClientId && addedProducts.length > 0;
+        const valid = selectedCustomerId && addedProducts.length > 0;
         btn.disabled = !valid;
       }
 
@@ -446,8 +455,8 @@
 
       // Fecha sugestões ao clicar fora
       document.addEventListener('click', function (e) {
-        if (!e.target.closest('#clientSearch') && !e.target.closest('#clientSuggestions')) {
-          clientSuggestions.classList.add('hidden');
+        if (!e.target.closest('#customerSearch') && !e.target.closest('#customerSuggestions')) {
+          customerSuggestions.classList.add('hidden');
         }
         if (!e.target.closest('#productSearch') && !e.target.closest('#productSuggestions')) {
           productSuggestions.classList.add('hidden');

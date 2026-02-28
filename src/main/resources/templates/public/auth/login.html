@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrar | SnapDog Delivery</title>
+
+    <script src="/js/tailwind.js"></script>
+    <link rel="stylesheet" href="/style/style.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'snapdog': {
+                            50: '#fef2f2',
+                            100: '#fee2e2',
+                            200: '#fecaca',
+                            300: '#fca5a5',
+                            400: '#f87171',
+                            500: '#ef4444',
+                            600: '#dc2626',
+                            700: '#b91c1c',
+                            800: '#991b1b',
+                            900: '#7f1d1d',
+                            950: '#450a0a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script src="/js/lucide.min.js"></script>
+</head>
+
+<body class="min-h-screen flex">
+
+    <!-- Painel esquerdo — promoção da marca (oculto em mobile) -->
+    <div class="hidden md:flex md:w-1/2 flex-col justify-between p-12"
+         style="background: linear-gradient(135deg, #b91c1c 0%, #dc2626 50%, #ef4444 100%);">
+
+        <!-- Logo -->
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center flex-shrink-0">
+                <span class="text-snapdog-600 font-bold text-lg">S</span>
+            </div>
+            <div>
+                <p class="font-bold text-lg text-white leading-tight">SnapDog</p>
+                <p class="text-red-200 text-xs font-medium">Delivery</p>
+            </div>
+        </div>
+
+        <!-- Slogan e benefícios -->
+        <div class="space-y-8">
+            <div>
+                <h1 class="text-4xl font-bold text-white leading-tight mb-3">
+                    O melhor hot dog<br>da cidade,<br>na sua porta.
+                </h1>
+                <p class="text-red-200 text-lg">Peça agora e receba em minutos.</p>
+            </div>
+
+            <!-- Benefícios -->
+            <ul class="space-y-4">
+                <li class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="zap" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <div>
+                        <p class="text-white font-semibold text-sm">Entrega ultrarrápida</p>
+                        <p class="text-red-200 text-xs">Seu pedido chega em até 30 minutos</p>
+                    </div>
+                </li>
+                <li class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="leaf" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <div>
+                        <p class="text-white font-semibold text-sm">Ingredientes frescos</p>
+                        <p class="text-red-200 text-xs">Selecionados diariamente com cuidado</p>
+                    </div>
+                </li>
+                <li class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="map-pin" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <div>
+                        <p class="text-white font-semibold text-sm">Acompanhe seu pedido</p>
+                        <p class="text-red-200 text-xs">Saiba o status em tempo real</p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Rodapé -->
+        <p class="text-red-300 text-xs">© 2025 SnapDog Delivery. Todos os direitos reservados.</p>
+
+    </div>
+
+    <!-- Painel direito — formulário de login -->
+    <div class="w-full md:w-1/2 bg-white flex items-center justify-center p-8 md:p-12">
+
+        <div class="w-full max-w-md">
+
+            <!-- Logo (visível apenas em mobile) -->
+            <div class="flex items-center justify-center gap-3 mb-8 md:hidden">
+                <div class="w-10 h-10 bg-snapdog-600 rounded-xl flex items-center justify-center">
+                    <span class="text-white font-bold text-lg">S</span>
+                </div>
+                <div>
+                    <p class="font-bold text-lg text-gray-900 leading-tight">SnapDog</p>
+                    <p class="text-snapdog-600 text-xs font-medium">Delivery</p>
+                </div>
+            </div>
+
+            <!-- Cabeçalho -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-1">Bem-vindo de volta!</h2>
+                <p class="text-gray-500 text-sm">Entre na sua conta para fazer seus pedidos.</p>
+            </div>
+
+            <!-- Flash de sucesso (pós-cadastro) -->
+            <div th:if="${successMessage}"
+                 class="mb-5 p-4 rounded-lg bg-green-50 border border-green-200 text-green-700 flex items-center gap-3">
+                <i data-lucide="check-circle" class="w-5 h-5 flex-shrink-0"></i>
+                <span th:text="${successMessage}" class="text-sm"></span>
+            </div>
+
+            <!-- Erro de autenticação -->
+            <div th:if="${error}"
+                 class="mb-5 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 flex items-center gap-3">
+                <i data-lucide="alert-circle" class="w-5 h-5 flex-shrink-0"></i>
+                <span th:text="${error}" class="text-sm"></span>
+            </div>
+
+            <!-- Formulário -->
+            <form th:action="@{/login}" method="post" class="space-y-5">
+
+                <!-- E-mail -->
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1.5">E-mail</label>
+                    <div class="relative">
+                        <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                            <i data-lucide="mail" class="w-4 h-4"></i>
+                        </div>
+                        <input type="email" id="email" name="email" required autocomplete="email"
+                               class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500 outline-none transition"
+                               placeholder="seu@email.com">
+                    </div>
+                </div>
+
+                <!-- Senha -->
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label for="password" class="block text-sm font-medium text-gray-700">Senha</label>
+                        <span class="text-xs text-gray-400 cursor-not-allowed" title="Em breve">Esqueceu a senha?</span>
+                    </div>
+                    <div class="relative">
+                        <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                            <i data-lucide="lock" class="w-4 h-4"></i>
+                        </div>
+                        <input type="password" id="password" name="password" required autocomplete="current-password"
+                               class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500 outline-none transition"
+                               placeholder="••••••••">
+                    </div>
+                </div>
+
+                <!-- Botão entrar -->
+                <button type="submit"
+                        class="w-full py-2.5 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg font-semibold text-sm transition-colors flex items-center justify-center gap-2">
+                    <i data-lucide="log-in" class="w-4 h-4"></i>
+                    Entrar
+                </button>
+
+            </form>
+
+            <!-- Divisor -->
+            <div class="my-6 flex items-center gap-4">
+                <div class="flex-1 h-px bg-gray-200"></div>
+                <span class="text-xs text-gray-400">ou</span>
+                <div class="flex-1 h-px bg-gray-200"></div>
+            </div>
+
+            <!-- Link para cadastro -->
+            <p class="text-center text-sm text-gray-600">
+                Não tem conta?
+                <a href="/register" class="text-snapdog-600 hover:text-snapdog-700 font-semibold">Cadastre-se grátis</a>
+            </p>
+
+        </div>
+
+    </div>
+
+    <script>lucide.createIcons();</script>
+
+</body>
+
+</html>
