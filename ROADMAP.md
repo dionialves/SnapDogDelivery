@@ -168,18 +168,6 @@ Estilo discreto (`text-xs`, `text-gray-400`), alinhado com o visual atual do foo
 ## Bugs Conhecidos
 
 
-### Criar page 400 404 e 500 para a area publica
-
-Customizar paginas exclusivas para a area publica, seguindo o layout atual, para os erros HTTP 400, 404 e 500. Atualmente, o sistema esta utilizando as paginas em /error, que foram estilizadas para serem usadas no admin.
-
-Etapas
-
-- Crias as paginas `400.html`, `404.html` e `500.html` em `templates/public/error/`
-- Modificar as paginas em `/error` para `templates/admin/error/`, pois forame stilizadas para o admin
-- Ajustar sistema para buscar as paginas corretamente, dependendo da origem do erro (admin vs público).
-
----
-
 
 ## Funcionalidades Futuras (pós v1.0)
 

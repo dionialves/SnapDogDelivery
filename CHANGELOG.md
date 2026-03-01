@@ -9,6 +9,13 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ### Correções
 
+- **Páginas de erro 400/404/500 separadas para área pública e admin** (01/03/2026)
+  Criadas páginas em `templates/public/error/` com layout público (header, footer, botão "Ir para o início").
+  Páginas admin movidas para `templates/admin/error/`. `GlobalExceptionHandler` agora detecta
+  a origem da requisição (`/admin` vs público) e renderiza o template correto.
+  Adicionado handler para `NoHandlerFoundException` e `NoResourceFoundException` que exibe 404
+  em vez de 500 ao acessar rotas inexistentes. Configurado `spring.mvc.throw-exception-if-no-handler-found=true`.
+
 - **Erro 500 ao excluir produto com pedidos associados** (01/03/2026)
   Adicionada verificação em `ProductService.delete()` via `ProductOrderRepository.existsByProductId()`.
   Agora lança `BusinessException` com mensagem amigável em vez de expor erro de constraint do banco.
