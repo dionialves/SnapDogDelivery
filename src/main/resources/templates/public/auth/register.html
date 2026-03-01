@@ -194,7 +194,7 @@
                                     th:classappend="${#fields.hasErrors('state')} ? 'border-red-400' : ''">
                                 <option value="">Selecione o estado</option>
                                 <option th:each="s : ${states}"
-                                        th:value="${s.name()}"
+                                        th:value="${s}"
                                         th:text="${s.name + ' (' + s.code + ')'}">
                                 </option>
                             </select>

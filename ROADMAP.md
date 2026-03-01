@@ -156,8 +156,17 @@ Estilo discreto (`text-xs`, `text-gray-400`), alinhado com o visual atual do foo
 
 ## Bugs Conhecidos
 
+### Logo placeholder nas telas de login e cadastro público
 
+**Arquivos:** `templates/public/auth/login.html`, `templates/public/auth/register.html`
 
+**Sintoma:** As telas `/login` e `/register` da área pública ainda exibem o placeholder
+original — um quadrado vermelho com a letra "S" — em vez da logo real (`/image/logo.png`).
+O mesmo problema já foi corrigido no painel admin.
+
+**Solução planejada:**
+- Substituir o bloco placeholder pelo `<img src="/image/logo.png">` nos dois templates,
+  tanto na versão desktop quanto na versão mobile (no caso do `login.html`)
 
 ---
 

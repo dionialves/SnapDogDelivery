@@ -9,6 +9,11 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ### Correções
 
+- **Select de estado inoperante no cadastro e perfil do cliente** (01/03/2026)
+  Substituído `th:value="${s.name()}"` por `th:value="${s}"` nas options do `<select>` de
+  estado em `register.html` e `profile.html`. O Thymeleaf/Spring passa a gerenciar a
+  conversão enum ↔ String automaticamente, corrigindo a seleção.
+
 - **Conflito de sessão entre área admin e área pública corrigido** (01/03/2026)
   Configurado `HttpSessionSecurityContextRepository` com chave `"ADMIN_SECURITY_CONTEXT"` na
   cadeia admin via `.securityContext(sc -> sc.securityContextRepository(adminRepo))`. A cadeia
