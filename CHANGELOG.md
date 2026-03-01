@@ -9,6 +9,13 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ### Novas Funcionalidades
 
+- **Máscaras de telefone e CEP + autocomplete ViaCEP** (01/03/2026)
+  Adicionadas máscaras JavaScript nos campos `#phone` (`(00) 00000-0000`) e `#zipCode`
+  (`00000-000`) nas telas de cadastro e perfil do cliente. No blur do CEP com 8 dígitos,
+  busca automática na API ViaCEP preenche rua, bairro, cidade e estado. Spinner discreto
+  durante a requisição e mensagem de erro inline se CEP não encontrado. JavaScript vanilla,
+  sem dependências externas.
+
 - **Categorias de produtos no catálogo público** (01/03/2026)
   Adicionado enum `ProductCategory` (HOT_DOG, BEBIDA) e campo `category` na entidade `Product`.
   Catálogo público exibe duas seções separadas (Hot Dog acima, Bebidas abaixo) quando nenhum filtro

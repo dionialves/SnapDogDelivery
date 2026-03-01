@@ -84,27 +84,6 @@ O botão "Adicionar" posta diretamente com `quantity=1` fixo.
 
 ---
 
-#### Máscaras de telefone e CEP no cadastro de cliente
-**Arquivos:** `templates/public/auth/register.html`, `templates/public/account/profile.html`
-
-**Solução planejada:**
-- Máscara JavaScript no campo `#phone` → `(00) 00000-0000`
-- Máscara JavaScript no campo `#zipCode` → `00000-000`
-- Evento `input` + regex, JavaScript vanilla, sem bibliotecas externas
-
----
-
-#### Auto-preenchimento de endereço por CEP (ViaCEP)
-**Arquivos:** `templates/public/auth/register.html`, `templates/public/account/profile.html`
-
-**Solução planejada:**
-- No `blur` do campo `#zipCode` com 8 dígitos: `fetch('https://viacep.com.br/ws/{cep}/json/')`
-- Preencher automaticamente: `street`, `neighborhood`, `city`, `state`
-- Spinner discreto durante a requisição; mensagem de erro inline se CEP não encontrado
-- Campos preenchidos permanecem editáveis
-- JavaScript vanilla, sem dependências externas
-
----
 
 #### Campo `origin` visível na área admin
 **Arquivos:** `templates/admin/orders/list.html`, `templates/admin/orders/form.html`
@@ -149,7 +128,13 @@ Estilo discreto (`text-xs`, `text-gray-400`), alinhado com o visual atual do foo
 
 ## Bugs Conhecidos
 
+### [UI] Ícone incorreto na seção "Dados Gerais" do formulário de produto
+**Arquivo:** `templates/admin/products/form.html`
 
+O ícone `user` está sendo usado no cabeçalho da seção "Dados Gerais", mas deveria ser
+um ícone relacionado a produto (ex: `package` ou `box`).
+
+---
 
 ## Funcionalidades Futuras (pós v1.0)
 
