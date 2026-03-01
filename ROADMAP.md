@@ -32,13 +32,7 @@ Criar um editor de imagem se abre quando o upload de imagem e aberto, desse edit
 
 ### Área Pública
 
-#### Categoria de tipos de produtos
-
-Criar categorias diferentes de produtos como HotDog e Bebidas, e mostras no cardapio separado por categoria.
-
----
-
-#### Flag de produto em destaque no catálogo público
+##### Flag de produto em destaque no catálogo público
 
 **Arquivos:** `domain/admin/product/Product.java`, `domain/admin/product/ProductService.java`,
 `templates/admin/products/form.html`, `templates/public/index.html`
@@ -177,4 +171,4 @@ Estilo discreto (`text-xs`, `text-gray-400`), alinhado com o visual atual do foo
 
 ---
 
-*Atualizado em: 01/03/2026*
+*Atualizado em: 01/03/2026 (categorias de produto concluído)*

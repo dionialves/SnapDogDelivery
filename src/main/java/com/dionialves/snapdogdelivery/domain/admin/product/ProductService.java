@@ -73,6 +73,28 @@ public class ProductService {
     }
 
     /**
+     * Retorna todos os produtos ativos de uma categoria, ordenados por nome.
+     * Usado na view "Todos" do catálogo público (duas seções: Hot Dog e Bebidas, sem paginação).
+     */
+    @Transactional(readOnly = true)
+    public List<ProductResponseDTO> findAllActiveByCategory(ProductCategory category) {
+        return productRepository.findByActiveTrueAndCategoryOrderByNameAsc(category)
+                .stream()
+                .map(ProductResponseDTO::fromEntity)
+                .toList();
+    }
+
+    /**
+     * Retorna produtos ativos de uma categoria, paginados.
+     * Usado quando o usuário filtra por categoria específica no catálogo.
+     */
+    @Transactional(readOnly = true)
+    public Page<ProductResponseDTO> findAllActive(Pageable pageable, ProductCategory category) {
+        return productRepository.findByActiveTrueAndCategory(category, pageable)
+                .map(ProductResponseDTO::fromEntity);
+    }
+
+    /**
      * Retorna até 6 produtos ativos para a seção de destaques da landing page.
      */
     @Transactional(readOnly = true)
@@ -92,6 +114,7 @@ public class ProductService {
         created.setDescription(product.getDescription());
         created.setImageUrl(product.getImageUrl());
         created.setActive(product.isActive());
+        created.setCategory(product.getCategory());
 
         productRepository.save(created);
 
@@ -109,6 +132,7 @@ public class ProductService {
         updating.setDescription(product.getDescription());
         updating.setImageUrl(product.getImageUrl());
         updating.setActive(product.isActive());
+        updating.setCategory(product.getCategory());
 
         return ProductResponseDTO.fromEntity(updating);
 

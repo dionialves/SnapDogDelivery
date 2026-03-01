@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.dionialves.snapdogdelivery.domain.admin.product.ProductCategory;
 import com.dionialves.snapdogdelivery.domain.admin.product.ProductService;
 import com.dionialves.snapdogdelivery.domain.storefront.cart.CartService;
 import com.dionialves.snapdogdelivery.exception.NotFoundException;
@@ -35,21 +36,30 @@ public class StoreController {
     }
 
     /**
-     * Catálogo público paginado — exibe somente produtos ativos.
+     * Catálogo público — sem filtro: duas seções (Hot Dog e Bebidas, sem paginação).
+     * Com filtro por categoria: grid paginado.
      */
     @GetMapping("/catalog")
     public String catalog(
             @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) ProductCategory category,
             Model model,
             HttpSession session) {
 
-        var pageable = PageRequest.of(page, PAGE_SIZE, Sort.by(Sort.Direction.ASC, "name"));
-        var products = productService.findAllActive(pageable);
-
-        model.addAttribute("products", products);
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", products.getTotalPages());
+        model.addAttribute("selectedCategory", category);
         model.addAttribute("cartItemCount", cartService.getItemCount(session));
+
+        if (category == null) {
+            model.addAttribute("hotDogProducts", productService.findAllActiveByCategory(ProductCategory.HOT_DOG));
+            model.addAttribute("bebidaProducts", productService.findAllActiveByCategory(ProductCategory.BEBIDA));
+        } else {
+            var pageable = PageRequest.of(page, PAGE_SIZE, Sort.by(Sort.Direction.ASC, "name"));
+            var products = productService.findAllActive(pageable, category);
+            model.addAttribute("products", products);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", products.getTotalPages());
+        }
+
         return "public/store/catalog";
     }
 

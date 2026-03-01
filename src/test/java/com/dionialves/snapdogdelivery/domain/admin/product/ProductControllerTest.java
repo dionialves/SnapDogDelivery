@@ -42,7 +42,7 @@ class ProductControllerTest {
     @DisplayName("GET /admin/api/products/search retorna lista de produtos")
     void search_retornaListaProdutos() throws Exception {
         var dto = new ProductResponseDTO(1L, "Hot Dog Clássico", new BigDecimal("15.90"),
-                "Pão, salsicha, mostarda", null, true);
+                "Pão, salsicha, mostarda", null, true, null, null);
 
         when(productService.search("hot")).thenReturn(List.of(dto));
 
@@ -55,8 +55,8 @@ class ProductControllerTest {
     @Test
     @DisplayName("GET /admin/api/products/search com termo vazio retorna todos")
     void search_termoVazio_retornaTodos() throws Exception {
-        var dto1 = new ProductResponseDTO(1L, "Hot Dog Clássico", new BigDecimal("15.90"), null, null, true);
-        var dto2 = new ProductResponseDTO(2L, "X-Burguer", new BigDecimal("22.50"), null, null, true);
+        var dto1 = new ProductResponseDTO(1L, "Hot Dog Clássico", new BigDecimal("15.90"), null, null, true, null, null);
+        var dto2 = new ProductResponseDTO(2L, "X-Burguer", new BigDecimal("22.50"), null, null, true, null, null);
 
         when(productService.search("")).thenReturn(List.of(dto1, dto2));
 

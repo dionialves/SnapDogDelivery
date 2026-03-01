@@ -9,6 +9,12 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ### Novas Funcionalidades
 
+- **Categorias de produtos no catálogo público** (01/03/2026)
+  Adicionado enum `ProductCategory` (HOT_DOG, BEBIDA) e campo `category` na entidade `Product`.
+  Catálogo público exibe duas seções separadas (Hot Dog acima, Bebidas abaixo) quando nenhum filtro
+  está selecionado; tabs permitem filtrar por categoria com grid paginado. Painel admin exibe coluna
+  "Categoria" na listagem e select no formulário de produto. DataSeeder atualizado com categorias.
+
 - **Configurações da Empresa no painel admin** (01/03/2026)
   Criada seção `/admin/settings` com formulário para editar nome, e-mail, telefone, endereço,
   horário de funcionamento e copyright. Dados armazenados em `tb_company_settings` (singleton,

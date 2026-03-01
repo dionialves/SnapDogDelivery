@@ -19,6 +19,7 @@ import com.dionialves.snapdogdelivery.domain.admin.order.Order;
 import com.dionialves.snapdogdelivery.domain.admin.order.OrderRepository;
 import com.dionialves.snapdogdelivery.domain.admin.order.OrderStatus;
 import com.dionialves.snapdogdelivery.domain.admin.product.Product;
+import com.dionialves.snapdogdelivery.domain.admin.product.ProductCategory;
 import com.dionialves.snapdogdelivery.domain.admin.product.ProductRepository;
 import com.dionialves.snapdogdelivery.domain.admin.settings.CompanySettings;
 import com.dionialves.snapdogdelivery.domain.admin.settings.CompanySettingsRepository;
@@ -99,21 +100,25 @@ public class DataSeeder implements CommandLineRunner {
     private void seedProducts() {
         List<Product> products = List.of(
                 createProduct("Hot Dog Tradicional", new BigDecimal("12.00"),
-                        "Pão, salsicha, molho, mostarda e ketchup"),
+                        "Pão, salsicha, molho, mostarda e ketchup", ProductCategory.HOT_DOG),
                 createProduct("Hot Dog Especial", new BigDecimal("16.00"),
-                        "Pão, salsicha, purê de batata, milho, ervilha, batata palha e molhos"),
+                        "Pão, salsicha, purê de batata, milho, ervilha, batata palha e molhos", ProductCategory.HOT_DOG),
                 createProduct("Hot Dog Duplo", new BigDecimal("20.00"),
-                        "Pão, duas salsichas, queijo cheddar, bacon e molhos"),
+                        "Pão, duas salsichas, queijo cheddar, bacon e molhos", ProductCategory.HOT_DOG),
                 createProduct("Hot Dog Cheddar Bacon", new BigDecimal("22.00"),
-                        "Pão, salsicha, cheddar cremoso, bacon crocante e cebola caramelizada"),
+                        "Pão, salsicha, cheddar cremoso, bacon crocante e cebola caramelizada", ProductCategory.HOT_DOG),
                 createProduct("Hot Dog Vegetariano", new BigDecimal("15.00"),
-                        "Pão, salsicha de soja, milho, ervilha, purê e molhos"),
+                        "Pão, salsicha de soja, milho, ervilha, purê e molhos", ProductCategory.HOT_DOG),
                 createProduct("Hot Dog Calabresa", new BigDecimal("18.00"),
-                        "Pão, salsicha, calabresa ralada, vinagrete e molhos"),
-                createProduct("Hot Dog Kids", new BigDecimal("10.00"), "Pão macio, salsicha, ketchup e batata palha"),
-                createProduct("Refrigerante Lata", new BigDecimal("6.00"), "Lata 350ml - Coca-Cola, Guaraná ou Fanta"),
-                createProduct("Suco Natural", new BigDecimal("8.00"), "Copo 500ml - Laranja, Limão ou Maracujá"),
-                createProduct("Água Mineral", new BigDecimal("4.00"), "Garrafa 500ml - com ou sem gás"));
+                        "Pão, salsicha, calabresa ralada, vinagrete e molhos", ProductCategory.HOT_DOG),
+                createProduct("Hot Dog Kids", new BigDecimal("10.00"),
+                        "Pão macio, salsicha, ketchup e batata palha", ProductCategory.HOT_DOG),
+                createProduct("Refrigerante Lata", new BigDecimal("6.00"),
+                        "Lata 350ml - Coca-Cola, Guaraná ou Fanta", ProductCategory.BEBIDA),
+                createProduct("Suco Natural", new BigDecimal("8.00"),
+                        "Copo 500ml - Laranja, Limão ou Maracujá", ProductCategory.BEBIDA),
+                createProduct("Água Mineral", new BigDecimal("4.00"),
+                        "Garrafa 500ml - com ou sem gás", ProductCategory.BEBIDA));
 
         productRepository.saveAll(products);
     }
@@ -174,11 +179,12 @@ public class DataSeeder implements CommandLineRunner {
         return customer;
     }
 
-    private Product createProduct(String name, BigDecimal price, String description) {
+    private Product createProduct(String name, BigDecimal price, String description, ProductCategory category) {
         Product product = new Product();
         product.setName(name);
         product.setPrice(price);
         product.setDescription(description);
+        product.setCategory(category);
         return product;
     }
 

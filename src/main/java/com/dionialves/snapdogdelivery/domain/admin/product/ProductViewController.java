@@ -59,6 +59,7 @@ public class ProductViewController {
 
         ProductResponseDTO product = productService.findById(id);
         model.addAttribute("product", product);
+        model.addAttribute("categories", ProductCategory.values());
 
         return "admin/products/form";
     }
@@ -71,6 +72,7 @@ public class ProductViewController {
         model.addAttribute("pageSubtitle", "Adicione um novo produto a sua base");
 
         model.addAttribute("product", new ProductDTO());
+        model.addAttribute("categories", ProductCategory.values());
 
         return "admin/products/form";
     }
@@ -87,6 +89,7 @@ public class ProductViewController {
             model.addAttribute("activeMenu", "produtos");
             model.addAttribute("pageTitle", "Novo Produto");
             model.addAttribute("pageSubtitle", "Adicione um novo produto a sua base");
+            model.addAttribute("categories", ProductCategory.values());
 
             return "admin/products/form";
         }
@@ -115,6 +118,7 @@ public class ProductViewController {
             model.addAttribute("activeMenu", "produtos");
             model.addAttribute("pageTitle", "Editar Produto");
             model.addAttribute("pageSubtitle", "Atualize os dados do produto");
+            model.addAttribute("categories", ProductCategory.values());
 
             return "admin/products/form";
         }
