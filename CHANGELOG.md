@@ -6,6 +6,17 @@ Registro de todas as alterações relevantes do projeto, organizadas por data e 
 
 ## [Não lançado] — develop
 
+### Documentação
+
+- **Documentação v0.3.0** (28/02/2026)
+  Criação do diretório `docs/` e do arquivo `docs/v0.3.0.md` com documentação de alto nível:
+  regras de negócio por domínio (Admin e Storefront), fluxos de trabalho completos, controle
+  de acesso e glossário. Voltada a contribuidores open source.
+
+- **Planning Protocol no CLAUDE.md** (28/02/2026)
+  Adicionada seção "Planning Protocol" ao `CLAUDE.md` definindo o comportamento obrigatório de
+  apresentar um plano nomeado e aguardar autorização explícita antes de executar qualquer tarefa.
+
 ### Novas Funcionalidades
 
 - **Credenciais próprias para Customer** (`d38c323` — 26/02/2026 15:20)
