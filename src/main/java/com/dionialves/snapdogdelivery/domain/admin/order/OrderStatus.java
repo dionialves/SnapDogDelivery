@@ -1,11 +1,21 @@
 package com.dionialves.snapdogdelivery.domain.admin.order;
 
 public enum OrderStatus {
-    PENDING,
-    PREPARING,
-    OUT_FOR_DELIVERY,
-    DELIVERED,
-    CANCELED;
+    PENDING("Aguardando"),
+    PREPARING("Em preparo"),
+    OUT_FOR_DELIVERY("Saiu para entrega"),
+    DELIVERED("Entregue"),
+    CANCELED("Cancelado");
+
+    private final String label;
+
+    OrderStatus(String label) {
+        this.label = label;
+    }
+
+    public String getLabel() {
+        return label;
+    }
 
     public OrderStatus getNextStatus() {
         return switch (this) {

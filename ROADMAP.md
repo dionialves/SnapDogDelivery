@@ -156,19 +156,6 @@ Estilo discreto (`text-xs`, `text-gray-400`), alinhado com o visual atual do foo
 
 ## Bugs Conhecidos
 
-### Status do pedido exibido em inglês na tela de confirmação
-**Arquivo:** `templates/public/checkout/confirmation.html` (linha 32)
-
-`th:text="${order.status}"` imprime o nome literal do enum (`PENDING`, `PREPARING` etc.) em inglês.
-
-**Solução planejada:**
-- Adicionar campo `label` em PT-BR à enum `OrderStatus`:
-  `PENDING("Aguardando"), PREPARING("Em preparo"), OUT_FOR_DELIVERY("Saiu para entrega"),
-  DELIVERED("Entregue"), CANCELED("Cancelado")`
-- Atualizar `confirmation.html`, `account/orders.html` e `account/order-detail.html` para
-  usar `${order.status.label}`
-
----
 
 ### Dropdown do cliente exibe e-mail em vez do nome
 **Arquivo:** `templates/public/fragments/layout.html` (linha 83)

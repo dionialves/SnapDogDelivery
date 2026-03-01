@@ -27,6 +27,7 @@ public class OrderResponseDTO {
     private CustomerDTO customer;
     private List<ProductOrderDTO> products;
     private String status;
+    private String statusLabel;
     private OrderOrigin origin;
     private String deliveryAddress;
 
@@ -51,6 +52,7 @@ public class OrderResponseDTO {
         dto.setProducts(products);
 
         dto.setStatus(order.getStatus().name());
+        dto.setStatusLabel(order.getStatus().getLabel());
         dto.setOrigin(order.getOrigin());
         dto.setDeliveryAddress(order.getDeliveryAddress());
 

@@ -9,6 +9,12 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ### Correções
 
+- **Status do pedido exibido em PT-BR na área pública** (01/03/2026)
+  Adicionado campo `label` PT-BR ao enum `OrderStatus` (Aguardando, Em preparo, Saiu para
+  entrega, Entregue, Cancelado). Adicionado campo `statusLabel` no `OrderResponseDTO`.
+  Templates `confirmation.html`, `account/orders.html` e `account/order-detail.html`
+  atualizados para usar `${order.statusLabel}`.
+
 - **Copyright atualizado de 2025 para 2026** (01/03/2026)
   Corrigido em 5 templates: `public/fragments/layout.html`, `public/auth/login.html`,
   `public/auth/register.html`, `admin/auth/login.html` e `auth/login.html`.
