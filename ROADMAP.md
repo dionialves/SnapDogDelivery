@@ -180,29 +180,6 @@ Etapas
 
 ---
 
-### Erro 500 ao tentar excluir produto com pedidos associados
-
-**Arquivo:** `src/main/java/com/dionialves/snapdogdelivery/domain/admin/product/ProductService.java`
-
-**Sintoma:** Ao tentar excluir um produto que possui pedidos associados, o sistema retorna erro
-HTTP 500 em vez de uma mensagem de negócio amigável.
-
-**Causa:** `ProductService.delete()` chama `deleteById()` sem verificar se o produto está
-referenciado em `tb_product_orders`. O banco lança uma `ConstraintViolationException` que não
-é tratada.
-
-**Regra de negócio esperada:** Produtos com pedidos associados **não podem ser excluídos**,
-apenas desativados (`active = false`). A exclusão deve ser bloqueada com uma `BusinessException`
-clara para o usuário.
-
-**Solução planejada:**
-- Em `ProductService.delete()`: verificar se existe algum `ProductOrder` com o `product_id`
-  antes de deletar, e lançar `BusinessException` caso exista
-- Atualizar a UI (`admin/products/list.html`) para exibir o botão "Desativar" como alternativa
-  ao "Excluir" quando o produto tiver pedidos associados
-
----
-
 
 ## Funcionalidades Futuras (pós v1.0)
 
