@@ -242,9 +242,15 @@ clara para o usuário.
 
 ---
 
-### Nova logo
+### Logo no layout admin (sidebar) não integrada
 
-Uma nova logo foi criada para o sistema e ja colocada no layout.html da area publica, ela se encontra no public/images/logo.png. Precisa reestilizar a paginas de /login /admin/login e layout do sistema de administração do sistema.
+A logo foi inserida na sidebar do painel admin (`templates/admin/fragments/layout.html`),
+mas o container vermelho (`bg-snapdog-700`) conflita com as cores da imagem. A logo tem
+fundo claro e cores escuras, o que a torna pouco legível sobre o fundo vermelho atual.
+
+**Solução planejada:**
+- Avaliar redesign do bloco de logo na sidebar: fundo branco no container da logo ou
+  ajuste da área superior da sidebar para acomodar a imagem com melhor contraste.
 
 ---
 

@@ -9,9 +9,13 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ### Correções
 
+- **Logo real na tela de login admin** (01/03/2026)
+  Removido header vermelho com emoji 🌭 de `admin/auth/login.html`. Substituído por
+  seção branca com a logo centralizada (`h-14`) e subtítulo "Painel Administrativo".
+
 - **Logo real substituída no layout admin** (01/03/2026)
   Removido placeholder com emoji 🌭 da sidebar do painel admin. Substituído por
-  `<img src="/image/logo.png">` dentro do mesmo container branco existente.
+  `<img src="/image/logo.png">` dentro do container branco existente.
 
 ---
 
