@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{public/fragments/layout :: layout(
+          pageTitle='Operação não permitida',
+          content=~{::content}
+      )}">
+
+<head>
+    <title>400 - Operação não permitida</title>
+</head>
+
+<body>
+
+    <th:block th:fragment="content">
+
+        <div class="flex flex-col items-center justify-center min-h-[60vh] px-4 py-16">
+
+            <div class="text-9xl mb-6">🚫</div>
+
+            <h1 class="text-8xl font-bold text-snapdog-600 mb-4">400</h1>
+
+            <h2 class="text-2xl font-semibold text-gray-800 mb-2">Operação não permitida</h2>
+            <p th:if="${message}" th:text="${message}" class="text-gray-500 text-center max-w-md mb-8"></p>
+            <p th:unless="${message}" class="text-gray-500 text-center max-w-md mb-8">
+                A operação solicitada não é permitida. Verifique os dados e tente novamente.
+            </p>
+
+            <div class="flex items-center gap-4">
+                <a onclick="history.back()"
+                    class="inline-flex items-center gap-2 border border-gray-300 hover:bg-gray-50 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors cursor-pointer">
+                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                    Voltar
+                </a>
+                <a th:href="@{/}"
+                    class="inline-flex items-center gap-2 bg-snapdog-600 hover:bg-snapdog-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    Ir para o início
+                </a>
+            </div>
+
+        </div>
+
+    </th:block>
+
+</body>
+
+</html>

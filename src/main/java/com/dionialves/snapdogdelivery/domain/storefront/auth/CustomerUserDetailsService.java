@@ -1,9 +1,6 @@
 package com.dionialves.snapdogdelivery.domain.storefront.auth;
 
-import java.util.List;
-
 import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -35,9 +32,6 @@ public class CustomerUserDetailsService implements UserDetailsService {
             throw new DisabledException("Conta desabilitada para o e-mail: " + email);
         }
 
-        return new org.springframework.security.core.userdetails.User(
-                customer.getEmail(),
-                customer.getPassword(),
-                List.of(new SimpleGrantedAuthority("ROLE_CUSTOMER")));
+        return new CustomerPrincipal(customer);
     }
 }

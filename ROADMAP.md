@@ -5,6 +5,17 @@ Quando um item for concluído, mova-o para `CHANGELOG.md` com data e detalhes de
 
 ---
 
+## Melhorias
+
+### Melhorar design da logo para maior integração com o layout
+
+A logo atual (`/image/logo.png`) foi integrada nos templates, mas seu design visual não se
+harmoniza bem com o layout do sistema. Reavaliar cores, proporções e estilo da logo para
+que ela se integre naturalmente tanto no fundo branco (área pública, cadastro, mobile) quanto
+no fundo vermelho (sidebar admin, painel esquerdo do login).
+
+---
+
 ## Features Planejadas
 
 ### Area Admin
@@ -36,6 +47,34 @@ Criar uma seção de "Configurações da Empresa" no painel admin para armazenar
 #### Categoria de tipos de produtos
 
 Criar categorias diferentes de produtos como HotDog e Bebidas, e mostras no cardapio separado por categoria.
+
+---
+
+#### Flag de produto em destaque no catálogo público
+
+**Arquivos:** `domain/admin/product/Product.java`, `domain/admin/product/ProductService.java`,
+`templates/admin/products/form.html`, `templates/public/index.html`
+
+Atualmente, os destaques da landing page exibem os 6 primeiros produtos ativos em ordem
+alfabética. A melhoria propõe permitir que o admin marque explicitamente quais produtos devem
+aparecer em destaque.
+
+**Regra de negócio:**
+- Cada produto terá um campo booleano `featured` (padrão `false`).
+- No máximo **6 produtos** podem ter `featured = true` simultaneamente.
+- Ao tentar marcar um 7º produto como destaque, o sistema deve lançar `BusinessException`
+  informando que o limite foi atingido.
+- Se o número de produtos com `featured = true` for menor que 6, a landing page complementa
+  a exibição com produtos ativos em ordem alfabética até totalizar 6 itens.
+- Produtos inativos nunca aparecem nos destaques, mesmo que `featured = true`.
+
+**Solução planejada:**
+- Adicionar coluna `featured boolean NOT NULL DEFAULT false` à entidade `Product`
+- Em `ProductService`: validar limite de 6 ao salvar/atualizar um produto com `featured = true`
+- Atualizar `ProductService.findFeatured()`: buscar primeiro os `featured = true` e ativos;
+  se forem menos de 6, complementar com ativos ordenados por nome até atingir 6
+- Adicionar checkbox "Produto em destaque" no formulário admin de produto
+- Exibir badge visual "Destaque" na listagem admin de produtos para produtos marcados
 
 ---
 
@@ -106,7 +145,7 @@ Estilo discreto (`text-xs`, `text-gray-400`), alinhado com o visual atual do foo
 
 ---
 
-### Infraestrutura — v1.0
+### Infraestrutura
 
 #### Migrations com Flyway
 **Arquivo:** `src/main/resources/application.properties`
@@ -128,105 +167,7 @@ Estilo discreto (`text-xs`, `text-gray-400`), alinhado com o visual atual do foo
 
 ## Bugs Conhecidos
 
-### Falha de compilação em CustomerServiceTest e UserServiceTest
 
-**Arquivos:**
-- `src/test/java/com/dionialves/snapdogdelivery/domain/admin/customer/CustomerServiceTest.java` (linha 108)
-- `src/test/java/com/dionialves/snapdogdelivery/domain/admin/user/UserServiceTest.java` (linha 84)
-
-**Sintoma:** `mvn test` termina com 2 erros de compilação:
-```
-CustomerServiceTest.search_paginado_retornaPage:108 » Unresolved compilation problem:
-  Type mismatch: cannot convert from Streamable<CustomerDTO> to Page<CustomerDTO>
-
-UserServiceTest.findAll_retornaPaginaUsuarios:84 » Unresolved compilation problem:
-  Type mismatch: cannot convert from Streamable<UserResponseDTO> to Page<UserResponseDTO>
-```
-
-**Causa:** O uso de `var` para capturar o retorno dos métodos `customerService.search(String, int, int)` e `userService.findAll(int)` faz o compilador inferir `Streamable<T>` em vez de `Page<T>`. Isso ocorre porque `Page<T>` estende `Streamable<T>` e o compilador escolhe o tipo mais genérico ao encadear `.map()` num `PageImpl`.
-
-**Solução planejada:**
-- `CustomerServiceTest.java:108`: substituir `var result` por `Page<CustomerDTO> result`
-- `UserServiceTest.java:84`: substituir `var result` por `Page<UserResponseDTO> result`
-
----
-
-### Logo placeholder no layout admin
-**Arquivo:** `templates/admin/fragments/layout.html` (~linha 54)
-
-Comentário `<!-- Logo placeholder - depois substituímos pelo SVG real -->` com emoji no lugar
-do logo. Requer asset de logo (SVG/imagem) que ainda não existe no projeto.
-
----
-
-### Status do pedido exibido em inglês na tela de confirmação
-**Arquivo:** `templates/public/checkout/confirmation.html` (linha 32)
-
-`th:text="${order.status}"` imprime o nome literal do enum (`PENDING`, `PREPARING` etc.) em inglês.
-
-**Solução planejada:**
-- Adicionar campo `label` em PT-BR à enum `OrderStatus`:
-  `PENDING("Aguardando"), PREPARING("Em preparo"), OUT_FOR_DELIVERY("Saiu para entrega"),
-  DELIVERED("Entregue"), CANCELED("Cancelado")`
-- Atualizar `confirmation.html`, `account/orders.html` e `account/order-detail.html` para
-  usar `${order.status.label}`
-
----
-
-### Dropdown do cliente exibe e-mail em vez do nome
-**Arquivo:** `templates/public/fragments/layout.html` (linha 83)
-
-`sec:authentication="name"` retorna o `username` do `UserDetails` — que no
-`CustomerUserDetailsService` é o e-mail. Exibe `joao@email.com` em vez de `João Silva`.
-
-**Solução planejada:**
-- Implementar `CustomerPrincipal` encapsulando `Customer`, com `getName()` retornando o nome
-  real e `getUsername()` retornando o e-mail para o Spring Security
-- Ou injetar `customerName` via `@ControllerAdvice` / `@ModelAttribute`
-
----
-
-### Conflito de sessão entre área admin e área pública
-As duas `SecurityFilterChain` compartilham o mesmo atributo `SPRING_SECURITY_CONTEXT` na
-`HttpSession`. Login admin no mesmo browser corrompe a sessão do cliente.
-
-**Solução planejada:**
-- `HttpSessionSecurityContextRepository` com atributo de sessão distinto por cadeia:
-  - Cadeia admin: `setSpringSecurityContextAttrName("ADMIN_SECURITY_CONTEXT")`
-  - Cadeia pública: mantém `SPRING_SECURITY_CONTEXT` (padrão)
-
----
-
-### Copyright com ano desatualizado (2025)
-
-| Arquivo | Ocorrência |
-|---|---|
-| `templates/public/fragments/layout.html` | ~linha 187 |
-| `templates/public/auth/register.html` | ~linha 228 |
-| `templates/public/auth/login.html` | painel esquerdo — rodapé |
-| `templates/admin/auth/login.html` | rodapé |
-
-Atualizar `© 2025` → `© 2026` em todos os arquivos listados.
-
----
-
-### Criar page 400 404 e 500 para a area publica
-
-Customizar paginas exclusivas para a area publica, seguindo o layout atual, para os erros HTTP 400, 404 e 500. Atualmente, o sistema esta utilizando as paginas em /error, que foram estilizadas para serem usadas no admin.
-
-Etapas
-
-- Crias as paginas `400.html`, `404.html` e `500.html` em `templates/public/error/`
-- Modificar as paginas em `/error` para `templates/admin/error/`, pois forame stilizadas para o admin
-- Ajustar sistema para buscar as paginas corretamente, dependendo da origem do erro (admin vs público).
-
----
-
-### Nova logo
-
-Uma nova logo foi criada para o sistema e ja colocada no layout.html da area publica, ela se encontra no public/images/logo.png. Precisa reestilizar a paginas de /login /admin/login e layout do sistema de administração do sistema.
-
----
 
 ## Funcionalidades Futuras (pós v1.0)
 
@@ -248,4 +189,4 @@ Uma nova logo foi criada para o sistema e ja colocada no layout.html da area pub
 
 ---
 
-*Atualizado em: 26/02/2026*
+*Atualizado em: 01/03/2026*

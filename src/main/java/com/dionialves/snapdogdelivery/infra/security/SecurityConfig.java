@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
 import com.dionialves.snapdogdelivery.domain.storefront.auth.CustomerUserDetailsService;
 
@@ -28,8 +29,12 @@ public class SecurityConfig {
             HttpSecurity http,
             CustomUserDetailsService adminUserDetailsService) throws Exception {
 
+        var adminRepo = new HttpSessionSecurityContextRepository();
+        adminRepo.setSpringSecurityContextKey("ADMIN_SECURITY_CONTEXT");
+
         http
             .securityMatcher("/admin/**")
+            .securityContext(sc -> sc.securityContextRepository(adminRepo))
             .authenticationProvider(adminAuthProvider(adminUserDetailsService))
             .authorizeHttpRequests(auth -> auth
                 // Gerenciamento de usuários: apenas SUPER_ADMIN

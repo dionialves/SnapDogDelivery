@@ -1,9 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/fragments/layout :: layout(
-          pageTitle='Página não encontrada', 
-          activeMenu='', 
-          pageSubtitle='',
-          headerActions=~{::headerActions},
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{public/fragments/layout :: layout(
+          pageTitle='Página não encontrada',
           content=~{::content}
       )}">
 
@@ -13,42 +10,31 @@
 
 <body>
 
-    <!-- Header Actions (vazio) -->
-    <th:block th:fragment="headerActions">
-    </th:block>
-
-    <!-- Conteúdo -->
     <th:block th:fragment="content">
 
-        <div class="flex flex-col items-center justify-center min-h-[60vh]">
+        <div class="flex flex-col items-center justify-center min-h-[60vh] px-4 py-16">
 
-            <!-- Ilustração divertida -->
-            <div class="text-9xl mb-6">
-                🌭
-            </div>
+            <div class="text-9xl mb-6">🌭</div>
 
-            <!-- Código do erro -->
             <h1 class="text-8xl font-bold text-snapdog-600 mb-4">404</h1>
 
-            <!-- Mensagem -->
             <h2 class="text-2xl font-semibold text-gray-800 mb-2">Ops! Página não encontrada</h2>
             <p class="text-gray-500 text-center max-w-md mb-8">
                 Parece que esse hot dog foi entregue no endereço errado...
                 A página que você procura não existe ou foi removida.
             </p>
 
-            <!-- Botões de ação -->
             <div class="flex items-center gap-4">
-                <a th:href="@{/admin/dashboard}"
+                <a th:href="@{/catalog}"
                     class="inline-flex items-center gap-2 bg-snapdog-600 hover:bg-snapdog-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
-                    <i data-lucide="home" class="w-5 h-5"></i>
-                    Voltar ao Dashboard
+                    <i data-lucide="utensils" class="w-5 h-5"></i>
+                    Ver cardápio
                 </a>
-                <button onclick="history.back()"
+                <a th:href="@{/}"
                     class="inline-flex items-center gap-2 border border-gray-300 hover:bg-gray-50 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors">
-                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
-                    Voltar
-                </button>
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    Ir para o início
+                </a>
             </div>
 
         </div>

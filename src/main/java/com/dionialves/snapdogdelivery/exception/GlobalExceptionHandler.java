@@ -9,11 +9,32 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler({NoHandlerFoundException.class, NoResourceFoundException.class})
+    public Object handleNotMapped(Exception ex, HttpServletRequest request) {
+
+        if (isApiRequest(request)) {
+            ErrorResponse error = new ErrorResponse(
+                    HttpStatus.NOT_FOUND.value(),
+                    "Recurso não encontrado",
+                    LocalDateTime.now());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
+
+        String template = isAdminRequest(request) ? "admin/error/404" : "public/error/404";
+        ModelAndView modelAndView = new ModelAndView(template);
+        modelAndView.setStatus(HttpStatus.NOT_FOUND);
+        modelAndView.addObject("status", 404);
+        modelAndView.addObject("message", null);
+        return modelAndView;
+    }
 
     @ExceptionHandler(NotFoundException.class)
     public Object handleNotFound(NotFoundException ex, HttpServletRequest request) {
@@ -26,7 +47,8 @@ public class GlobalExceptionHandler {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
         }
 
-        ModelAndView modelAndView = new ModelAndView("error/404");
+        String template = isAdminRequest(request) ? "admin/error/404" : "public/error/404";
+        ModelAndView modelAndView = new ModelAndView(template);
         modelAndView.setStatus(HttpStatus.NOT_FOUND);
         modelAndView.addObject("status", 404);
         modelAndView.addObject("message", ex.getMessage());
@@ -44,7 +66,8 @@ public class GlobalExceptionHandler {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
         }
 
-        ModelAndView modelAndView = new ModelAndView("error/400");
+        String template = isAdminRequest(request) ? "admin/error/400" : "public/error/400";
+        ModelAndView modelAndView = new ModelAndView(template);
         modelAndView.setStatus(HttpStatus.BAD_REQUEST);
         modelAndView.addObject("status", 400);
         modelAndView.addObject("message", ex.getMessage());
@@ -62,8 +85,9 @@ public class GlobalExceptionHandler {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
 
-        ModelAndView modelAndView = new ModelAndView("error/500");
-        modelAndView.setStatus(HttpStatus.BAD_REQUEST);
+        String template = isAdminRequest(request) ? "admin/error/500" : "public/error/500";
+        ModelAndView modelAndView = new ModelAndView(template);
+        modelAndView.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
         modelAndView.addObject("status", 500);
         modelAndView.addObject("message", ex.getMessage());
         return modelAndView;
@@ -129,5 +153,10 @@ public class GlobalExceptionHandler {
         }
 
         return false;
+    }
+
+    private boolean isAdminRequest(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path != null && path.startsWith("/admin");
     }
 }
