@@ -24,6 +24,7 @@ import com.dionialves.snapdogdelivery.domain.admin.user.User;
 import com.dionialves.snapdogdelivery.domain.admin.user.UserRepository;
 import com.dionialves.snapdogdelivery.domain.admin.user.UserService;
 import com.dionialves.snapdogdelivery.domain.admin.user.dto.UserCreateDTO;
+import com.dionialves.snapdogdelivery.domain.admin.user.dto.UserResponseDTO;
 import com.dionialves.snapdogdelivery.domain.admin.user.dto.UserUpdateDTO;
 import com.dionialves.snapdogdelivery.exception.BusinessException;
 import com.dionialves.snapdogdelivery.exception.NotFoundException;
@@ -81,7 +82,7 @@ class UserServiceTest {
         Page<User> page = new PageImpl<>(List.of(user));
         when(userRepository.findAll(any(Pageable.class))).thenReturn(page);
 
-        var result = userService.findAll(0);
+        Page<UserResponseDTO> result = userService.findAll(0);
 
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).getName()).isEqualTo("Administrador Teste");

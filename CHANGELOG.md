@@ -6,6 +6,15 @@ Registro de todas as alterações relevantes do projeto, organizadas por data e 
 
 ## [Não lançado] — develop
 
+### Correções
+
+- **Falha de compilação nos testes de serviço paginado** (01/03/2026)
+  Substituído `var` por tipo explícito em `CustomerServiceTest:108` (`Page<CustomerDTO>`),
+  `UserServiceTest:84` (`Page<UserResponseDTO>`) e `ProductServiceTest:78`
+  (`Page<ProductResponseDTO>`). O compilador Java 21 inferia `Streamable<T>` ao invés de
+  `Page<T>` nesses contextos. Restaurado `Role.USER` no enum `Role`, que havia sido removido
+  acidentalmente, quebrando `DataSeeder` e `UserRoleTest`. Todos os 180 testes passando.
+
 ### Documentação
 
 - **Documentação v0.3.0** (28/02/2026)

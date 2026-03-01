@@ -19,6 +19,7 @@ import com.dionialves.snapdogdelivery.domain.admin.product.Product;
 import com.dionialves.snapdogdelivery.domain.admin.product.ProductRepository;
 import com.dionialves.snapdogdelivery.domain.admin.product.ProductService;
 import com.dionialves.snapdogdelivery.domain.admin.product.dto.ProductDTO;
+import com.dionialves.snapdogdelivery.domain.admin.product.dto.ProductResponseDTO;
 import com.dionialves.snapdogdelivery.exception.NotFoundException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -75,7 +76,7 @@ class ProductServiceTest {
         when(productRepository.findByNameContainingIgnoreCase(anyString(), any(Pageable.class)))
                 .thenReturn(page);
 
-        var result = productService.search("hot", 0, 10);
+        Page<ProductResponseDTO> result = productService.search("hot", 0, 10);
 
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).getPrice()).isEqualByComparingTo("15.90");

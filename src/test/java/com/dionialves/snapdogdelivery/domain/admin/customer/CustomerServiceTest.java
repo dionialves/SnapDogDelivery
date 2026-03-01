@@ -105,7 +105,7 @@ class CustomerServiceTest {
         when(customerRepository.findByNameContainingIgnoreCaseOrPhoneContaining(
                 anyString(), anyString(), any(Pageable.class))).thenReturn(page);
 
-        var result = customerService.search("joão", 0, 10);
+        Page<CustomerDTO> result = customerService.search("joão", 0, 10);
 
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).getEmail()).isEqualTo("joao@email.com");

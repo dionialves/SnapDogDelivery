@@ -39,6 +39,34 @@ Criar categorias diferentes de produtos como HotDog e Bebidas, e mostras no card
 
 ---
 
+#### Flag de produto em destaque no catálogo público
+
+**Arquivos:** `domain/admin/product/Product.java`, `domain/admin/product/ProductService.java`,
+`templates/admin/products/form.html`, `templates/public/index.html`
+
+Atualmente, os destaques da landing page exibem os 6 primeiros produtos ativos em ordem
+alfabética. A melhoria propõe permitir que o admin marque explicitamente quais produtos devem
+aparecer em destaque.
+
+**Regra de negócio:**
+- Cada produto terá um campo booleano `featured` (padrão `false`).
+- No máximo **6 produtos** podem ter `featured = true` simultaneamente.
+- Ao tentar marcar um 7º produto como destaque, o sistema deve lançar `BusinessException`
+  informando que o limite foi atingido.
+- Se o número de produtos com `featured = true` for menor que 6, a landing page complementa
+  a exibição com produtos ativos em ordem alfabética até totalizar 6 itens.
+- Produtos inativos nunca aparecem nos destaques, mesmo que `featured = true`.
+
+**Solução planejada:**
+- Adicionar coluna `featured boolean NOT NULL DEFAULT false` à entidade `Product`
+- Em `ProductService`: validar limite de 6 ao salvar/atualizar um produto com `featured = true`
+- Atualizar `ProductService.findFeatured()`: buscar primeiro os `featured = true` e ativos;
+  se forem menos de 6, complementar com ativos ordenados por nome até atingir 6
+- Adicionar checkbox "Produto em destaque" no formulário admin de produto
+- Exibir badge visual "Destaque" na listagem admin de produtos para produtos marcados
+
+---
+
 #### Upload de arquivo no formulário admin de produto
 **Arquivos:** `templates/admin/products/form.html`
 
@@ -106,7 +134,7 @@ Estilo discreto (`text-xs`, `text-gray-400`), alinhado com o visual atual do foo
 
 ---
 
-### Infraestrutura — v1.0
+### Infraestrutura
 
 #### Migrations com Flyway
 **Arquivo:** `src/main/resources/application.properties`
@@ -127,29 +155,6 @@ Estilo discreto (`text-xs`, `text-gray-400`), alinhado com o visual atual do foo
 ---
 
 ## Bugs Conhecidos
-
-### Falha de compilação em CustomerServiceTest e UserServiceTest
-
-**Arquivos:**
-- `src/test/java/com/dionialves/snapdogdelivery/domain/admin/customer/CustomerServiceTest.java` (linha 108)
-- `src/test/java/com/dionialves/snapdogdelivery/domain/admin/user/UserServiceTest.java` (linha 84)
-
-**Sintoma:** `mvn test` termina com 2 erros de compilação:
-```
-CustomerServiceTest.search_paginado_retornaPage:108 » Unresolved compilation problem:
-  Type mismatch: cannot convert from Streamable<CustomerDTO> to Page<CustomerDTO>
-
-UserServiceTest.findAll_retornaPaginaUsuarios:84 » Unresolved compilation problem:
-  Type mismatch: cannot convert from Streamable<UserResponseDTO> to Page<UserResponseDTO>
-```
-
-**Causa:** O uso de `var` para capturar o retorno dos métodos `customerService.search(String, int, int)` e `userService.findAll(int)` faz o compilador inferir `Streamable<T>` em vez de `Page<T>`. Isso ocorre porque `Page<T>` estende `Streamable<T>` e o compilador escolhe o tipo mais genérico ao encadear `.map()` num `PageImpl`.
-
-**Solução planejada:**
-- `CustomerServiceTest.java:108`: substituir `var result` por `Page<CustomerDTO> result`
-- `UserServiceTest.java:84`: substituir `var result` por `Page<UserResponseDTO> result`
-
----
 
 ### Logo placeholder no layout admin
 **Arquivo:** `templates/admin/fragments/layout.html` (~linha 54)
@@ -222,6 +227,29 @@ Etapas
 
 ---
 
+### Erro 500 ao tentar excluir produto com pedidos associados
+
+**Arquivo:** `src/main/java/com/dionialves/snapdogdelivery/domain/admin/product/ProductService.java`
+
+**Sintoma:** Ao tentar excluir um produto que possui pedidos associados, o sistema retorna erro
+HTTP 500 em vez de uma mensagem de negócio amigável.
+
+**Causa:** `ProductService.delete()` chama `deleteById()` sem verificar se o produto está
+referenciado em `tb_product_orders`. O banco lança uma `ConstraintViolationException` que não
+é tratada.
+
+**Regra de negócio esperada:** Produtos com pedidos associados **não podem ser excluídos**,
+apenas desativados (`active = false`). A exclusão deve ser bloqueada com uma `BusinessException`
+clara para o usuário.
+
+**Solução planejada:**
+- Em `ProductService.delete()`: verificar se existe algum `ProductOrder` com o `product_id`
+  antes de deletar, e lançar `BusinessException` caso exista
+- Atualizar a UI (`admin/products/list.html`) para exibir o botão "Desativar" como alternativa
+  ao "Excluir" quando o produto tiver pedidos associados
+
+---
+
 ### Nova logo
 
 Uma nova logo foi criada para o sistema e ja colocada no layout.html da area publica, ela se encontra no public/images/logo.png. Precisa reestilizar a paginas de /login /admin/login e layout do sistema de administração do sistema.
@@ -248,4 +276,4 @@ Uma nova logo foi criada para o sistema e ja colocada no layout.html da area pub
 
 ---
 
-*Atualizado em: 26/02/2026*
+*Atualizado em: 01/03/2026*
