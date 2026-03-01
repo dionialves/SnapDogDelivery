@@ -157,16 +157,6 @@ Estilo discreto (`text-xs`, `text-gray-400`), alinhado com o visual atual do foo
 ## Bugs Conhecidos
 
 
-### Conflito de sessão entre área admin e área pública
-As duas `SecurityFilterChain` compartilham o mesmo atributo `SPRING_SECURITY_CONTEXT` na
-`HttpSession`. Login admin no mesmo browser corrompe a sessão do cliente.
-
-**Solução planejada:**
-- `HttpSessionSecurityContextRepository` com atributo de sessão distinto por cadeia:
-  - Cadeia admin: `setSpringSecurityContextAttrName("ADMIN_SECURITY_CONTEXT")`
-  - Cadeia pública: mantém `SPRING_SECURITY_CONTEXT` (padrão)
-
----
 
 
 ---

@@ -9,6 +9,12 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ### Correções
 
+- **Conflito de sessão entre área admin e área pública corrigido** (01/03/2026)
+  Configurado `HttpSessionSecurityContextRepository` com chave `"ADMIN_SECURITY_CONTEXT"` na
+  cadeia admin via `.securityContext(sc -> sc.securityContextRepository(adminRepo))`. A cadeia
+  pública mantém `SPRING_SECURITY_CONTEXT` (padrão). Login admin no mesmo browser não
+  corrompe mais a sessão do cliente e vice-versa.
+
 - **Dropdown do cliente exibindo nome em vez do e-mail** (01/03/2026)
   Criado `CustomerPrincipal` implementando `UserDetails` com `getUsername()` retornando o
   e-mail (Spring Security) e `getName()` retornando o nome real. `CustomerUserDetailsService`
