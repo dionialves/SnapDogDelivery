@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/fragments/layout :: layout(
+          pageTitle='Configurações da Empresa',
+          activeMenu='configuracoes',
+          pageSubtitle='Informações exibidas no site público',
+          headerActions=~{::headerActions},
+          content=~{::content}
+      )}">
+
+<head>
+    <title>Configurações da Empresa</title>
+</head>
+
+<body>
+
+    <th:block th:fragment="headerActions"></th:block>
+
+    <th:block th:fragment="content">
+
+        <!-- Flash messages -->
+        <div th:if="${successMessage}"
+            class="mb-6 p-4 rounded-lg bg-green-50 border border-green-200 text-green-700 flex items-center gap-3">
+            <i data-lucide="check-circle" class="w-5 h-5 flex-shrink-0"></i>
+            <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}"
+            class="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 flex items-center gap-3">
+            <i data-lucide="alert-circle" class="w-5 h-5 flex-shrink-0"></i>
+            <span th:text="${errorMessage}"></span>
+        </div>
+
+        <form th:action="@{/admin/settings}" th:object="${settings}" method="post" class="space-y-6">
+
+            <!-- Card: Dados da Empresa -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                        <i data-lucide="building-2" class="w-5 h-5 text-snapdog-600"></i>
+                        Dados da Empresa
+                    </h2>
+                </div>
+                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <!-- Nome da empresa -->
+                    <div>
+                        <label for="companyName" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nome da empresa <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="companyName" th:field="*{companyName}"
+                            th:classappend="${#fields.hasErrors('companyName')} ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500"
+                            placeholder="Ex: SnapDog Delivery">
+                        <p th:if="${#fields.hasErrors('companyName')}" th:errors="*{companyName}"
+                            class="mt-1 text-sm text-red-500"></p>
+                    </div>
+
+                    <!-- Copyright -->
+                    <div>
+                        <label for="copyright" class="block text-sm font-medium text-gray-700 mb-2">
+                            Texto de copyright <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="copyright" th:field="*{copyright}"
+                            th:classappend="${#fields.hasErrors('copyright')} ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500"
+                            placeholder="Ex: © 2026 SnapDog Delivery. Todos os direitos reservados.">
+                        <p th:if="${#fields.hasErrors('copyright')}" th:errors="*{copyright}"
+                            class="mt-1 text-sm text-red-500"></p>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Card: Informações de Contato -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                        <i data-lucide="phone" class="w-5 h-5 text-snapdog-600"></i>
+                        Informações de Contato
+                    </h2>
+                </div>
+                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <!-- Telefone -->
+                    <div>
+                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
+                            Telefone <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="phone" th:field="*{phone}"
+                            th:classappend="${#fields.hasErrors('phone')} ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500"
+                            placeholder="(00) 00000-0000">
+                        <p th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"
+                            class="mt-1 text-sm text-red-500"></p>
+                    </div>
+
+                    <!-- E-mail -->
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                            E-mail <span class="text-red-500">*</span>
+                        </label>
+                        <input type="email" id="email" th:field="*{email}"
+                            th:classappend="${#fields.hasErrors('email')} ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500"
+                            placeholder="contato@empresa.com">
+                        <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}"
+                            class="mt-1 text-sm text-red-500"></p>
+                    </div>
+
+                    <!-- Endereço -->
+                    <div class="md:col-span-2">
+                        <label for="address" class="block text-sm font-medium text-gray-700 mb-2">
+                            Endereço físico <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="address" th:field="*{address}"
+                            th:classappend="${#fields.hasErrors('address')} ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500"
+                            placeholder="Ex: Rua Example, 100 — São Paulo, SP">
+                        <p th:if="${#fields.hasErrors('address')}" th:errors="*{address}"
+                            class="mt-1 text-sm text-red-500"></p>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Card: Horário de Funcionamento -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                        <i data-lucide="clock" class="w-5 h-5 text-snapdog-600"></i>
+                        Horário de Funcionamento
+                    </h2>
+                </div>
+                <div class="p-6">
+
+                    <div>
+                        <label for="openingHours" class="block text-sm font-medium text-gray-700 mb-2">
+                            Horário <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="openingHours" th:field="*{openingHours}"
+                            th:classappend="${#fields.hasErrors('openingHours')} ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500"
+                            placeholder="Ex: Seg–Sex: 11h às 22h | Sáb–Dom: 11h às 23h">
+                        <p th:if="${#fields.hasErrors('openingHours')}" th:errors="*{openingHours}"
+                            class="mt-1 text-sm text-red-500"></p>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="flex items-center justify-end gap-4">
+                <button type="submit"
+                    class="px-6 py-2 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg font-medium transition-colors inline-flex items-center gap-2">
+                    <i data-lucide="save" class="w-5 h-5"></i>
+                    Salvar Configurações
+                </button>
+            </div>
+
+        </form>
+
+    </th:block>
+
+</body>
+
+</html>

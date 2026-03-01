@@ -20,6 +20,8 @@ import com.dionialves.snapdogdelivery.domain.admin.order.OrderRepository;
 import com.dionialves.snapdogdelivery.domain.admin.order.OrderStatus;
 import com.dionialves.snapdogdelivery.domain.admin.product.Product;
 import com.dionialves.snapdogdelivery.domain.admin.product.ProductRepository;
+import com.dionialves.snapdogdelivery.domain.admin.settings.CompanySettings;
+import com.dionialves.snapdogdelivery.domain.admin.settings.CompanySettingsRepository;
 import com.dionialves.snapdogdelivery.domain.admin.user.Role;
 import com.dionialves.snapdogdelivery.domain.admin.user.User;
 import com.dionialves.snapdogdelivery.domain.admin.user.UserRepository;
@@ -33,6 +35,7 @@ public class DataSeeder implements CommandLineRunner {
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
+    private final CompanySettingsRepository companySettingsRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -51,6 +54,10 @@ public class DataSeeder implements CommandLineRunner {
 
         if (orderRepository.count() == 0) {
             seedOrders();
+        }
+
+        if (companySettingsRepository.count() == 0) {
+            seedCompanySettings();
         }
     }
 
@@ -173,6 +180,17 @@ public class DataSeeder implements CommandLineRunner {
         product.setPrice(price);
         product.setDescription(description);
         return product;
+    }
+
+    private void seedCompanySettings() {
+        var settings = new CompanySettings();
+        settings.setCompanyName("SnapDog Delivery");
+        settings.setEmail("contato@snapdogdelivery.com");
+        settings.setPhone("(00) 12345-6789");
+        settings.setAddress("Rua Example, 100 — São Paulo, SP");
+        settings.setOpeningHours("Seg–Sex: 11h às 22h | Sáb–Dom: 11h às 23h");
+        settings.setCopyright("© 2026 SnapDog Delivery. Todos os direitos reservados.");
+        companySettingsRepository.save(settings);
     }
 
     private User createUser(String name, String email, String password, Role role) {

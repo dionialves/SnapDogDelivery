@@ -165,8 +165,7 @@
                         <i data-lucide="clock" class="w-4 h-4 text-snapdog-600"></i>
                         Horário de funcionamento
                     </h3>
-                    <p class="text-sm text-gray-500">Segunda a Sexta: 11h às 22h</p>
-                    <p class="text-sm text-gray-500">Sábado e Domingo: 11h às 23h</p>
+                    <p th:text="${companySettings?.openingHours}" class="text-sm text-gray-500"></p>
                 </div>
 
                 <!-- Contato -->
@@ -175,14 +174,14 @@
                         <i data-lucide="phone" class="w-4 h-4 text-snapdog-600"></i>
                         Contato
                     </h3>
-                    <p class="text-sm text-gray-500">(00) 12345-6789</p>
-                    <p class="text-sm text-gray-500">contato@snapdogdelivery.com</p>
+                    <p th:text="${companySettings?.phone}" class="text-sm text-gray-500"></p>
+                    <p th:text="${companySettings?.email}" class="text-sm text-gray-500"></p>
                 </div>
 
             </div>
 
             <div class="border-t border-gray-100 mt-8 pt-6 text-center">
-                <p class="text-xs text-gray-400">© 2026 SnapDog Delivery. Todos os direitos reservados.</p>
+                <p th:text="${companySettings?.copyright}" class="text-xs text-gray-400"></p>
             </div>
         </div>
     </footer>

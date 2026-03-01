@@ -30,18 +30,6 @@ Criar um editor de imagem se abre quando o upload de imagem e aberto, desse edit
 
 ---
 
-#### Informações da empresa no painel admin
-
-Criar uma seção de "Configurações da Empresa" no painel admin para armazenar informações como:
-
-- Copyright
-- telefone de contato
-- email de contato
-- endereço físico
-- e outros
-
----
-
 ### Área Pública
 
 #### Categoria de tipos de produtos

@@ -7,7 +7,14 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ## [Não lançado] — develop
 
-Sem alterações registradas desde a v0.3.1.
+### Novas Funcionalidades
+
+- **Configurações da Empresa no painel admin** (01/03/2026)
+  Criada seção `/admin/settings` com formulário para editar nome, e-mail, telefone, endereço,
+  horário de funcionamento e copyright. Dados armazenados em `tb_company_settings` (singleton,
+  ID sempre 1). Footer da área pública passa a exibir os dados da entidade em vez de valores
+  hardcoded. `CompanySettingsAdvice` injeta o objeto em todos os controllers do storefront via
+  `@ModelAttribute`. DataSeeder inicializa os dados padrão.
 
 ---
 
