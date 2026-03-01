@@ -7,64 +7,16 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ## [Não lançado] — develop
 
-### Correções
+Sem alterações registradas desde a v0.3.1.
 
-- **Páginas de erro 400/404/500 separadas para área pública e admin** (01/03/2026)
-  Criadas páginas em `templates/public/error/` com layout público (header, footer, botão "Ir para o início").
-  Páginas admin movidas para `templates/admin/error/`. `GlobalExceptionHandler` agora detecta
-  a origem da requisição (`/admin` vs público) e renderiza o template correto.
-  Adicionado handler para `NoHandlerFoundException` e `NoResourceFoundException` que exibe 404
-  em vez de 500 ao acessar rotas inexistentes. Configurado `spring.mvc.throw-exception-if-no-handler-found=true`.
+---
 
-- **Erro 500 ao excluir produto com pedidos associados** (01/03/2026)
-  Adicionada verificação em `ProductService.delete()` via `ProductOrderRepository.existsByProductId()`.
-  Agora lança `BusinessException` com mensagem amigável em vez de expor erro de constraint do banco.
-  Criado `ProductOrderRepository` e adicionado teste unitário para o novo cenário.
+## [0.3.1] — 01/03/2026
 
-- **Logo placeholder substituída nas telas de login e cadastro público** (01/03/2026)
-  Removido o quadrado vermelho com a letra "S" de `login.html` (painel desktop e versão
-  mobile) e `register.html`. Substituído por `<img src="/image/logo.png">` em todos os
-  pontos, com container branco no painel vermelho do login para contraste adequado.
+Release de correções de bugs. Estabilização pós v0.3.0: páginas de erro HTTP por contexto
+(admin/público), exclusão segura de produto com pedidos, ajustes de sessão, UI e PT-BR.
 
-- **Select de estado inoperante no cadastro e perfil do cliente** (01/03/2026)
-  Substituído `th:value="${s.name()}"` por `th:value="${s}"` nas options do `<select>` de
-  estado em `register.html` e `profile.html`. O Thymeleaf/Spring passa a gerenciar a
-  conversão enum ↔ String automaticamente, corrigindo a seleção.
-
-- **Conflito de sessão entre área admin e área pública corrigido** (01/03/2026)
-  Configurado `HttpSessionSecurityContextRepository` com chave `"ADMIN_SECURITY_CONTEXT"` na
-  cadeia admin via `.securityContext(sc -> sc.securityContextRepository(adminRepo))`. A cadeia
-  pública mantém `SPRING_SECURITY_CONTEXT` (padrão). Login admin no mesmo browser não
-  corrompe mais a sessão do cliente e vice-versa.
-
-- **Dropdown do cliente exibindo nome em vez do e-mail** (01/03/2026)
-  Criado `CustomerPrincipal` implementando `UserDetails` com `getUsername()` retornando o
-  e-mail (Spring Security) e `getName()` retornando o nome real. `CustomerUserDetailsService`
-  atualizado para retornar `CustomerPrincipal`. Template `public/fragments/layout.html`
-  atualizado para usar `sec:authentication="principal.name"`.
-
-- **Status do pedido exibido em PT-BR na área pública** (01/03/2026)
-  Adicionado campo `label` PT-BR ao enum `OrderStatus` (Aguardando, Em preparo, Saiu para
-  entrega, Entregue, Cancelado). Adicionado campo `statusLabel` no `OrderResponseDTO`.
-  Templates `confirmation.html`, `account/orders.html` e `account/order-detail.html`
-  atualizados para usar `${order.statusLabel}`.
-
-- **Copyright atualizado de 2025 para 2026** (01/03/2026)
-  Corrigido em 5 templates: `public/fragments/layout.html`, `public/auth/login.html`,
-  `public/auth/register.html`, `admin/auth/login.html` e `auth/login.html`.
-
-- **Logo integrada na sidebar do layout admin** (01/03/2026)
-  Substituído container quadrado 40×40px + textos redundantes por container branco
-  de largura total com a logo em tamanho legível (`h-9`), respeitando o design horizontal
-  da imagem e o contraste com o fundo vermelho da sidebar.
-
-- **Logo real na tela de login admin** (01/03/2026)
-  Removido header vermelho com emoji 🌭 de `admin/auth/login.html`. Substituído por
-  seção branca com a logo centralizada (`h-14`) e subtítulo "Painel Administrativo".
-
-- **Logo real substituída no layout admin** (01/03/2026)
-  Removido placeholder com emoji 🌭 da sidebar do painel admin. Substituído por
-  `<img src="/image/logo.png">` dentro do container branco existente.
+→ [Documentação completa](docs/v0.3.1.md)
 
 ---
 
