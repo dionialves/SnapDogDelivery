@@ -194,16 +194,6 @@ As duas `SecurityFilterChain` compartilham o mesmo atributo `SPRING_SECURITY_CON
 
 ---
 
-### Copyright com ano desatualizado (2025)
-
-| Arquivo | Ocorrência |
-|---|---|
-| `templates/public/fragments/layout.html` | ~linha 187 |
-| `templates/public/auth/register.html` | ~linha 228 |
-| `templates/public/auth/login.html` | painel esquerdo — rodapé |
-| `templates/admin/auth/login.html` | rodapé |
-
-Atualizar `© 2025` → `© 2026` em todos os arquivos listados.
 
 ---
 

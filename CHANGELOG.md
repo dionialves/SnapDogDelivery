@@ -9,6 +9,10 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ### Correções
 
+- **Copyright atualizado de 2025 para 2026** (01/03/2026)
+  Corrigido em 5 templates: `public/fragments/layout.html`, `public/auth/login.html`,
+  `public/auth/register.html`, `admin/auth/login.html` e `auth/login.html`.
+
 - **Logo integrada na sidebar do layout admin** (01/03/2026)
   Substituído container quadrado 40×40px + textos redundantes por container branco
   de largura total com a logo em tamanho legível (`h-9`), respeitando o design horizontal
