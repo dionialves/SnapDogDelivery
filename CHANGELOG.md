@@ -9,6 +9,12 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ### Correções
 
+- **Dropdown do cliente exibindo nome em vez do e-mail** (01/03/2026)
+  Criado `CustomerPrincipal` implementando `UserDetails` com `getUsername()` retornando o
+  e-mail (Spring Security) e `getName()` retornando o nome real. `CustomerUserDetailsService`
+  atualizado para retornar `CustomerPrincipal`. Template `public/fragments/layout.html`
+  atualizado para usar `sec:authentication="principal.name"`.
+
 - **Status do pedido exibido em PT-BR na área pública** (01/03/2026)
   Adicionado campo `label` PT-BR ao enum `OrderStatus` (Aguardando, Em preparo, Saiu para
   entrega, Entregue, Cancelado). Adicionado campo `statusLabel` no `OrderResponseDTO`.

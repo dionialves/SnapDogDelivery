@@ -157,19 +157,6 @@ Estilo discreto (`text-xs`, `text-gray-400`), alinhado com o visual atual do foo
 ## Bugs Conhecidos
 
 
-### Dropdown do cliente exibe e-mail em vez do nome
-**Arquivo:** `templates/public/fragments/layout.html` (linha 83)
-
-`sec:authentication="name"` retorna o `username` do `UserDetails` — que no
-`CustomerUserDetailsService` é o e-mail. Exibe `joao@email.com` em vez de `João Silva`.
-
-**Solução planejada:**
-- Implementar `CustomerPrincipal` encapsulando `Customer`, com `getName()` retornando o nome
-  real e `getUsername()` retornando o e-mail para o Spring Security
-- Ou injetar `customerName` via `@ControllerAdvice` / `@ModelAttribute`
-
----
-
 ### Conflito de sessão entre área admin e área pública
 As duas `SecurityFilterChain` compartilham o mesmo atributo `SPRING_SECURITY_CONTEXT` na
 `HttpSession`. Login admin no mesmo browser corrompe a sessão do cliente.
