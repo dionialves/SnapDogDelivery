@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.dionialves.snapdogdelivery.domain.admin.product.dto.ProductDTO;
 import com.dionialves.snapdogdelivery.domain.admin.product.dto.ProductResponseDTO;
+import com.dionialves.snapdogdelivery.domain.admin.productorder.ProductOrderRepository;
+import com.dionialves.snapdogdelivery.exception.BusinessException;
 import com.dionialves.snapdogdelivery.exception.NotFoundException;
 
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final ProductOrderRepository productOrderRepository;
 
     @Transactional(readOnly = true)
     public List<ProductResponseDTO> search(String search) {
@@ -115,6 +118,9 @@ public class ProductService {
     public void delete(Long id) {
         if (!productRepository.existsById(id))
             throw new NotFoundException("Produto não encontrado com ID: " + id);
+
+        if (productOrderRepository.existsByProductId(id))
+            throw new BusinessException("Produto não pode ser excluído pois está associado a pedidos existentes.");
 
         productRepository.deleteById(id);
     }

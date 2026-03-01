@@ -9,6 +9,11 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ### Correções
 
+- **Erro 500 ao excluir produto com pedidos associados** (01/03/2026)
+  Adicionada verificação em `ProductService.delete()` via `ProductOrderRepository.existsByProductId()`.
+  Agora lança `BusinessException` com mensagem amigável em vez de expor erro de constraint do banco.
+  Criado `ProductOrderRepository` e adicionado teste unitário para o novo cenário.
+
 - **Logo placeholder substituída nas telas de login e cadastro público** (01/03/2026)
   Removido o quadrado vermelho com a letra "S" de `login.html` (painel desktop e versão
   mobile) e `register.html`. Substituído por `<img src="/image/logo.png">` em todos os

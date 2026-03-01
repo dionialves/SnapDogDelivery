@@ -20,6 +20,8 @@ import com.dionialves.snapdogdelivery.domain.admin.product.ProductRepository;
 import com.dionialves.snapdogdelivery.domain.admin.product.ProductService;
 import com.dionialves.snapdogdelivery.domain.admin.product.dto.ProductDTO;
 import com.dionialves.snapdogdelivery.domain.admin.product.dto.ProductResponseDTO;
+import com.dionialves.snapdogdelivery.domain.admin.productorder.ProductOrderRepository;
+import com.dionialves.snapdogdelivery.exception.BusinessException;
 import com.dionialves.snapdogdelivery.exception.NotFoundException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,6 +37,9 @@ class ProductServiceTest {
 
     @Mock
     private ProductRepository productRepository;
+
+    @Mock
+    private ProductOrderRepository productOrderRepository;
 
     @InjectMocks
     private ProductService productService;
@@ -152,9 +157,10 @@ class ProductServiceTest {
     // --- delete ---
 
     @Test
-    @DisplayName("delete com ID existente remove o produto")
+    @DisplayName("delete com ID existente e sem pedidos remove o produto")
     void delete_existente_removeSucesso() {
         when(productRepository.existsById(1L)).thenReturn(true);
+        when(productOrderRepository.existsByProductId(1L)).thenReturn(false);
 
         productService.delete(1L);
 
@@ -169,6 +175,19 @@ class ProductServiceTest {
         assertThatThrownBy(() -> productService.delete(99L))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("99");
+
+        verify(productRepository, never()).deleteById(any());
+    }
+
+    @Test
+    @DisplayName("delete com pedidos associados lança BusinessException")
+    void delete_comPedidosAssociados_lancaBusinessException() {
+        when(productRepository.existsById(1L)).thenReturn(true);
+        when(productOrderRepository.existsByProductId(1L)).thenReturn(true);
+
+        assertThatThrownBy(() -> productService.delete(1L))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("pedidos");
 
         verify(productRepository, never()).deleteById(any());
     }
