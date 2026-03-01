@@ -5,7 +5,6 @@ import lombok.Getter;
 @Getter
 public enum Role {
 
-    USER("USER", "Usuário"),
     ADMIN("ADMIN", "Administrador"),
     SUPER_ADMIN("SUPER_ADMIN", "Super Administrador");
 
