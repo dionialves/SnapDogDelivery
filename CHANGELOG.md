@@ -9,6 +9,11 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ### Correções
 
+- **Logo integrada na sidebar do layout admin** (01/03/2026)
+  Substituído container quadrado 40×40px + textos redundantes por container branco
+  de largura total com a logo em tamanho legível (`h-9`), respeitando o design horizontal
+  da imagem e o contraste com o fundo vermelho da sidebar.
+
 - **Logo real na tela de login admin** (01/03/2026)
   Removido header vermelho com emoji 🌭 de `admin/auth/login.html`. Substituído por
   seção branca com a logo centralizada (`h-14`) e subtítulo "Painel Administrativo".
