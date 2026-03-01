@@ -156,14 +156,6 @@ Estilo discreto (`text-xs`, `text-gray-400`), alinhado com o visual atual do foo
 
 ## Bugs Conhecidos
 
-### Logo placeholder no layout admin
-**Arquivo:** `templates/admin/fragments/layout.html` (~linha 54)
-
-Comentário `<!-- Logo placeholder - depois substituímos pelo SVG real -->` com emoji no lugar
-do logo. Requer asset de logo (SVG/imagem) que ainda não existe no projeto.
-
----
-
 ### Status do pedido exibido em inglês na tela de confirmação
 **Arquivo:** `templates/public/checkout/confirmation.html` (linha 32)
 

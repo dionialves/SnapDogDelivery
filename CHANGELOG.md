@@ -7,7 +7,11 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ## [Não lançado] — develop
 
-Sem alterações registradas desde a v0.3.0.
+### Correções
+
+- **Logo real substituída no layout admin** (01/03/2026)
+  Removido placeholder com emoji 🌭 da sidebar do painel admin. Substituído por
+  `<img src="/image/logo.png">` dentro do mesmo container branco existente.
 
 ---
 
