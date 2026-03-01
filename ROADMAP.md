@@ -70,19 +70,6 @@ Ainda faltam:
 
 ---
 
-#### Modal de quantidade ao adicionar ao carrinho
-**Arquivos:** `templates/public/store/catalog.html`, `templates/public/store/product-detail.html`
-
-O botão "Adicionar" posta diretamente com `quantity=1` fixo.
-
-**Solução planejada:**
-- Substituir o `<form>` de POST direto por um botão que abre um modal JS
-- Modal exibe: imagem, nome, descrição e campo numérico de quantidade (min 1, max 20, padrão 1)
-- Botão "Adicionar ao carrinho" dentro do modal submete `POST /cart/add` com `productId` e `quantity`
-- Acessível via teclado (fechar com `Esc`, foco retorna ao botão de origem)
-- JavaScript vanilla + Tailwind, sem dependências externas
-
----
 
 
 #### Campo `origin` visível na área admin

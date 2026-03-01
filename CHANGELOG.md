@@ -9,6 +9,13 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ### Novas Funcionalidades
 
+- **Modal de quantidade ao adicionar ao carrinho** (01/03/2026)
+  Substituídos os botões "Adicionar" (quantity=1 fixo) por triggers que abrem um modal com
+  thumbnail, nome, descrição e seletor de quantidade (1–20). Imagem e nome do produto também
+  abrem o modal. Na landing page, "Ver mais" passa a "Adicionar" para clientes autenticados.
+  Página de detalhe individual (`product-detail.html`) removida e rota `/catalog/{id}` excluída.
+  JavaScript vanilla, sem dependências externas.
+
 - **Máscaras de telefone e CEP + autocomplete ViaCEP** (01/03/2026)
   Adicionadas máscaras JavaScript nos campos `#phone` (`(00) 00000-0000`) e `#zipCode`
   (`00000-000`) nas telas de cadastro e perfil do cliente. No blur do CEP com 8 dígitos,

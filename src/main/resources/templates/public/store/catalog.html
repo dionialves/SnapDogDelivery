@@ -47,7 +47,15 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mb-10">
                         <div th:each="product : ${hotDogProducts}"
                             class="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group flex flex-col">
-                            <a th:href="@{/catalog/{id}(id=${product.id})}" class="block aspect-video bg-white overflow-hidden">
+
+                            <!-- Imagem (autenticado → abre modal; não autenticado → estático) -->
+                            <button type="button" sec:authorize="hasRole('CUSTOMER')"
+                                th:data-id="${product.id}"
+                                th:data-name="${product.name}"
+                                th:data-description="${product.description != null ? product.description : ''}"
+                                th:data-image="${product.imageUrl != null ? product.imageUrl : ''}"
+                                onclick="openQuantityModal(this)"
+                                class="aspect-video bg-white overflow-hidden w-full cursor-pointer">
                                 <img th:if="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
                                     th:src="${product.imageUrl}" th:alt="${product.name}"
                                     class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300">
@@ -55,28 +63,50 @@
                                     class="w-full h-full flex items-center justify-center text-gray-200">
                                     <i data-lucide="image" class="w-10 h-10"></i>
                                 </div>
-                            </a>
+                            </button>
+                            <div sec:authorize="!hasRole('CUSTOMER')" class="aspect-video bg-white overflow-hidden">
+                                <img th:if="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
+                                    th:src="${product.imageUrl}" th:alt="${product.name}"
+                                    class="w-full h-full object-contain">
+                                <div th:unless="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
+                                    class="w-full h-full flex items-center justify-center text-gray-200">
+                                    <i data-lucide="image" class="w-10 h-10"></i>
+                                </div>
+                            </div>
+
                             <div class="p-4 flex flex-col flex-1">
-                                <a th:href="@{/catalog/{id}(id=${product.id})}"
-                                    class="font-semibold text-gray-900 mb-1 hover:text-snapdog-600 transition-colors line-clamp-1"
-                                    th:text="${product.name}">Nome</a>
+                                <!-- Nome (autenticado → abre modal; não autenticado → texto) -->
+                                <button type="button" sec:authorize="hasRole('CUSTOMER')"
+                                    th:data-id="${product.id}"
+                                    th:data-name="${product.name}"
+                                    th:data-description="${product.description != null ? product.description : ''}"
+                                    th:data-image="${product.imageUrl != null ? product.imageUrl : ''}"
+                                    onclick="openQuantityModal(this)"
+                                    class="font-semibold text-gray-900 mb-1 hover:text-snapdog-600 transition-colors line-clamp-1 text-left w-full"
+                                    th:text="${product.name}">Nome</button>
+                                <span sec:authorize="!hasRole('CUSTOMER')"
+                                    class="font-semibold text-gray-900 mb-1 line-clamp-1 block"
+                                    th:text="${product.name}">Nome</span>
+
                                 <p th:if="${product.description != null and !#strings.isEmpty(product.description)}"
                                     class="text-xs text-gray-500 mb-3 line-clamp-2 flex-1" th:text="${product.description}"></p>
                                 <div th:unless="${product.description != null and !#strings.isEmpty(product.description)}"
                                     class="flex-1"></div>
+
                                 <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
                                     <span class="text-snapdog-600 font-bold"
                                         th:text="'R$ ' + ${#numbers.formatDecimal(product.price, 1, 'POINT', 2, 'COMMA')}">
                                     </span>
-                                    <form sec:authorize="hasRole('CUSTOMER')" th:action="@{/cart/add}" method="post">
-                                        <input type="hidden" name="productId" th:value="${product.id}">
-                                        <input type="hidden" name="quantity" value="1">
-                                        <button type="submit"
-                                            class="flex items-center gap-1.5 px-3 py-1.5 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg text-xs font-semibold transition-colors">
-                                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                                            Adicionar
-                                        </button>
-                                    </form>
+                                    <button type="button" sec:authorize="hasRole('CUSTOMER')"
+                                        th:data-id="${product.id}"
+                                        th:data-name="${product.name}"
+                                        th:data-description="${product.description != null ? product.description : ''}"
+                                        th:data-image="${product.imageUrl != null ? product.imageUrl : ''}"
+                                        onclick="openQuantityModal(this)"
+                                        class="flex items-center gap-1.5 px-3 py-1.5 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg text-xs font-semibold transition-colors">
+                                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                        Adicionar
+                                    </button>
                                     <a sec:authorize="!hasRole('CUSTOMER')" href="/login"
                                         class="flex items-center gap-1.5 px-3 py-1.5 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg text-xs font-semibold transition-colors">
                                         <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -97,7 +127,14 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                         <div th:each="product : ${bebidaProducts}"
                             class="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group flex flex-col">
-                            <a th:href="@{/catalog/{id}(id=${product.id})}" class="block aspect-video bg-white overflow-hidden">
+
+                            <button type="button" sec:authorize="hasRole('CUSTOMER')"
+                                th:data-id="${product.id}"
+                                th:data-name="${product.name}"
+                                th:data-description="${product.description != null ? product.description : ''}"
+                                th:data-image="${product.imageUrl != null ? product.imageUrl : ''}"
+                                onclick="openQuantityModal(this)"
+                                class="aspect-video bg-white overflow-hidden w-full cursor-pointer">
                                 <img th:if="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
                                     th:src="${product.imageUrl}" th:alt="${product.name}"
                                     class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300">
@@ -105,28 +142,49 @@
                                     class="w-full h-full flex items-center justify-center text-gray-200">
                                     <i data-lucide="image" class="w-10 h-10"></i>
                                 </div>
-                            </a>
+                            </button>
+                            <div sec:authorize="!hasRole('CUSTOMER')" class="aspect-video bg-white overflow-hidden">
+                                <img th:if="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
+                                    th:src="${product.imageUrl}" th:alt="${product.name}"
+                                    class="w-full h-full object-contain">
+                                <div th:unless="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
+                                    class="w-full h-full flex items-center justify-center text-gray-200">
+                                    <i data-lucide="image" class="w-10 h-10"></i>
+                                </div>
+                            </div>
+
                             <div class="p-4 flex flex-col flex-1">
-                                <a th:href="@{/catalog/{id}(id=${product.id})}"
-                                    class="font-semibold text-gray-900 mb-1 hover:text-snapdog-600 transition-colors line-clamp-1"
-                                    th:text="${product.name}">Nome</a>
+                                <button type="button" sec:authorize="hasRole('CUSTOMER')"
+                                    th:data-id="${product.id}"
+                                    th:data-name="${product.name}"
+                                    th:data-description="${product.description != null ? product.description : ''}"
+                                    th:data-image="${product.imageUrl != null ? product.imageUrl : ''}"
+                                    onclick="openQuantityModal(this)"
+                                    class="font-semibold text-gray-900 mb-1 hover:text-snapdog-600 transition-colors line-clamp-1 text-left w-full"
+                                    th:text="${product.name}">Nome</button>
+                                <span sec:authorize="!hasRole('CUSTOMER')"
+                                    class="font-semibold text-gray-900 mb-1 line-clamp-1 block"
+                                    th:text="${product.name}">Nome</span>
+
                                 <p th:if="${product.description != null and !#strings.isEmpty(product.description)}"
                                     class="text-xs text-gray-500 mb-3 line-clamp-2 flex-1" th:text="${product.description}"></p>
                                 <div th:unless="${product.description != null and !#strings.isEmpty(product.description)}"
                                     class="flex-1"></div>
+
                                 <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
                                     <span class="text-snapdog-600 font-bold"
                                         th:text="'R$ ' + ${#numbers.formatDecimal(product.price, 1, 'POINT', 2, 'COMMA')}">
                                     </span>
-                                    <form sec:authorize="hasRole('CUSTOMER')" th:action="@{/cart/add}" method="post">
-                                        <input type="hidden" name="productId" th:value="${product.id}">
-                                        <input type="hidden" name="quantity" value="1">
-                                        <button type="submit"
-                                            class="flex items-center gap-1.5 px-3 py-1.5 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg text-xs font-semibold transition-colors">
-                                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                                            Adicionar
-                                        </button>
-                                    </form>
+                                    <button type="button" sec:authorize="hasRole('CUSTOMER')"
+                                        th:data-id="${product.id}"
+                                        th:data-name="${product.name}"
+                                        th:data-description="${product.description != null ? product.description : ''}"
+                                        th:data-image="${product.imageUrl != null ? product.imageUrl : ''}"
+                                        onclick="openQuantityModal(this)"
+                                        class="flex items-center gap-1.5 px-3 py-1.5 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg text-xs font-semibold transition-colors">
+                                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                        Adicionar
+                                    </button>
                                     <a sec:authorize="!hasRole('CUSTOMER')" href="/login"
                                         class="flex items-center gap-1.5 px-3 py-1.5 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg text-xs font-semibold transition-colors">
                                         <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -138,7 +196,7 @@
                     </div>
                 </th:block>
 
-                <!-- Estado vazio (nenhum produto em nenhuma categoria) -->
+                <!-- Estado vazio -->
                 <div th:if="${(hotDogProducts == null or #lists.isEmpty(hotDogProducts)) and (bebidaProducts == null or #lists.isEmpty(bebidaProducts))}"
                     class="text-center py-20 text-gray-400">
                     <i data-lucide="package-open" class="w-12 h-12 mx-auto mb-4"></i>
@@ -151,14 +209,19 @@
             <!-- ===== VIEW FILTRADA: grid paginado por categoria ===== -->
             <th:block th:unless="${selectedCategory == null}">
 
-                <!-- Grid -->
                 <div th:if="${products != null and products.hasContent()}"
                     class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
 
                     <div th:each="product : ${products}"
                         class="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group flex flex-col">
 
-                        <a th:href="@{/catalog/{id}(id=${product.id})}" class="block aspect-video bg-white overflow-hidden">
+                        <button type="button" sec:authorize="hasRole('CUSTOMER')"
+                            th:data-id="${product.id}"
+                            th:data-name="${product.name}"
+                            th:data-description="${product.description != null ? product.description : ''}"
+                            th:data-image="${product.imageUrl != null ? product.imageUrl : ''}"
+                            onclick="openQuantityModal(this)"
+                            class="aspect-video bg-white overflow-hidden w-full cursor-pointer">
                             <img th:if="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
                                 th:src="${product.imageUrl}" th:alt="${product.name}"
                                 class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300">
@@ -166,12 +229,29 @@
                                 class="w-full h-full flex items-center justify-center text-gray-200">
                                 <i data-lucide="image" class="w-10 h-10"></i>
                             </div>
-                        </a>
+                        </button>
+                        <div sec:authorize="!hasRole('CUSTOMER')" class="aspect-video bg-white overflow-hidden">
+                            <img th:if="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
+                                th:src="${product.imageUrl}" th:alt="${product.name}"
+                                class="w-full h-full object-contain">
+                            <div th:unless="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
+                                class="w-full h-full flex items-center justify-center text-gray-200">
+                                <i data-lucide="image" class="w-10 h-10"></i>
+                            </div>
+                        </div>
 
                         <div class="p-4 flex flex-col flex-1">
-                            <a th:href="@{/catalog/{id}(id=${product.id})}"
-                                class="font-semibold text-gray-900 mb-1 hover:text-snapdog-600 transition-colors line-clamp-1"
-                                th:text="${product.name}">Nome</a>
+                            <button type="button" sec:authorize="hasRole('CUSTOMER')"
+                                th:data-id="${product.id}"
+                                th:data-name="${product.name}"
+                                th:data-description="${product.description != null ? product.description : ''}"
+                                th:data-image="${product.imageUrl != null ? product.imageUrl : ''}"
+                                onclick="openQuantityModal(this)"
+                                class="font-semibold text-gray-900 mb-1 hover:text-snapdog-600 transition-colors line-clamp-1 text-left w-full"
+                                th:text="${product.name}">Nome</button>
+                            <span sec:authorize="!hasRole('CUSTOMER')"
+                                class="font-semibold text-gray-900 mb-1 line-clamp-1 block"
+                                th:text="${product.name}">Nome</span>
 
                             <p th:if="${product.description != null and !#strings.isEmpty(product.description)}"
                                 class="text-xs text-gray-500 mb-3 line-clamp-2 flex-1" th:text="${product.description}"></p>
@@ -182,17 +262,16 @@
                                 <span class="text-snapdog-600 font-bold"
                                     th:text="'R$ ' + ${#numbers.formatDecimal(product.price, 1, 'POINT', 2, 'COMMA')}">
                                 </span>
-
-                                <form sec:authorize="hasRole('CUSTOMER')" th:action="@{/cart/add}" method="post">
-                                    <input type="hidden" name="productId" th:value="${product.id}">
-                                    <input type="hidden" name="quantity" value="1">
-                                    <button type="submit"
-                                        class="flex items-center gap-1.5 px-3 py-1.5 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg text-xs font-semibold transition-colors">
-                                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                                        Adicionar
-                                    </button>
-                                </form>
-
+                                <button type="button" sec:authorize="hasRole('CUSTOMER')"
+                                    th:data-id="${product.id}"
+                                    th:data-name="${product.name}"
+                                    th:data-description="${product.description != null ? product.description : ''}"
+                                    th:data-image="${product.imageUrl != null ? product.imageUrl : ''}"
+                                    onclick="openQuantityModal(this)"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg text-xs font-semibold transition-colors">
+                                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                    Adicionar
+                                </button>
                                 <a sec:authorize="!hasRole('CUSTOMER')" href="/login"
                                     class="flex items-center gap-1.5 px-3 py-1.5 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg text-xs font-semibold transition-colors">
                                     <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -229,6 +308,9 @@
             </th:block>
 
         </div>
+
+        <th:block th:replace="~{public/fragments/quantity-modal :: quantityModal}"></th:block>
+
     </main>
 </body>
 

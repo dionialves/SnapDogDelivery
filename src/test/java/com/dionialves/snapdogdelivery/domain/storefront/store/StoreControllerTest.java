@@ -22,7 +22,6 @@ import com.dionialves.snapdogdelivery.domain.admin.product.ProductCategory;
 import com.dionialves.snapdogdelivery.domain.admin.product.ProductService;
 import com.dionialves.snapdogdelivery.domain.admin.product.dto.ProductResponseDTO;
 import com.dionialves.snapdogdelivery.domain.storefront.cart.CartService;
-import com.dionialves.snapdogdelivery.exception.NotFoundException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -106,37 +105,4 @@ class StoreControllerTest {
                 .andExpect(model().attributeExists("products", "currentPage", "totalPages", "cartItemCount"));
     }
 
-    // ---------- GET /catalog/{id} ----------
-
-    @Test
-    @DisplayName("GET /catalog/{id} com produto ativo retorna detalhe do produto")
-    void productDetail_produtoAtivo_retornaDetalhe() throws Exception {
-        var produto = new ProductResponseDTO(5L, "Hot Dog Premium", new BigDecimal("22.90"), "Descrição", null, true, ProductCategory.HOT_DOG, "Hot Dog");
-        when(productService.findById(5L)).thenReturn(produto);
-        when(cartService.getItemCount(any())).thenReturn(0);
-
-        mockMvc.perform(get("/catalog/5").session(session))
-                .andExpect(status().isOk())
-                .andExpect(view().name("public/store/product-detail"))
-                .andExpect(model().attributeExists("product", "cartItemCount"));
-    }
-
-    @Test
-    @DisplayName("GET /catalog/{id} com produto inativo propaga NotFoundException como ServletException")
-    void productDetail_produtoInativo_lancaNotFoundException() throws Exception {
-        var produto = new ProductResponseDTO(7L, "Produto Inativo", new BigDecimal("10.00"), null, null, false, null, null);
-        when(productService.findById(7L)).thenReturn(produto);
-
-        // NotFoundException propaga como ServletException no standaloneSetup sem GlobalExceptionHandler
-        try {
-            mockMvc.perform(get("/catalog/7").session(session));
-        } catch (Exception ex) {
-            // Verifica que a causa raiz é NotFoundException
-            Throwable cause = ex.getCause();
-            while (cause != null && !(cause instanceof com.dionialves.snapdogdelivery.exception.NotFoundException)) {
-                cause = cause.getCause();
-            }
-            assert cause instanceof com.dionialves.snapdogdelivery.exception.NotFoundException;
-        }
-    }
 }
