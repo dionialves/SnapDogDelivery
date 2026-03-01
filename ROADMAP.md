@@ -5,6 +5,17 @@ Quando um item for concluído, mova-o para `CHANGELOG.md` com data e detalhes de
 
 ---
 
+## Melhorias
+
+### Melhorar design da logo para maior integração com o layout
+
+A logo atual (`/image/logo.png`) foi integrada nos templates, mas seu design visual não se
+harmoniza bem com o layout do sistema. Reavaliar cores, proporções e estilo da logo para
+que ela se integre naturalmente tanto no fundo branco (área pública, cadastro, mobile) quanto
+no fundo vermelho (sidebar admin, painel esquerdo do login).
+
+---
+
 ## Features Planejadas
 
 ### Area Admin
@@ -156,19 +167,6 @@ Estilo discreto (`text-xs`, `text-gray-400`), alinhado com o visual atual do foo
 
 ## Bugs Conhecidos
 
-### Logo placeholder nas telas de login e cadastro público
-
-**Arquivos:** `templates/public/auth/login.html`, `templates/public/auth/register.html`
-
-**Sintoma:** As telas `/login` e `/register` da área pública ainda exibem o placeholder
-original — um quadrado vermelho com a letra "S" — em vez da logo real (`/image/logo.png`).
-O mesmo problema já foi corrigido no painel admin.
-
-**Solução planejada:**
-- Substituir o bloco placeholder pelo `<img src="/image/logo.png">` nos dois templates,
-  tanto na versão desktop quanto na versão mobile (no caso do `login.html`)
-
----
 
 ### Criar page 400 404 e 500 para a area publica
 

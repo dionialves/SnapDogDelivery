@@ -9,6 +9,11 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ### Correções
 
+- **Logo placeholder substituída nas telas de login e cadastro público** (01/03/2026)
+  Removido o quadrado vermelho com a letra "S" de `login.html` (painel desktop e versão
+  mobile) e `register.html`. Substituído por `<img src="/image/logo.png">` em todos os
+  pontos, com container branco no painel vermelho do login para contraste adequado.
+
 - **Select de estado inoperante no cadastro e perfil do cliente** (01/03/2026)
   Substituído `th:value="${s.name()}"` por `th:value="${s}"` nas options do `<select>` de
   estado em `register.html` e `profile.html`. O Thymeleaf/Spring passa a gerenciar a
