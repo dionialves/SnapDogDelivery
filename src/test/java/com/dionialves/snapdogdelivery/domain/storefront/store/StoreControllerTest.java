@@ -18,10 +18,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
+import com.dionialves.snapdogdelivery.domain.admin.product.ProductCategory;
 import com.dionialves.snapdogdelivery.domain.admin.product.ProductService;
 import com.dionialves.snapdogdelivery.domain.admin.product.dto.ProductResponseDTO;
 import com.dionialves.snapdogdelivery.domain.storefront.cart.CartService;
-import com.dionialves.snapdogdelivery.exception.NotFoundException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -64,7 +64,7 @@ class StoreControllerTest {
     @Test
     @DisplayName("GET / retorna home com produtos em destaque no model")
     void home_retornaIndexComFeaturedProducts() throws Exception {
-        var produto = new ProductResponseDTO(1L, "Hot Dog", new BigDecimal("15.90"), null, null, true);
+        var produto = new ProductResponseDTO(1L, "Hot Dog", new BigDecimal("15.90"), null, null, true, false, null, null);
         when(productService.findFeatured()).thenReturn(List.of(produto));
         when(cartService.getItemCount(any())).thenReturn(0);
 
@@ -77,63 +77,32 @@ class StoreControllerTest {
     // ---------- GET /catalog ----------
 
     @Test
-    @DisplayName("GET /catalog retorna catálogo paginado com model completo")
-    void catalog_retornaCatalogoComPaginacao() throws Exception {
-        var produto = new ProductResponseDTO(1L, "Hot Dog", new BigDecimal("15.90"), null, null, true);
-        var page = new PageImpl<>(List.of(produto), PageRequest.of(0, 12), 1);
-        when(productService.findAllActive(any())).thenReturn(page);
-        when(cartService.getItemCount(any())).thenReturn(2);
+    @DisplayName("GET /catalog sem categoria retorna view 'Todos' com duas seções")
+    void catalog_semCategoria_retornaDuasSecoes() throws Exception {
+        var hotDog = new ProductResponseDTO(1L, "Hot Dog", new BigDecimal("15.90"), null, null, true, false, ProductCategory.HOT_DOG, "Hot Dog");
+        var bebida = new ProductResponseDTO(2L, "Suco", new BigDecimal("8.00"), null, null, true, false, ProductCategory.BEBIDA, "Bebida");
+        when(productService.findAllActiveByCategory(ProductCategory.HOT_DOG)).thenReturn(List.of(hotDog));
+        when(productService.findAllActiveByCategory(ProductCategory.BEBIDA)).thenReturn(List.of(bebida));
+        when(cartService.getItemCount(any())).thenReturn(0);
 
         mockMvc.perform(get("/catalog").session(session))
+                .andExpect(status().isOk())
+                .andExpect(view().name("public/store/catalog"))
+                .andExpect(model().attributeExists("hotDogProducts", "bebidaProducts", "cartItemCount"));
+    }
+
+    @Test
+    @DisplayName("GET /catalog?category=HOT_DOG retorna grid paginado filtrado")
+    void catalog_comCategoria_retornaPaginadoFiltrado() throws Exception {
+        var produto = new ProductResponseDTO(1L, "Hot Dog", new BigDecimal("15.90"), null, null, true, false, ProductCategory.HOT_DOG, "Hot Dog");
+        var page = new PageImpl<>(List.of(produto), PageRequest.of(0, 12), 1);
+        when(productService.findAllActive(any(), any())).thenReturn(page);
+        when(cartService.getItemCount(any())).thenReturn(2);
+
+        mockMvc.perform(get("/catalog").param("category", "HOT_DOG").session(session))
                 .andExpect(status().isOk())
                 .andExpect(view().name("public/store/catalog"))
                 .andExpect(model().attributeExists("products", "currentPage", "totalPages", "cartItemCount"));
     }
 
-    @Test
-    @DisplayName("GET /catalog?page=1 usa a página correta na consulta")
-    void catalog_comPaginacao_usaPaginaCorreta() throws Exception {
-        var page = new PageImpl<ProductResponseDTO>(List.of(), PageRequest.of(1, 12), 0);
-        when(productService.findAllActive(any())).thenReturn(page);
-        when(cartService.getItemCount(any())).thenReturn(0);
-
-        mockMvc.perform(get("/catalog").param("page", "1").session(session))
-                .andExpect(status().isOk())
-                .andExpect(view().name("public/store/catalog"))
-                .andExpect(model().attribute("currentPage", 1));
-    }
-
-    // ---------- GET /catalog/{id} ----------
-
-    @Test
-    @DisplayName("GET /catalog/{id} com produto ativo retorna detalhe do produto")
-    void productDetail_produtoAtivo_retornaDetalhe() throws Exception {
-        var produto = new ProductResponseDTO(5L, "Hot Dog Premium", new BigDecimal("22.90"), "Descrição", null, true);
-        when(productService.findById(5L)).thenReturn(produto);
-        when(cartService.getItemCount(any())).thenReturn(0);
-
-        mockMvc.perform(get("/catalog/5").session(session))
-                .andExpect(status().isOk())
-                .andExpect(view().name("public/store/product-detail"))
-                .andExpect(model().attributeExists("product", "cartItemCount"));
-    }
-
-    @Test
-    @DisplayName("GET /catalog/{id} com produto inativo propaga NotFoundException como ServletException")
-    void productDetail_produtoInativo_lancaNotFoundException() throws Exception {
-        var produto = new ProductResponseDTO(7L, "Produto Inativo", new BigDecimal("10.00"), null, null, false);
-        when(productService.findById(7L)).thenReturn(produto);
-
-        // NotFoundException propaga como ServletException no standaloneSetup sem GlobalExceptionHandler
-        try {
-            mockMvc.perform(get("/catalog/7").session(session));
-        } catch (Exception ex) {
-            // Verifica que a causa raiz é NotFoundException
-            Throwable cause = ex.getCause();
-            while (cause != null && !(cause instanceof com.dionialves.snapdogdelivery.exception.NotFoundException)) {
-                cause = cause.getCause();
-            }
-            assert cause instanceof com.dionialves.snapdogdelivery.exception.NotFoundException;
-        }
-    }
 }

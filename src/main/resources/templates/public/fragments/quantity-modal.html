@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<th:block th:fragment="quantityModal">
+
+    <!-- ===== MODAL DE QUANTIDADE ===== -->
+    <div sec:authorize="hasRole('CUSTOMER')"
+        id="quantityModal" class="hidden fixed inset-0 z-50" role="dialog" aria-modal="true">
+        <div class="absolute inset-0 bg-black/50" onclick="closeQuantityModal()"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden mx-4">
+            <div class="flex h-[36rem]">
+
+                <!-- Metade esquerda: imagem com altura fixa -->
+                <div class="w-1/2 bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    <img id="modalProductImage" src="" alt="" class="hidden w-full h-full object-contain">
+                    <i id="modalProductImagePlaceholder" data-lucide="image" class="w-20 h-20 text-gray-200"></i>
+                </div>
+
+                <!-- Metade direita: dividida verticalmente em topo (título + descrição) e base (quantidade + ações) -->
+                <div class="w-1/2 flex flex-col">
+
+                    <!-- Topo: título e descrição -->
+                    <div class="p-6 flex-1 overflow-y-auto">
+                        <div class="flex items-start justify-between gap-3 mb-3">
+                            <h3 id="modalProductName" class="font-bold text-gray-900 text-lg leading-tight"></h3>
+                            <button type="button" onclick="closeQuantityModal()"
+                                class="text-gray-400 hover:text-gray-600 flex-shrink-0 transition-colors mt-0.5">
+                                <i data-lucide="x" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                        <p id="modalProductDescription" class="text-sm text-gray-500 leading-relaxed"></p>
+                    </div>
+
+                    <!-- Base: quantidade ao lado de adicionar ao carrinho; cancelar abaixo -->
+                    <div class="p-6 border-t border-gray-100 space-y-3 flex-shrink-0">
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                <button type="button" onclick="changeQuantity(-1)"
+                                    class="w-9 h-9 rounded-lg border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors">
+                                    <i data-lucide="minus" class="w-4 h-4"></i>
+                                </button>
+                                <input id="modalQuantity" type="number" value="1" min="1" max="20"
+                                    class="w-14 text-center py-2 border border-gray-300 rounded-lg text-sm font-semibold outline-none focus:ring-2 focus:ring-snapdog-500"
+                                    oninput="syncQuantity(this.value)">
+                                <button type="button" onclick="changeQuantity(1)"
+                                    class="w-9 h-9 rounded-lg border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                            <form id="modalForm" th:action="@{/cart/add}" method="post" class="flex-1">
+                                <input type="hidden" id="modalProductId" name="productId" value="">
+                                <input type="hidden" id="modalQuantityHidden" name="quantity" value="1">
+                                <button type="submit"
+                                    class="w-full py-2.5 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg font-semibold text-sm transition-colors flex items-center justify-center gap-2">
+                                    <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                                    Adicionar ao carrinho
+                                </button>
+                            </form>
+                        </div>
+                        <button type="button" onclick="closeQuantityModal()"
+                            class="w-full py-2.5 border border-gray-300 text-gray-700 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors">
+                            Cancelar
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let _modalTrigger = null;
+
+        function openQuantityModal(btn) {
+            document.getElementById('modalProductName').textContent        = btn.dataset.name        || '';
+            document.getElementById('modalProductDescription').textContent = btn.dataset.description || '';
+            document.getElementById('modalProductId').value                = btn.dataset.id;
+
+            const img         = document.getElementById('modalProductImage');
+            const placeholder = document.getElementById('modalProductImagePlaceholder');
+            const imageUrl    = btn.dataset.image;
+
+            if (imageUrl && imageUrl.trim() !== '') {
+                img.src = imageUrl;
+                img.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+            } else {
+                img.src = '';
+                img.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+            }
+
+            document.getElementById('modalQuantity').value      = 1;
+            document.getElementById('modalQuantityHidden').value = 1;
+
+            _modalTrigger = btn;
+            document.getElementById('quantityModal').classList.remove('hidden');
+            document.getElementById('modalQuantity').focus();
+        }
+
+        function closeQuantityModal() {
+            document.getElementById('quantityModal').classList.add('hidden');
+            if (_modalTrigger) { _modalTrigger.focus(); _modalTrigger = null; }
+        }
+
+        function changeQuantity(delta) {
+            const input = document.getElementById('modalQuantity');
+            const val   = Math.max(1, Math.min(20, parseInt(input.value || 1) + delta));
+            input.value = val;
+            document.getElementById('modalQuantityHidden').value = val;
+        }
+
+        function syncQuantity(value) {
+            const val = Math.max(1, Math.min(20, parseInt(value) || 1));
+            document.getElementById('modalQuantity').value       = val;
+            document.getElementById('modalQuantityHidden').value = val;
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeQuantityModal();
+        });
+    </script>
+
+</th:block>
+</body>
+</html>

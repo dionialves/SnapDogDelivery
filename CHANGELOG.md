@@ -7,7 +7,18 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ## [Não lançado] — develop
 
-Sem alterações registradas desde a v0.3.1.
+Sem alterações registradas desde a v0.4.0.
+
+---
+
+## [0.4.0] — 03/03/2026
+
+Formulário de produto reformulado com drop zone, editor de recorte (Cropper.js) e upload AJAX.
+Categorias e flag de destaque para produtos. Modal de quantidade no carrinho. Máscaras e
+autocomplete ViaCEP no perfil do cliente. Configurações da empresa com footer dinâmico.
+Flyway como responsável pelo schema em ambiente dev.
+
+→ [Documentação completa](docs/v0.4.0.md)
 
 ---
 

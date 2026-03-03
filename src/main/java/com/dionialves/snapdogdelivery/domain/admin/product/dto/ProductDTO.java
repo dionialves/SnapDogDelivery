@@ -11,6 +11,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import com.dionialves.snapdogdelivery.domain.admin.product.ProductCategory;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -32,5 +34,9 @@ public class ProductDTO {
     private String imageUrl;
 
     private boolean active = true;
+
+    private boolean featured = false;
+
+    private ProductCategory category;
 
 }

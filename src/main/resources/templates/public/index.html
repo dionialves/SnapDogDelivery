@@ -99,7 +99,19 @@
                                 th:text="'R$ ' + ${#numbers.formatDecimal(product.price, 1, 'POINT', 2, 'COMMA')}">
                                 R$ 0,00
                             </span>
-                            <a th:href="@{/catalog/{id}(id=${product.id})}"
+                            <!-- Autenticado: abre modal -->
+                            <button type="button" sec:authorize="hasRole('CUSTOMER')"
+                                th:data-id="${product.id}"
+                                th:data-name="${product.name}"
+                                th:data-description="${product.description != null ? product.description : ''}"
+                                th:data-image="${product.imageUrl != null ? product.imageUrl : ''}"
+                                onclick="openQuantityModal(this)"
+                                class="px-4 py-1.5 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5">
+                                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                Adicionar
+                            </button>
+                            <!-- Não autenticado: vai para o cardápio -->
+                            <a sec:authorize="!hasRole('CUSTOMER')" href="/catalog"
                                 class="px-4 py-1.5 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg text-sm font-semibold transition-colors">
                                 Ver mais
                             </a>
@@ -132,6 +144,8 @@
                 </a>
             </div>
         </section>
+
+        <th:block th:replace="~{public/fragments/quantity-modal :: quantityModal}"></th:block>
 
     </main>
 </body>

@@ -1,5 +1,6 @@
 package com.dionialves.snapdogdelivery.domain.admin.product;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -20,6 +21,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Service
 public class ProductService {
+
+    private static final int MAX_FEATURED = 6;
 
     private final ProductRepository productRepository;
     private final ProductOrderRepository productOrderRepository;
@@ -73,18 +76,53 @@ public class ProductService {
     }
 
     /**
-     * Retorna até 6 produtos ativos para a seção de destaques da landing page.
+     * Retorna todos os produtos ativos de uma categoria, ordenados por nome.
+     * Usado na view "Todos" do catálogo público (duas seções: Hot Dog e Bebidas, sem paginação).
      */
     @Transactional(readOnly = true)
-    public List<ProductResponseDTO> findFeatured() {
-        return productRepository.findTop6ByActiveTrueOrderByNameAsc()
+    public List<ProductResponseDTO> findAllActiveByCategory(ProductCategory category) {
+        return productRepository.findByActiveTrueAndCategoryOrderByNameAsc(category)
                 .stream()
                 .map(ProductResponseDTO::fromEntity)
                 .toList();
     }
 
+    /**
+     * Retorna produtos ativos de uma categoria, paginados.
+     * Usado quando o usuário filtra por categoria específica no catálogo.
+     */
+    @Transactional(readOnly = true)
+    public Page<ProductResponseDTO> findAllActive(Pageable pageable, ProductCategory category) {
+        return productRepository.findByActiveTrueAndCategory(category, pageable)
+                .map(ProductResponseDTO::fromEntity);
+    }
+
+    /**
+     * Retorna até 6 produtos para a seção de destaques da landing page.
+     * Prioriza produtos com featured=true e ativos; complementa com ativos
+     * não destacados em ordem alfabética até totalizar 6 itens.
+     */
+    @Transactional(readOnly = true)
+    public List<ProductResponseDTO> findFeatured() {
+        var featured = productRepository.findByActiveTrueAndFeaturedTrueOrderByNameAsc();
+        int remaining = MAX_FEATURED - featured.size();
+        if (remaining > 0) {
+            var complement = productRepository.findByActiveTrueAndFeaturedFalseOrderByNameAsc(
+                    PageRequest.of(0, remaining));
+            var result = new ArrayList<>(featured);
+            result.addAll(complement.getContent());
+            return result.stream().map(ProductResponseDTO::fromEntity).toList();
+        }
+        return featured.stream().map(ProductResponseDTO::fromEntity).toList();
+    }
+
     @Transactional
     public ProductResponseDTO create(ProductDTO product) {
+
+        if (product.isFeatured() && productRepository.countByFeaturedTrue() >= MAX_FEATURED) {
+            throw new BusinessException(
+                    "Limite de " + MAX_FEATURED + " produtos em destaque atingido.");
+        }
 
         Product created = new Product();
         created.setName(product.getName());
@@ -92,6 +130,8 @@ public class ProductService {
         created.setDescription(product.getDescription());
         created.setImageUrl(product.getImageUrl());
         created.setActive(product.isActive());
+        created.setFeatured(product.isFeatured());
+        created.setCategory(product.getCategory());
 
         productRepository.save(created);
 
@@ -104,11 +144,19 @@ public class ProductService {
         Product updating = productRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Produto não encontrado com ID: " + id));
 
+        if (product.isFeatured() && !updating.isFeatured()
+                && productRepository.countByFeaturedTrue() >= MAX_FEATURED) {
+            throw new BusinessException(
+                    "Limite de " + MAX_FEATURED + " produtos em destaque atingido.");
+        }
+
         updating.setName(product.getName());
         updating.setPrice(product.getPrice());
         updating.setDescription(product.getDescription());
         updating.setImageUrl(product.getImageUrl());
         updating.setActive(product.isActive());
+        updating.setFeatured(product.isFeatured());
+        updating.setCategory(product.getCategory());
 
         return ProductResponseDTO.fromEntity(updating);
 

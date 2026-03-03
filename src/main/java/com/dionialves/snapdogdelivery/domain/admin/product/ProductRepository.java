@@ -20,4 +20,19 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     /** Retorna os N primeiros produtos ativos ordenados por nome (para a landing page). */
     List<Product> findTop6ByActiveTrueOrderByNameAsc();
 
+    /** Retorna todos os produtos ativos de uma categoria ordenados por nome (sem paginação, para a view "Todos"). */
+    List<Product> findByActiveTrueAndCategoryOrderByNameAsc(ProductCategory category);
+
+    /** Retorna produtos ativos de uma categoria paginados (para filtro por categoria). */
+    Page<Product> findByActiveTrueAndCategory(ProductCategory category, Pageable pageable);
+
+    /** Conta produtos marcados como destaque (para validar limite máximo de 6). */
+    long countByFeaturedTrue();
+
+    /** Retorna produtos ativos e marcados como destaque, ordenados por nome. */
+    List<Product> findByActiveTrueAndFeaturedTrueOrderByNameAsc();
+
+    /** Retorna produtos ativos e não marcados como destaque, ordenados por nome (para complementar a seção de destaques). */
+    Page<Product> findByActiveTrueAndFeaturedFalseOrderByNameAsc(Pageable pageable);
+
 }

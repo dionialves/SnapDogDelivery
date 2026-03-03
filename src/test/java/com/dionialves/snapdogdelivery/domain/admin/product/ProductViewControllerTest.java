@@ -26,12 +26,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
@@ -104,43 +104,36 @@ class ProductViewControllerTest {
                 .andExpect(model().attribute("product", dto));
     }
 
-    // ---------- POST /admin/products/new com URL de imagem ----------
+    // ---------- POST /admin/products/new ----------
 
     @Test
-    @DisplayName("POST /admin/products/new com URL de imagem cria produto e redireciona com sucesso")
+    @DisplayName("POST /admin/products/new cria produto com imageUrl e redireciona com sucesso")
     void saved_comUrlImagem_redirecionaComSucesso() throws Exception {
         when(productService.create(any())).thenReturn(buildProductResponseDTO(10L, "Hot Dog"));
 
         mockMvc.perform(post("/admin/products/new")
                 .param("name", "Hot Dog")
                 .param("price", "15.90")
-                .param("imageUrl", "https://exemplo.com/imagem.jpg"))
+                .param("imageUrl", "/uploads/products/uuid.jpg"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/products"))
                 .andExpect(flash().attribute("successMessage", "Produto salvo com sucesso!"));
-
-        // StorageService NÃO deve ser chamado quando apenas URL é fornecida
-        verify(storageService, never()).store(any());
     }
 
-    // ---------- POST /admin/products/new com arquivo de imagem ----------
+    // ---------- POST /admin/products/upload-image ----------
 
     @Test
-    @DisplayName("POST /admin/products/new com arquivo de imagem chama StorageService e redireciona")
-    void saved_comArquivoImagem_chamaStorageERedirecionaComSucesso() throws Exception {
+    @DisplayName("POST /admin/products/upload-image chama StorageService e retorna JSON com url")
+    void uploadImage_comArquivoValido_retornaUrlJson() throws Exception {
         var imageFile = new MockMultipartFile(
-                "imageFile", "logo.jpg", "image/jpeg", "conteudo".getBytes());
+                "file", "logo.jpg", "image/jpeg", "conteudo".getBytes());
 
         when(storageService.store(any())).thenReturn("/uploads/products/uuid.jpg");
-        when(productService.create(any())).thenReturn(buildProductResponseDTO(11L, "Hot Dog"));
 
-        mockMvc.perform(multipart("/admin/products/new")
-                .file(imageFile)
-                .param("name", "Hot Dog")
-                .param("price", "15.90"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/admin/products"))
-                .andExpect(flash().attribute("successMessage", "Produto salvo com sucesso!"));
+        mockMvc.perform(multipart("/admin/products/upload-image").file(imageFile))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("application/json"))
+                .andExpect(content().json("{\"url\":\"/uploads/products/uuid.jpg\"}"));
 
         verify(storageService).store(any());
     }
@@ -188,6 +181,6 @@ class ProductViewControllerTest {
     // ---------- Auxiliares ----------
 
     private ProductResponseDTO buildProductResponseDTO(Long id, String name) {
-        return new ProductResponseDTO(id, name, new BigDecimal("15.90"), "Descrição", null, true);
+        return new ProductResponseDTO(id, name, new BigDecimal("15.90"), "Descrição", null, true, false, null, null);
     }
 }

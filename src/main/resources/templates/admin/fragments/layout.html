@@ -101,6 +101,14 @@
                             <span>Usuários</span>
                         </a>
                     </li>
+                    <li>
+                        <a th:href="@{/admin/settings}"
+                            th:classappend="${activeMenu == 'configuracoes'} ? 'bg-snapdog-800 text-white' : 'text-snapdog-100 hover:bg-snapdog-600'"
+                            class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors">
+                            <i data-lucide="settings" class="w-5 h-5"></i>
+                            <span>Configurações</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
 
