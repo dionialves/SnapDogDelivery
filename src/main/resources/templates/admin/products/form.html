@@ -21,11 +21,14 @@
     </a>
   </th:block>
 
-  <!-- Conteúdo Principal -->
   <th:block th:fragment="content">
 
     <!-- Cropper.js CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+
+    <!-- CSRF para requisições AJAX -->
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
 
     <!-- Mensagens de Feedback -->
     <div th:if="${successMessage}" class="mb-6 p-4 rounded-lg bg-green-100 text-green-800 flex items-center gap-3">
@@ -39,103 +42,126 @@
 
     <!-- Formulário -->
     <form th:action="${product.id != null} ? @{/admin/products/{id}(id=${product.id})} : @{/admin/products/new}"
-      th:object="${product}" method="post" enctype="multipart/form-data" class="space-y-6">
+      th:object="${product}" method="post" class="space-y-6">
 
       <div class="bg-white rounded-xl shadow-sm border border-gray-200">
         <div class="p-6 border-b border-gray-200">
           <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <i data-lucide="user" class="w-5 h-5 text-snapdog-600"></i>
+            <i data-lucide="package" class="w-5 h-5 text-snapdog-600"></i>
             Dados Gerais
           </h2>
         </div>
-        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
 
-          <div>
-            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-              Nome <span class="text-red-500">*</span>
-            </label>
-            <input type="text" id="name" th:field="*{name}"
-              th:classappend="${#fields.hasErrors('name')} ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500"
-              placeholder="Digite o nome do produto">
-            <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="mt-1 text-sm text-red-500">
-            </p>
+        <!-- Layout: campos (esquerda) + imagem (direita) -->
+        <div class="p-6 flex gap-8">
+
+          <!-- Coluna esquerda: campos -->
+          <div class="flex-1 grid grid-cols-2 gap-6">
+
+            <div>
+              <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                Nome <span class="text-red-500">*</span>
+              </label>
+              <input type="text" id="name" th:field="*{name}"
+                th:classappend="${#fields.hasErrors('name')} ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500"
+                placeholder="Digite o nome do produto">
+              <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="mt-1 text-sm text-red-500"></p>
+            </div>
+
+            <div>
+              <label for="price" class="block text-sm font-medium text-gray-700 mb-2">
+                Preço <span class="text-red-500">*</span>
+              </label>
+              <input type="text" id="priceDisplay"
+                th:classappend="${#fields.hasErrors('price')} ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500"
+                placeholder="R$ 0,00"
+                autocomplete="off">
+              <input type="hidden" th:field="*{price}" id="priceHidden">
+              <p th:if="${#fields.hasErrors('price')}" th:errors="*{price}" class="mt-1 text-sm text-red-500"></p>
+            </div>
+
+            <div class="col-span-2">
+              <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                Descrição
+              </label>
+              <textarea rows="4" id="description" th:field="*{description}"
+                th:classappend="${#fields.hasErrors('description')} ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500"
+                placeholder="Digite a descrição do produto">
+              </textarea>
+              <p th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="mt-1 text-sm text-red-500"></p>
+            </div>
+
+            <div>
+              <label for="category" class="block text-sm font-medium text-gray-700 mb-2">
+                Categoria
+              </label>
+              <select id="category" th:field="*{category}"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500 bg-white">
+                <option value="">Selecione uma categoria</option>
+                <option th:each="cat : ${categories}" th:value="${cat.name()}" th:text="${cat.label}"></option>
+              </select>
+            </div>
+
+            <div class="col-span-2 flex items-start">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" id="active" th:field="*{active}"
+                  class="w-4 h-4 text-snapdog-600 border-gray-300 rounded focus:ring-snapdog-500">
+                <span class="text-sm font-medium text-gray-700">Exibir no catálogo público</span>
+              </label>
+              <p class="mt-1 text-xs text-gray-500 ml-7">Quando desmarcado, o produto não aparece para clientes.</p>
+            </div>
+
           </div>
 
-          <div>
-            <label for="price" class="block text-sm font-medium text-gray-700 mb-2">
-              Preço <span class="text-red-500">*</span>
-            </label>
-            <input type="text" id="priceDisplay"
-              th:classappend="${#fields.hasErrors('price')} ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500"
-              placeholder="R$ 0,00"
-              autocomplete="off">
-            <input type="hidden" th:field="*{price}" id="priceHidden">
-            <p th:if="${#fields.hasErrors('price')}" th:errors="*{price}" class="mt-1 text-sm text-red-500">
-            </p>
-          </div>
+          <!-- Coluna direita: imagem -->
+          <div class="w-72 flex-shrink-0">
 
-          <div class="md:col-span-2">
-            <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
-              Descrição
-            </label>
-            <textarea rows="4" id="description" th:field="*{description}"
-              th:classappend="${#fields.hasErrors('description')} ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500"
-              placeholder="Digite a descrição do produto">
-            </textarea>
-            <p th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="mt-1 text-sm text-red-500">
-            </p>
-          </div>
-
-          <!-- Categoria -->
-          <div>
-            <label for="category" class="block text-sm font-medium text-gray-700 mb-2">
-              Categoria
-            </label>
-            <select id="category" th:field="*{category}"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500 bg-white">
-              <option value="">Selecione uma categoria</option>
-              <option th:each="cat : ${categories}" th:value="${cat.name()}" th:text="${cat.label}"></option>
-            </select>
-          </div>
-
-          <!-- Imagem do Produto -->
-          <div class="md:col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Imagem do Produto</label>
+            <p class="text-sm font-medium text-gray-700 mb-2">Foto do Produto</p>
 
             <input type="hidden" th:field="*{imageUrl}">
+            <input type="file" id="imageFile" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden">
 
-            <div class="flex gap-4 items-start">
-              <div class="flex-1">
-                <input type="file" id="imageFile" name="imageFile" accept="image/jpeg,image/png,image/webp,image/gif"
-                  class="w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-snapdog-50 file:text-snapdog-700 file:font-semibold hover:file:bg-snapdog-100"
-                  onchange="previewUpload(this)">
-                <p class="text-xs text-gray-400 mt-1">JPG, PNG, WEBP ou GIF. Máx 5MB.</p>
+            <!-- Estado 1: Drop zone -->
+            <div id="dropZone"
+              th:classappend="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)} ? 'hidden' : ''"
+              class="h-72 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-snapdog-400 hover:bg-snapdog-50 transition-colors select-none">
+              <i data-lucide="upload-cloud" class="w-10 h-10 text-gray-400 pointer-events-none"></i>
+              <div class="text-center pointer-events-none">
+                <p class="text-sm font-medium text-gray-600">Arraste a foto aqui</p>
+                <p class="text-xs text-gray-400 mt-1">ou clique para selecionar</p>
               </div>
-
-              <!-- Preview -->
-              <div class="w-24 h-24 border border-gray-200 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center flex-shrink-0">
-                <img id="imagePreview"
-                  th:src="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)} ? ${product.imageUrl} : ''"
-                  th:class="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)} ? 'w-full h-full object-cover' : 'hidden'"
-                  alt="Preview">
-                <i id="imagePlaceholder"
-                  th:class="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)} ? 'hidden' : ''"
-                  data-lucide="image" class="w-8 h-8 text-gray-300"></i>
-              </div>
+              <p class="text-xs text-gray-400 pointer-events-none">JPG, PNG, WEBP ou GIF · Máx 5MB</p>
             </div>
-          </div>
 
-          <!-- Visibilidade no Catálogo -->
-          <div class="md:col-span-2">
-            <label class="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" id="active" th:field="*{active}"
-                class="w-4 h-4 text-snapdog-600 border-gray-300 rounded focus:ring-snapdog-500">
-              <span class="text-sm font-medium text-gray-700">Exibir no catálogo público</span>
-            </label>
-            <p class="mt-1 text-xs text-gray-500 ml-7">Quando desmarcado, o produto não aparece para clientes no catálogo.</p>
+            <!-- Estado 2: Enviando (spinner) -->
+            <div id="uploadandoZone"
+              class="hidden h-72 border border-gray-200 rounded-xl bg-gray-50 flex flex-col items-center justify-center gap-3">
+              <div class="w-10 h-10 border-4 border-gray-200 border-t-snapdog-600 rounded-full animate-spin"></div>
+              <p class="text-sm text-gray-500">Enviando...</p>
+            </div>
+
+            <!-- Estado 3: Preview -->
+            <div id="previewZone"
+              th:classappend="${product.imageUrl == null or #strings.isEmpty(product.imageUrl)} ? 'hidden' : ''"
+              class="relative h-72 rounded-xl overflow-hidden group">
+              <img id="imagePreview"
+                th:src="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)} ? ${product.imageUrl} : ''"
+                class="w-full h-full object-cover"
+                alt="Foto do produto">
+              <button type="button" onclick="removerImagem()"
+                class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <!-- Erro de upload -->
+            <p id="uploadError" class="hidden mt-2 text-xs text-red-500 text-center">
+              Erro ao enviar a imagem. Tente novamente.
+            </p>
+
           </div>
 
         </div>
@@ -160,7 +186,6 @@
     <div id="modalRecorte" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 p-4">
       <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl flex flex-col" style="max-height: 90vh;">
 
-        <!-- Header do modal -->
         <div class="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
           <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
             <i data-lucide="crop" class="w-5 h-5 text-snapdog-600"></i>
@@ -172,15 +197,11 @@
           </button>
         </div>
 
-        <!-- Área do cropper -->
         <div class="bg-gray-900 flex-shrink-0" style="height: 380px;">
           <img id="cropImage" src="" alt="Imagem para recorte" class="block max-w-full">
         </div>
 
-        <!-- Controles -->
         <div class="px-4 py-3 border-b border-gray-200 flex items-center gap-4 flex-shrink-0">
-
-          <!-- Zoom -->
           <span class="text-sm font-medium text-gray-600">Zoom</span>
           <div class="flex items-center gap-1">
             <button type="button" onclick="cropper && cropper.zoom(-0.1)"
@@ -192,8 +213,6 @@
               +
             </button>
           </div>
-
-          <!-- Proporção -->
           <div class="flex items-center gap-2 ml-auto">
             <span class="text-sm font-medium text-gray-600">Proporção</span>
             <button type="button" id="btnLivre" onclick="setAspectRatio(NaN)"
@@ -205,10 +224,8 @@
               1:1
             </button>
           </div>
-
         </div>
 
-        <!-- Rodapé do modal -->
         <div class="p-4 flex justify-end gap-3 flex-shrink-0">
           <button type="button" onclick="cancelarRecorte()"
             class="px-5 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition-colors">
@@ -230,12 +247,70 @@
     <script>
       let cropper = null;
 
-      // ===== PREVIEW DO UPLOAD — abre modal de recorte =====
-      function previewUpload(input) {
-        if (!input.files || !input.files[0]) return;
+      // ===== DROP ZONE =====
+      (function initDropZone() {
+        const dropZone  = document.getElementById('dropZone');
+        const fileInput = document.getElementById('imageFile');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', function() {
+          if (this.files && this.files[0]) processarArquivo(this.files[0]);
+        });
+
+        dropZone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          dropZone.classList.add('border-snapdog-500', 'bg-snapdog-50');
+          dropZone.classList.remove('border-gray-300', 'bg-gray-50');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+          dropZone.classList.remove('border-snapdog-500', 'bg-snapdog-50');
+          dropZone.classList.add('border-gray-300', 'bg-gray-50');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          dropZone.classList.remove('border-snapdog-500', 'bg-snapdog-50');
+          dropZone.classList.add('border-gray-300', 'bg-gray-50');
+          if (e.dataTransfer.files[0]) processarArquivo(e.dataTransfer.files[0]);
+        });
+      })();
+
+      function processarArquivo(file) {
         const reader = new FileReader();
-        reader.onload = function(e) { abrirModalRecorte(e.target.result); };
-        reader.readAsDataURL(input.files[0]);
+        reader.onload = (e) => abrirModalRecorte(e.target.result);
+        reader.readAsDataURL(file);
+      }
+
+      // ===== GERENCIAMENTO DE ESTADO =====
+      function mostrarDropZone() {
+        document.getElementById('dropZone').classList.remove('hidden');
+        document.getElementById('uploadandoZone').classList.add('hidden');
+        document.getElementById('previewZone').classList.add('hidden');
+        document.getElementById('uploadError').classList.add('hidden');
+        document.getElementById('imageFile').value = '';
+      }
+
+      function mostrarUploadando() {
+        document.getElementById('dropZone').classList.add('hidden');
+        document.getElementById('uploadandoZone').classList.remove('hidden');
+        document.getElementById('previewZone').classList.add('hidden');
+        document.getElementById('uploadError').classList.add('hidden');
+      }
+
+      function mostrarPreview(url) {
+        document.getElementById('imageUrl').value = url;
+        document.getElementById('imagePreview').src = url;
+        document.getElementById('dropZone').classList.add('hidden');
+        document.getElementById('uploadandoZone').classList.add('hidden');
+        document.getElementById('previewZone').classList.remove('hidden');
+        document.getElementById('uploadError').classList.add('hidden');
+      }
+
+      function removerImagem() {
+        document.getElementById('imageUrl').value = '';
+        mostrarDropZone();
       }
 
       // ===== MODAL DE RECORTE =====
@@ -255,7 +330,6 @@
           checkOrientation: false,
         });
 
-        // Reinicia botões de proporção para "Livre"
         const activeClass   = 'px-3 py-1 text-xs font-semibold rounded-lg bg-snapdog-600 text-white transition-colors';
         const inactiveClass = 'px-3 py-1 text-xs font-semibold rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors';
         document.getElementById('btnLivre').className = activeClass;
@@ -275,7 +349,6 @@
       }
 
       function cancelarRecorte() {
-        document.getElementById('imageFile').value = '';
         fecharModalRecorte();
       }
 
@@ -283,19 +356,29 @@
         if (!cropper) return;
         const canvas = cropper.getCroppedCanvas({ maxWidth: 1200, maxHeight: 1200 });
         canvas.toBlob(function(blob) {
-          const fileInput = document.getElementById('imageFile');
-          const dt = new DataTransfer();
-          dt.items.add(new File([blob], 'produto.jpg', { type: 'image/jpeg' }));
-          fileInput.files = dt.files;
-
-          const img         = document.getElementById('imagePreview');
-          const placeholder = document.getElementById('imagePlaceholder');
-          img.src = canvas.toDataURL('image/jpeg');
-          img.classList.remove('hidden');
-          img.classList.add('w-full', 'h-full', 'object-cover');
-          placeholder.classList.add('hidden');
-
           fecharModalRecorte();
+          mostrarUploadando();
+
+          const formData = new FormData();
+          formData.append('file', new File([blob], 'produto.jpg', { type: 'image/jpeg' }));
+
+          const csrfToken  = document.querySelector('meta[name="_csrf"]').content;
+          const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+
+          fetch('/admin/products/upload-image', {
+            method: 'POST',
+            headers: { [csrfHeader]: csrfToken },
+            body: formData
+          })
+          .then(res => {
+            if (!res.ok) throw new Error('Erro no upload');
+            return res.json();
+          })
+          .then(data => mostrarPreview(data.url))
+          .catch(() => {
+            mostrarDropZone();
+            document.getElementById('uploadError').classList.remove('hidden');
+          });
         }, 'image/jpeg', 0.9);
       }
 
@@ -324,7 +407,7 @@
         }
       })();
 
-      priceDisplay.addEventListener("input", function (e) {
+      priceDisplay.addEventListener("input", function(e) {
         let digits = e.target.value.replace(/\D/g, "");
         let num    = (parseInt(digits || 0, 10) / 100).toFixed(2);
         e.target.value    = "R$ " + num.replace(".", ",")

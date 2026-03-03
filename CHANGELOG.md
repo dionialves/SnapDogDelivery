@@ -9,6 +9,14 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ### Novas Funcionalidades
 
+- **Refatoração do formulário de produto com drop zone e upload AJAX** (03/03/2026)
+  Layout dividido em 2 colunas: campos à esquerda e área de imagem à direita. A zona de
+  imagem suporta drag-and-drop ou clique para selecionar arquivo. Após confirmar o recorte,
+  a imagem é enviada imediatamente via AJAX para o novo endpoint `POST /upload-image` e o
+  preview é exibido na mesma área. Hover sobre o preview exibe X vermelho no canto superior
+  direito para remover a imagem. O submit do formulário deixou de ser multipart — a URL da
+  imagem trafega como campo hidden padrão.
+
 - **Remoção da opção de URL externa no formulário de produto** (03/03/2026)
   Campo de URL externa removido do formulário de produto. A imagem agora é definida
   exclusivamente via upload de arquivo com editor de recorte. Um campo hidden preserva

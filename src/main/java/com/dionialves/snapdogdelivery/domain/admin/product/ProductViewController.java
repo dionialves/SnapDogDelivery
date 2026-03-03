@@ -1,6 +1,9 @@
 package com.dionialves.snapdogdelivery.domain.admin.product;
 
+import java.util.Map;
+
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -10,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -77,11 +81,22 @@ public class ProductViewController {
         return "admin/products/form";
     }
 
+    @PostMapping("/upload-image")
+    @ResponseBody
+    public ResponseEntity<Map<String, String>> uploadImage(
+            @RequestParam("file") MultipartFile file) {
+        try {
+            var url = storageService.store(file);
+            return ResponseEntity.ok(Map.of("url", url));
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PostMapping("/new")
     public String saved(
             @Valid @ModelAttribute("product") ProductDTO product,
             BindingResult result,
-            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
             Model model,
             RedirectAttributes redirectAttributes) {
 
@@ -95,7 +110,6 @@ public class ProductViewController {
         }
 
         try {
-            resolveImageUrl(product, imageFile);
             productService.create(product);
             redirectAttributes.addFlashAttribute("successMessage", "Produto salvo com sucesso!");
         } catch (BusinessException e) {
@@ -110,7 +124,6 @@ public class ProductViewController {
             @PathVariable Long id,
             @Valid @ModelAttribute("product") ProductDTO product,
             BindingResult result,
-            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
             Model model,
             RedirectAttributes redirectAttributes) {
 
@@ -124,7 +137,6 @@ public class ProductViewController {
         }
 
         try {
-            resolveImageUrl(product, imageFile);
             productService.update(id, product);
             redirectAttributes.addFlashAttribute("successMessage", "Produto atualizado com sucesso!");
         } catch (BusinessException e) {
@@ -132,16 +144,6 @@ public class ProductViewController {
         }
 
         return "redirect:/admin/products";
-    }
-
-    /**
-     * Prioriza o arquivo enviado sobre a URL externa.
-     * Se um arquivo for enviado, faz upload e sobrescreve imageUrl no DTO.
-     */
-    private void resolveImageUrl(ProductDTO product, MultipartFile imageFile) {
-        if (imageFile != null && !imageFile.isEmpty()) {
-            product.setImageUrl(storageService.store(imageFile));
-        }
     }
 
     @PostMapping("/{id}/delete")
