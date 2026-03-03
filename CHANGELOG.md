@@ -7,7 +7,12 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ## [Não lançado] — develop
 
-Sem alterações registradas desde a v0.4.0.
+### Melhorias
+
+- **Atualização do README** (03/03/2026)
+  Corrigidos erros de digitação, tecnologias atualizadas (Flyway, Spring Security, Cropper.js),
+  arquitetura refletindo slicing vertical, funcionalidades separadas em Admin e Storefront,
+  tabela de rotas completa, credenciais de acesso padrão e índice de documentação versionada.
 
 ---
 
