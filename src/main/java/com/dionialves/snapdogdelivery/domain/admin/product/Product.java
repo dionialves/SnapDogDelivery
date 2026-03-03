@@ -42,6 +42,9 @@ public class Product {
     @Column(nullable = false)
     private boolean active = true;
 
+    @Column(nullable = false)
+    private boolean featured = false;
+
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private ProductCategory category;

@@ -25,56 +25,14 @@ no fundo vermelho (sidebar admin, painel esquerdo do login).
 ### Área Pública
 
 
-
-
-#### Campo `origin` visível na área admin
-**Arquivos:** `templates/admin/orders/list.html`, `templates/admin/orders/form.html`
-
-Backend já implementado (enum `OrderOrigin`, campo `origin` em `Order` e DTOs). Ainda faltam:
-- Coluna ou badge "Origem" (Online / Manual) em `admin/orders/list.html`
-- Exibição do origin na visualização do pedido em `admin/orders/form.html`
-- Filtro opcional por origin na listagem
-
----
-
-#### Crédito do criador no footer público
-**Arquivo:** `templates/public/fragments/layout.html` (~linha 187)
-
-Adicionar abaixo do copyright:
-```
-Desenvolvido por <a href="https://www.dionialves.com" target="_blank" rel="noopener">Dioni Alves</a>
-```
-Estilo discreto (`text-xs`, `text-gray-400`), alinhado com o visual atual do footer.
-
 ---
 
 ### Infraestrutura
-
-#### Migrations com Flyway
-**Arquivo:** `src/main/resources/application.properties`
-
-**Problema crítico:** `ddl-auto=create-drop` destrói e recria todas as tabelas a cada restart.
-
-**Solução planejada:**
-1. Alterar para `validate` em produção
-2. Adicionar `flyway-core` + `flyway-database-postgresql` ao `pom.xml`
-3. Criar scripts em `src/main/resources/db/migration/`:
-   - `V1__create_initial_schema.sql`
-   - `V2__add_product_image_url.sql`
-   - `V3__add_product_active.sql`
-   - `V4__add_order_origin.sql`
-   - `V5__add_order_delivery_address.sql`
-   - (migrations seguintes conforme novas features)
 
 ---
 
 ## Bugs Conhecidos
 
-### [UI] Ícone incorreto na seção "Dados Gerais" do formulário de produto
-**Arquivo:** `templates/admin/products/form.html`
-
-O ícone `user` está sendo usado no cabeçalho da seção "Dados Gerais", mas deveria ser
-um ícone relacionado a produto (ex: `package` ou `box`).
 
 ---
 
@@ -99,4 +57,4 @@ um ícone relacionado a produto (ex: `package` ou `box`).
 
 ---
 
-*Atualizado em: 03/03/2026 (flag de produto em destaque concluído)*
+*Atualizado em: 03/03/2026 (Flyway migrations concluído)*

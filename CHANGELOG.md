@@ -9,6 +9,13 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ### Novas Funcionalidades
 
+- **Migrations com Flyway** (03/03/2026)
+  Adicionadas dependências `flyway-core` e `flyway-database-postgresql` ao `pom.xml`.
+  Criado `V1__create_initial_schema.sql` com o schema completo (6 tabelas: `tb_users`,
+  `tb_customers`, `tb_products`, `tb_company_settings`, `tb_orders`, `tb_product_orders`).
+  Perfil `dev` alterado para `ddl-auto=none` — Flyway passa a ser responsável exclusivo
+  pelo schema. Perfil `test` (H2) permanece com `ddl-auto=create-drop` e Flyway desabilitado.
+
 - **Flag de produto em destaque no catálogo público** (03/03/2026)
   Adicionado campo `featured` (boolean, padrão `false`) na entidade `Product`. O admin pode
   marcar produtos como destaque via checkbox no formulário. Limite máximo de 6 produtos em
