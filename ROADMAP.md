@@ -24,33 +24,6 @@ no fundo vermelho (sidebar admin, painel esquerdo do login).
 
 ### Área Pública
 
-##### Flag de produto em destaque no catálogo público
-
-**Arquivos:** `domain/admin/product/Product.java`, `domain/admin/product/ProductService.java`,
-`templates/admin/products/form.html`, `templates/public/index.html`
-
-Atualmente, os destaques da landing page exibem os 6 primeiros produtos ativos em ordem
-alfabética. A melhoria propõe permitir que o admin marque explicitamente quais produtos devem
-aparecer em destaque.
-
-**Regra de negócio:**
-- Cada produto terá um campo booleano `featured` (padrão `false`).
-- No máximo **6 produtos** podem ter `featured = true` simultaneamente.
-- Ao tentar marcar um 7º produto como destaque, o sistema deve lançar `BusinessException`
-  informando que o limite foi atingido.
-- Se o número de produtos com `featured = true` for menor que 6, a landing page complementa
-  a exibição com produtos ativos em ordem alfabética até totalizar 6 itens.
-- Produtos inativos nunca aparecem nos destaques, mesmo que `featured = true`.
-
-**Solução planejada:**
-- Adicionar coluna `featured boolean NOT NULL DEFAULT false` à entidade `Product`
-- Em `ProductService`: validar limite de 6 ao salvar/atualizar um produto com `featured = true`
-- Atualizar `ProductService.findFeatured()`: buscar primeiro os `featured = true` e ativos;
-  se forem menos de 6, complementar com ativos ordenados por nome até atingir 6
-- Adicionar checkbox "Produto em destaque" no formulário admin de produto
-- Exibir badge visual "Destaque" na listagem admin de produtos para produtos marcados
-
----
 
 
 
@@ -126,4 +99,4 @@ um ícone relacionado a produto (ex: `package` ou `box`).
 
 ---
 
-*Atualizado em: 01/03/2026 (categorias de produto concluído)*
+*Atualizado em: 03/03/2026 (flag de produto em destaque concluído)*

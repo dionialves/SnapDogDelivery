@@ -35,6 +35,8 @@ public class ProductDTO {
 
     private boolean active = true;
 
+    private boolean featured = false;
+
     private ProductCategory category;
 
 }

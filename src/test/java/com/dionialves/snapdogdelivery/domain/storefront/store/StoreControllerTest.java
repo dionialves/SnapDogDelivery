@@ -64,7 +64,7 @@ class StoreControllerTest {
     @Test
     @DisplayName("GET / retorna home com produtos em destaque no model")
     void home_retornaIndexComFeaturedProducts() throws Exception {
-        var produto = new ProductResponseDTO(1L, "Hot Dog", new BigDecimal("15.90"), null, null, true, null, null);
+        var produto = new ProductResponseDTO(1L, "Hot Dog", new BigDecimal("15.90"), null, null, true, false, null, null);
         when(productService.findFeatured()).thenReturn(List.of(produto));
         when(cartService.getItemCount(any())).thenReturn(0);
 
@@ -79,8 +79,8 @@ class StoreControllerTest {
     @Test
     @DisplayName("GET /catalog sem categoria retorna view 'Todos' com duas seções")
     void catalog_semCategoria_retornaDuasSecoes() throws Exception {
-        var hotDog = new ProductResponseDTO(1L, "Hot Dog", new BigDecimal("15.90"), null, null, true, ProductCategory.HOT_DOG, "Hot Dog");
-        var bebida = new ProductResponseDTO(2L, "Suco", new BigDecimal("8.00"), null, null, true, ProductCategory.BEBIDA, "Bebida");
+        var hotDog = new ProductResponseDTO(1L, "Hot Dog", new BigDecimal("15.90"), null, null, true, false, ProductCategory.HOT_DOG, "Hot Dog");
+        var bebida = new ProductResponseDTO(2L, "Suco", new BigDecimal("8.00"), null, null, true, false, ProductCategory.BEBIDA, "Bebida");
         when(productService.findAllActiveByCategory(ProductCategory.HOT_DOG)).thenReturn(List.of(hotDog));
         when(productService.findAllActiveByCategory(ProductCategory.BEBIDA)).thenReturn(List.of(bebida));
         when(cartService.getItemCount(any())).thenReturn(0);
@@ -94,7 +94,7 @@ class StoreControllerTest {
     @Test
     @DisplayName("GET /catalog?category=HOT_DOG retorna grid paginado filtrado")
     void catalog_comCategoria_retornaPaginadoFiltrado() throws Exception {
-        var produto = new ProductResponseDTO(1L, "Hot Dog", new BigDecimal("15.90"), null, null, true, ProductCategory.HOT_DOG, "Hot Dog");
+        var produto = new ProductResponseDTO(1L, "Hot Dog", new BigDecimal("15.90"), null, null, true, false, ProductCategory.HOT_DOG, "Hot Dog");
         var page = new PageImpl<>(List.of(produto), PageRequest.of(0, 12), 1);
         when(productService.findAllActive(any(), any())).thenReturn(page);
         when(cartService.getItemCount(any())).thenReturn(2);

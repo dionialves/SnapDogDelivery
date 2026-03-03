@@ -71,7 +71,7 @@ class CartServiceTest {
     @Test
     @DisplayName("addItem com produto ativo adiciona item ao carrinho")
     void addItem_produtoAtivo_adicionaAoCarrinho() {
-        var product = new ProductResponseDTO(1L, "Hot Dog", new BigDecimal("15.90"), "Delicioso", null, true, null, null);
+        var product = new ProductResponseDTO(1L, "Hot Dog", new BigDecimal("15.90"), "Delicioso", null, true, false, null, null);
         when(productService.findById(1L)).thenReturn(product);
 
         var cart = new Cart();
@@ -87,7 +87,7 @@ class CartServiceTest {
     @Test
     @DisplayName("addItem com produto inativo lança BusinessException")
     void addItem_produtoInativo_lancaBusinessException() {
-        var product = new ProductResponseDTO(2L, "Produto Inativo", new BigDecimal("10.00"), null, null, false, null, null);
+        var product = new ProductResponseDTO(2L, "Produto Inativo", new BigDecimal("10.00"), null, null, false, false, null, null);
         when(productService.findById(2L)).thenReturn(product);
 
         assertThatThrownBy(() -> cartService.addItem(session, 2L, 1))

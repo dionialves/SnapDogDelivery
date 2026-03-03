@@ -26,4 +26,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     /** Retorna produtos ativos de uma categoria paginados (para filtro por categoria). */
     Page<Product> findByActiveTrueAndCategory(ProductCategory category, Pageable pageable);
 
+    /** Conta produtos marcados como destaque (para validar limite máximo de 6). */
+    long countByFeaturedTrue();
+
+    /** Retorna produtos ativos e marcados como destaque, ordenados por nome. */
+    List<Product> findByActiveTrueAndFeaturedTrueOrderByNameAsc();
+
+    /** Retorna produtos ativos e não marcados como destaque, ordenados por nome (para complementar a seção de destaques). */
+    Page<Product> findByActiveTrueAndFeaturedFalseOrderByNameAsc(Pageable pageable);
+
 }

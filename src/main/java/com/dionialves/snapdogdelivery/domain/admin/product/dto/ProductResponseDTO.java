@@ -22,6 +22,7 @@ public class ProductResponseDTO {
     private String description;
     private String imageUrl;
     private boolean active;
+    private boolean featured;
     private ProductCategory category;
     private String categoryLabel;
 
@@ -35,6 +36,7 @@ public class ProductResponseDTO {
                 product.getDescription(),
                 product.getImageUrl(),
                 product.isActive(),
+                product.isFeatured(),
                 category,
                 category != null ? category.getLabel() : null);
 

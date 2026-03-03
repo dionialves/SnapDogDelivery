@@ -9,6 +9,14 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ### Novas Funcionalidades
 
+- **Flag de produto em destaque no catálogo público** (03/03/2026)
+  Adicionado campo `featured` (boolean, padrão `false`) na entidade `Product`. O admin pode
+  marcar produtos como destaque via checkbox no formulário. Limite máximo de 6 produtos em
+  destaque simultâneos — ao ultrapassar, `BusinessException` é lançada. `ProductService.findFeatured()`
+  prioriza produtos com `featured=true` e ativos; complementa com ativos não-destacados em
+  ordem alfabética até totalizar 6. Badge âmbar "Destaque" exibido na listagem admin.
+  Novos testes de serviço cobrem os cenários de limite atingido e complemento de destaques.
+
 - **Correção do layout da listagem de produtos** (03/03/2026)
   Removida a coluna "Descrição" que quebrava as linhas da tabela. Larguras redistribuídas
   com valores fixos: Nome `w-5/12` com truncamento por reticências, Preço `w-1/8`,

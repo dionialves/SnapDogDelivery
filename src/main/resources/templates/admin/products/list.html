@@ -121,7 +121,14 @@
                     <span th:text="${#strings.substring(product.name, 0, 1).toUpperCase()}"
                       class="font-semibold text-snapdog-600">D</span>
                   </div>
-                  <p th:text="${product.name}" class="font-medium text-gray-800 truncate">Nome do Produto</p>
+                  <div class="min-w-0">
+                    <p th:text="${product.name}" class="font-medium text-gray-800 truncate">Nome do Produto</p>
+                    <span th:if="${product.featured}"
+                      class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700">
+                      <i data-lucide="star" class="w-3 h-3"></i>
+                      Destaque
+                    </span>
+                  </div>
                 </div>
               </td>
               <td class="px-6 py-4 text-left">

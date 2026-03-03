@@ -105,13 +105,22 @@
               </select>
             </div>
 
-            <div class="col-span-2 flex items-start">
+            <div class="col-span-2">
               <label class="flex items-center gap-3 cursor-pointer">
                 <input type="checkbox" id="active" th:field="*{active}"
                   class="w-4 h-4 text-snapdog-600 border-gray-300 rounded focus:ring-snapdog-500">
                 <span class="text-sm font-medium text-gray-700">Exibir no catálogo público</span>
               </label>
               <p class="mt-1 text-xs text-gray-500 ml-7">Quando desmarcado, o produto não aparece para clientes.</p>
+            </div>
+
+            <div class="col-span-2">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" id="featured" th:field="*{featured}"
+                  class="w-4 h-4 text-amber-500 border-gray-300 rounded focus:ring-amber-400">
+                <span class="text-sm font-medium text-gray-700">Produto em destaque</span>
+              </label>
+              <p class="mt-1 text-xs text-gray-500 ml-7">Exibe este produto na seção de destaques da página inicial. Máximo de 6 produtos simultaneamente.</p>
             </div>
 
           </div>

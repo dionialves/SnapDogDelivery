@@ -61,6 +61,66 @@ class ProductServiceTest {
         productDTO.setDescription("Pão, salsicha, mostarda e ketchup");
     }
 
+    // --- findFeatured ---
+
+    @Test
+    @DisplayName("findFeatured com menos de 6 destaques complementa com produtos ativos")
+    void findFeatured_menosDe6Featured_complementaComAtivos() {
+        var featuredProduct = new Product();
+        featuredProduct.setId(1L);
+        featuredProduct.setName("Hot Dog Destaque");
+        featuredProduct.setPrice(new BigDecimal("15.90"));
+        featuredProduct.setFeatured(true);
+        featuredProduct.setActive(true);
+
+        var activeProduct = new Product();
+        activeProduct.setId(2L);
+        activeProduct.setName("Hot Dog Comum");
+        activeProduct.setPrice(new BigDecimal("12.90"));
+        activeProduct.setActive(true);
+
+        when(productRepository.findByActiveTrueAndFeaturedTrueOrderByNameAsc())
+                .thenReturn(List.of(featuredProduct));
+        when(productRepository.findByActiveTrueAndFeaturedFalseOrderByNameAsc(any()))
+                .thenReturn(new PageImpl<>(List.of(activeProduct)));
+
+        var result = productService.findFeatured();
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getName()).isEqualTo("Hot Dog Destaque");
+        assertThat(result.get(1).getName()).isEqualTo("Hot Dog Comum");
+    }
+
+    // --- create com featured ---
+
+    @Test
+    @DisplayName("create com featured=true e limite atingido lança BusinessException")
+    void create_comFeatured_limiteAtingido_lancaBusinessException() {
+        productDTO.setFeatured(true);
+        when(productRepository.countByFeaturedTrue()).thenReturn(6L);
+
+        assertThatThrownBy(() -> productService.create(productDTO))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("destaque");
+
+        verify(productRepository, never()).save(any());
+    }
+
+    // --- update com featured ---
+
+    @Test
+    @DisplayName("update marcando featured=true com limite atingido lança BusinessException")
+    void update_marcaFeatured_limiteAtingido_lancaBusinessException() {
+        product.setFeatured(false);
+        productDTO.setFeatured(true);
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(productRepository.countByFeaturedTrue()).thenReturn(6L);
+
+        assertThatThrownBy(() -> productService.update(1L, productDTO))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("destaque");
+    }
+
     // --- search (lista) ---
 
     @Test

@@ -181,6 +181,6 @@ class ProductViewControllerTest {
     // ---------- Auxiliares ----------
 
     private ProductResponseDTO buildProductResponseDTO(Long id, String name) {
-        return new ProductResponseDTO(id, name, new BigDecimal("15.90"), "Descrição", null, true, null, null);
+        return new ProductResponseDTO(id, name, new BigDecimal("15.90"), "Descrição", null, true, false, null, null);
     }
 }
