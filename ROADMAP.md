@@ -7,6 +7,16 @@ Quando um item for concluído, mova-o para `CHANGELOG.md` com data e detalhes de
 
 ## Melhorias
 
+### Atualizar README para refletir o estado da v0.4.0
+
+O README foi escrito na época da v0.1.x e está desatualizado.
+Corrigir erros de digitação, atualizar tecnologias (Flyway, Spring Security,
+Cropper.js), refletir a arquitetura atual (slicing vertical), adicionar
+seção Storefront nas funcionalidades, completar tabela de rotas, incluir
+credenciais de acesso padrão e mencionar a documentação versionada em `/docs`.
+
+---
+
 ### Melhorar design da logo para maior integração com o layout
 
 A logo atual (`/image/logo.png`) foi integrada nos templates, mas seu design visual não se
