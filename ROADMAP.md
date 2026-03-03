@@ -20,12 +20,6 @@ no fundo vermelho (sidebar admin, painel esquerdo do login).
 
 ### Area Admin
 
-#### Editor de imagem para produtos — melhorias pendentes
-
-Após o recorte de imagem (já entregue), o editor ainda carece de:
-
-- Preview de como ficaria no card da área pública (proporção e enquadramento reais)
-
 ---
 
 ### Área Pública
@@ -55,16 +49,6 @@ aparecer em destaque.
   se forem menos de 6, complementar com ativos ordenados por nome até atingir 6
 - Adicionar checkbox "Produto em destaque" no formulário admin de produto
 - Exibir badge visual "Destaque" na listagem admin de produtos para produtos marcados
-
----
-
-#### Upload de arquivo no formulário admin de produto
-**Arquivos:** `templates/admin/products/form.html`
-
-Backend de upload já implementado (`StorageService`, `ProductViewController`, `WebMvcConfig`).
-Ainda faltam:
-- Campo `<input type="file">` no formulário admin como alternativa à URL externa
-- JavaScript vanilla para alternar entre os dois modos (upload de arquivo vs. URL externa)
 
 ---
 

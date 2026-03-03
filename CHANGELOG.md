@@ -9,6 +9,11 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ### Novas Funcionalidades
 
+- **Correção do layout da listagem de produtos** (03/03/2026)
+  Removida a coluna "Descrição" que quebrava as linhas da tabela. Larguras redistribuídas
+  com valores fixos: Nome `w-5/12` com truncamento por reticências, Preço `w-1/8`,
+  Categoria `w-1/6`, Status `w-1/8`, Ações `w-1/6` alinhada à direita.
+
 - **Refatoração do formulário de produto com drop zone e upload AJAX** (03/03/2026)
   Layout dividido em 2 colunas: campos à esquerda e área de imagem à direita. A zona de
   imagem suporta drag-and-drop ou clique para selecionar arquivo. Após confirmar o recorte,
