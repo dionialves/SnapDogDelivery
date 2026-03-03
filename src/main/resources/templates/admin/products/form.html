@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/fragments/layout :: layout(
-          pageTitle=${pageTitle}, 
-          activeMenu=${activeMenu}, 
+          pageTitle=${pageTitle},
+          activeMenu=${activeMenu},
           pageSubtitle=${pageSubtitle},
           headerActions=~{::headerActions},
           content=~{::content}
@@ -23,6 +23,9 @@
 
   <!-- Conteúdo Principal -->
   <th:block th:fragment="content">
+
+    <!-- Cropper.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 
     <!-- Mensagens de Feedback -->
     <div th:if="${successMessage}" class="mb-6 p-4 rounded-lg bg-green-100 text-green-800 flex items-center gap-3">
@@ -102,41 +105,14 @@
           <div class="md:col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-2">Imagem do Produto</label>
 
-            <!-- Tabs de seleção de modo -->
-            <div class="flex gap-2 mb-3">
-              <button type="button" id="tabUrl"
-                onclick="setImageMode('url')"
-                class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-snapdog-600 text-white transition-colors">
-                URL externa
-              </button>
-              <button type="button" id="tabFile"
-                onclick="setImageMode('file')"
-                class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">
-                Upload de arquivo
-              </button>
-            </div>
+            <input type="hidden" th:field="*{imageUrl}">
 
             <div class="flex gap-4 items-start">
-              <div class="flex-1 space-y-3">
-
-                <!-- Modo URL -->
-                <div id="modeUrl">
-                  <input type="text" id="imageUrl" th:field="*{imageUrl}"
-                    th:classappend="${#fields.hasErrors('imageUrl')} ? 'border-red-500' : ''"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-snapdog-500 focus:border-snapdog-500"
-                    placeholder="https://exemplo.com/imagem.jpg"
-                    oninput="atualizarPreview(this.value)">
-                  <p th:if="${#fields.hasErrors('imageUrl')}" th:errors="*{imageUrl}" class="mt-1 text-sm text-red-500"></p>
-                </div>
-
-                <!-- Modo Upload -->
-                <div id="modeFile" class="hidden">
-                  <input type="file" id="imageFile" name="imageFile" accept="image/jpeg,image/png,image/webp,image/gif"
-                    class="w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-snapdog-50 file:text-snapdog-700 file:font-semibold hover:file:bg-snapdog-100"
-                    onchange="previewUpload(this)">
-                  <p class="text-xs text-gray-400 mt-1">JPG, PNG, WEBP ou GIF. Máx 5MB.</p>
-                </div>
-
+              <div class="flex-1">
+                <input type="file" id="imageFile" name="imageFile" accept="image/jpeg,image/png,image/webp,image/gif"
+                  class="w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-snapdog-50 file:text-snapdog-700 file:font-semibold hover:file:bg-snapdog-100"
+                  onchange="previewUpload(this)">
+                <p class="text-xs text-gray-400 mt-1">JPG, PNG, WEBP ou GIF. Máx 5MB.</p>
               </div>
 
               <!-- Preview -->
@@ -164,6 +140,7 @@
 
         </div>
       </div>
+
       <!-- Botões de Ação -->
       <div class="flex items-center justify-end gap-4">
         <a th:href="@{/admin/products}"
@@ -179,64 +156,162 @@
 
     </form>
 
-    <script>
-      // ===== MODO DE IMAGEM (URL vs Upload) =====
-      function setImageMode(mode) {
-        const modeUrl  = document.getElementById('modeUrl');
-        const modeFile = document.getElementById('modeFile');
-        const tabUrl   = document.getElementById('tabUrl');
-        const tabFile  = document.getElementById('tabFile');
+    <!-- Modal de Recorte de Imagem -->
+    <div id="modalRecorte" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 p-4">
+      <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl flex flex-col" style="max-height: 90vh;">
 
-        if (mode === 'url') {
-          modeUrl.classList.remove('hidden');
-          modeFile.classList.add('hidden');
-          tabUrl.className  = 'px-3 py-1.5 text-xs font-semibold rounded-lg bg-snapdog-600 text-white transition-colors';
-          tabFile.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors';
-        } else {
-          modeUrl.classList.add('hidden');
-          modeFile.classList.remove('hidden');
-          tabFile.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg bg-snapdog-600 text-white transition-colors';
-          tabUrl.className  = 'px-3 py-1.5 text-xs font-semibold rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors';
+        <!-- Header do modal -->
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
+          <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+            <i data-lucide="crop" class="w-5 h-5 text-snapdog-600"></i>
+            Ajustar Imagem do Produto
+          </h3>
+          <button type="button" onclick="cancelarRecorte()"
+            class="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Área do cropper -->
+        <div class="bg-gray-900 flex-shrink-0" style="height: 380px;">
+          <img id="cropImage" src="" alt="Imagem para recorte" class="block max-w-full">
+        </div>
+
+        <!-- Controles -->
+        <div class="px-4 py-3 border-b border-gray-200 flex items-center gap-4 flex-shrink-0">
+
+          <!-- Zoom -->
+          <span class="text-sm font-medium text-gray-600">Zoom</span>
+          <div class="flex items-center gap-1">
+            <button type="button" onclick="cropper && cropper.zoom(-0.1)"
+              class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors text-lg font-bold leading-none">
+              −
+            </button>
+            <button type="button" onclick="cropper && cropper.zoom(0.1)"
+              class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors text-lg font-bold leading-none">
+              +
+            </button>
+          </div>
+
+          <!-- Proporção -->
+          <div class="flex items-center gap-2 ml-auto">
+            <span class="text-sm font-medium text-gray-600">Proporção</span>
+            <button type="button" id="btnLivre" onclick="setAspectRatio(NaN)"
+              class="px-3 py-1 text-xs font-semibold rounded-lg bg-snapdog-600 text-white transition-colors">
+              Livre
+            </button>
+            <button type="button" id="btn1x1" onclick="setAspectRatio(1)"
+              class="px-3 py-1 text-xs font-semibold rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">
+              1:1
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Rodapé do modal -->
+        <div class="p-4 flex justify-end gap-3 flex-shrink-0">
+          <button type="button" onclick="cancelarRecorte()"
+            class="px-5 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition-colors">
+            Cancelar
+          </button>
+          <button type="button" onclick="confirmarRecorte()"
+            class="px-5 py-2 bg-snapdog-600 hover:bg-snapdog-700 text-white rounded-lg font-medium transition-colors inline-flex items-center gap-2">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            Confirmar Recorte
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Cropper.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+
+    <script>
+      let cropper = null;
+
+      // ===== PREVIEW DO UPLOAD — abre modal de recorte =====
+      function previewUpload(input) {
+        if (!input.files || !input.files[0]) return;
+        const reader = new FileReader();
+        reader.onload = function(e) { abrirModalRecorte(e.target.result); };
+        reader.readAsDataURL(input.files[0]);
+      }
+
+      // ===== MODAL DE RECORTE =====
+      function abrirModalRecorte(src) {
+        const modal   = document.getElementById('modalRecorte');
+        const cropImg = document.getElementById('cropImage');
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        cropImg.src = src;
+
+        if (cropper) cropper.destroy();
+        cropper = new Cropper(cropImg, {
+          viewMode: 1,
+          autoCropArea: 0.8,
+          responsive: true,
+          checkOrientation: false,
+        });
+
+        // Reinicia botões de proporção para "Livre"
+        const activeClass   = 'px-3 py-1 text-xs font-semibold rounded-lg bg-snapdog-600 text-white transition-colors';
+        const inactiveClass = 'px-3 py-1 text-xs font-semibold rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors';
+        document.getElementById('btnLivre').className = activeClass;
+        document.getElementById('btn1x1').className   = inactiveClass;
+
+        lucide.createIcons();
+      }
+
+      function fecharModalRecorte() {
+        const modal = document.getElementById('modalRecorte');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        if (cropper) {
+          cropper.destroy();
+          cropper = null;
         }
       }
 
-      // ===== PREVIEW DA IMAGEM (URL) =====
-      function atualizarPreview(url) {
-        const img = document.getElementById('imagePreview');
-        const placeholder = document.getElementById('imagePlaceholder');
-        if (url && url.trim() !== '') {
-          img.src = url.trim();
+      function cancelarRecorte() {
+        document.getElementById('imageFile').value = '';
+        fecharModalRecorte();
+      }
+
+      function confirmarRecorte() {
+        if (!cropper) return;
+        const canvas = cropper.getCroppedCanvas({ maxWidth: 1200, maxHeight: 1200 });
+        canvas.toBlob(function(blob) {
+          const fileInput = document.getElementById('imageFile');
+          const dt = new DataTransfer();
+          dt.items.add(new File([blob], 'produto.jpg', { type: 'image/jpeg' }));
+          fileInput.files = dt.files;
+
+          const img         = document.getElementById('imagePreview');
+          const placeholder = document.getElementById('imagePlaceholder');
+          img.src = canvas.toDataURL('image/jpeg');
           img.classList.remove('hidden');
           img.classList.add('w-full', 'h-full', 'object-cover');
           placeholder.classList.add('hidden');
-        } else {
-          img.src = '';
-          img.classList.add('hidden');
-          placeholder.classList.remove('hidden');
-        }
+
+          fecharModalRecorte();
+        }, 'image/jpeg', 0.9);
       }
 
-      // ===== PREVIEW DO UPLOAD =====
-      function previewUpload(input) {
-        const img = document.getElementById('imagePreview');
-        const placeholder = document.getElementById('imagePlaceholder');
-        if (input.files && input.files[0]) {
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            img.src = e.target.result;
-            img.classList.remove('hidden');
-            img.classList.add('w-full', 'h-full', 'object-cover');
-            placeholder.classList.add('hidden');
-          };
-          reader.readAsDataURL(input.files[0]);
-        }
+      function setAspectRatio(ratio) {
+        if (!cropper) return;
+        cropper.setAspectRatio(ratio);
+        const activeClass   = 'px-3 py-1 text-xs font-semibold rounded-lg bg-snapdog-600 text-white transition-colors';
+        const inactiveClass = 'px-3 py-1 text-xs font-semibold rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors';
+        document.getElementById('btnLivre').className = isNaN(ratio) ? activeClass : inactiveClass;
+        document.getElementById('btn1x1').className   = isNaN(ratio) ? inactiveClass : activeClass;
       }
 
       // ===== FORMATAÇÃO DE PREÇO =====
       const priceDisplay = document.getElementById("priceDisplay");
       const priceHidden  = document.getElementById("priceHidden");
 
-      // Inicialização: se há valor (modo edição), formatar para exibição
       (function init() {
         const raw = priceHidden.value;
         if (raw) {
@@ -249,13 +324,12 @@
         }
       })();
 
-      // Formatação visual + atualiza hidden a cada keystroke
       priceDisplay.addEventListener("input", function (e) {
         let digits = e.target.value.replace(/\D/g, "");
         let num    = (parseInt(digits || 0, 10) / 100).toFixed(2);
         e.target.value    = "R$ " + num.replace(".", ",")
                                         .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-        priceHidden.value = num; // sempre ponto como separador decimal
+        priceHidden.value = num;
       });
     </script>
 

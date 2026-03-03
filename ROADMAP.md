@@ -20,13 +20,11 @@ no fundo vermelho (sidebar admin, painel esquerdo do login).
 
 ### Area Admin
 
-#### Criar um editor de imagem para produtos
+#### Editor de imagem para produtos — melhorias pendentes
 
-Criar um editor de imagem se abre quando o upload de imagem e aberto, desse editor tem um preview da imagem, e tem as seguintes opções:
+Após o recorte de imagem (já entregue), o editor ainda carece de:
 
-- Retirada de background (fundo transparente)
-- Preview de como ficaria do card da area publica
-- Aproximar ou afastar a imagem para melhor enquadramento
+- Preview de como ficaria no card da área pública (proporção e enquadramento reais)
 
 ---
 
@@ -127,6 +125,7 @@ um ícone relacionado a produto (ex: `package` ou `box`).
 
 | Funcionalidade | Descrição |
 |---|---|
+| **Retirada de background de imagem** | No editor de imagem de produto, opção para remover o fundo automaticamente (fundo transparente). |
 | **Login com Google (OAuth2)** | `spring-boot-starter-oauth2-client` + Google Cloud Console. Cria/vincula `Customer` automaticamente. |
 | **Campo `notes` em `Order`** | Campo `String` (max 500, nullable) para observações do cliente (ex.: "sem cebola"). |
 | **E-mail de confirmação de pedido** | Spring Mail + template HTML enviado após checkout. |

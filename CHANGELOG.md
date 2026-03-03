@@ -9,6 +9,18 @@ com regras de negócio, fluxos de trabalho e detalhes das alterações.
 
 ### Novas Funcionalidades
 
+- **Remoção da opção de URL externa no formulário de produto** (03/03/2026)
+  Campo de URL externa removido do formulário de produto. A imagem agora é definida
+  exclusivamente via upload de arquivo com editor de recorte. Um campo hidden preserva
+  a URL existente em modo de edição quando nenhum novo arquivo é enviado.
+
+- **Editor de recorte de imagem para produtos** (03/03/2026)
+  Ao selecionar um arquivo na aba "Upload de arquivo" do formulário de produto, um modal abre
+  automaticamente com o editor Cropper.js (via CDN). O admin pode mover a área de recorte,
+  ajustar o zoom e alternar proporção entre Livre e 1:1. Ao confirmar, a imagem recortada
+  (JPEG, máx 1200px) substitui o arquivo original no input via DataTransfer API — o backend
+  recebe o arquivo já recortado sem nenhuma mudança no servidor.
+
 - **Modal de quantidade ao adicionar ao carrinho** (01/03/2026)
   Substituídos os botões "Adicionar" (quantity=1 fixo) por triggers que abrem um modal com
   thumbnail, nome, descrição e seletor de quantidade (1–20). Imagem e nome do produto também
